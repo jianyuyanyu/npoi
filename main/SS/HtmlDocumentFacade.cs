@@ -91,7 +91,7 @@ namespace NPOI.SS
             string addition = GetOrCreateCssClass(element.Name, classNamePrefix, style);
             string newClassValue = string.IsNullOrEmpty(exising) ? addition
                     : (exising + " " + addition);
-            element.GetAttribute("class", newClassValue);
+            element.SetAttribute("class", newClassValue);
         }
 
         public XmlElement CreateBlock()
@@ -216,9 +216,9 @@ namespace NPOI.SS
             Dictionary<string, string> styleToClassName = stylesheet[tagName];
 
             string knownClass;
-            if (styleToClassName.ContainsKey(style))
+            if (styleToClassName.TryGetValue(style, out string value))
             {
-                knownClass = styleToClassName[style];
+                knownClass = value;
                 return knownClass;
             }
 

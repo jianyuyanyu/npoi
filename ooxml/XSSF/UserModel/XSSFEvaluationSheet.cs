@@ -49,10 +49,8 @@ namespace NPOI.XSSF.UserModel
             _cellCache = null;
         }
 
-        public XSSFSheet GetXSSFSheet()
-        {
-            return _xs;
-        }
+        public XSSFSheet XSSFSheet => _xs;
+        
         public IEvaluationCell GetCell(int rowIndex, int columnIndex)
         {
             // cache for performance: ~30% speedup due to caching
@@ -75,9 +73,9 @@ namespace NPOI.XSSF.UserModel
             CellKey key = new CellKey(rowIndex, columnIndex);
 
             IEvaluationCell evalcell = null;
-            if (_cellCache.ContainsKey(key))
+            if (_cellCache.TryGetValue(key, out IEvaluationCell value))
             {
-                evalcell = _cellCache[key];           
+                evalcell = value;           
             }           
 
             // If cache is stale, update cache with this one cell

@@ -210,8 +210,8 @@ namespace NPOI.SS.Formula
         public int GetSheetIndex(IEvaluationSheet sheet)
         {
             int result = int.MinValue;
-            if(_sheetIndexesBySheet.ContainsKey(sheet))
-                result = _sheetIndexesBySheet[sheet];
+            if(_sheetIndexesBySheet.TryGetValue(sheet, out int value))
+                result = value;
             if (result == int.MinValue)
             {
                 int sheetIndex = _workbook.GetSheetIndex(sheet);
@@ -237,9 +237,9 @@ namespace NPOI.SS.Formula
         public int GetSheetIndex(String sheetName)
         {
             int result;
-            if (_sheetIndexesByName.ContainsKey(sheetName))
+            if (_sheetIndexesByName.TryGetValue(sheetName, out int value))
             {
-                result = _sheetIndexesByName[sheetName];
+                result = value;
             }
             else
             {
@@ -636,7 +636,7 @@ namespace NPOI.SS.Formula
                                    ((FuncVarPtg)nextPtg).FunctionIndex == FunctionMetadataRegistry.FUNCTION_INDEX_IF)
                                {
                                    // this is an if statement without a false param (as opposed to MissingArgPtg as the false param)
-                                   i++;
+                                   //i++;
                                    stack.Push(arg0);
                                    stack.Push(BoolEval.FALSE);
                                }

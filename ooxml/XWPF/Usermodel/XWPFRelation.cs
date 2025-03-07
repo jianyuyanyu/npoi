@@ -222,14 +222,7 @@ namespace NPOI.XWPF.UserModel
         private XWPFRelation(String type, String rel, String defaultName, Type cls)
             : base(type, rel, defaultName, cls)
         {
-            if (_table.ContainsKey(rel))
-            {
-                _table[rel] = this;
-            }
-            else
-            {
-                _table.Add(rel, this);
-            }
+            _table[rel] = this;
         }
 
         /**
@@ -241,8 +234,8 @@ namespace NPOI.XWPF.UserModel
          */
         public static XWPFRelation GetInstance(String rel)
         {
-            if (_table.ContainsKey(rel))
-                return _table[(rel)];
+            if (_table.TryGetValue(rel, out XWPFRelation instance))
+                return instance;
             return null;
         }
 

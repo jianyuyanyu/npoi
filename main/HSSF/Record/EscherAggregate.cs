@@ -1298,10 +1298,7 @@ namespace NPOI.HSSF.Record
 
         internal void AddTailRecord(NoteRecord note)
         {
-            if (tailRec.ContainsKey(note.ShapeId))
-                tailRec.Add(note.ShapeId, note);
-            else
-                tailRec[note.ShapeId] = note;
+            tailRec[note.ShapeId] = note;
         }
         /**
      * @return unmodifiable copy of tail records. We need to access them when building shapes.
@@ -1320,9 +1317,9 @@ namespace NPOI.HSSF.Record
         internal NoteRecord GetNoteRecordByObj(ObjRecord obj)
         {
             CommonObjectDataSubRecord cod = (CommonObjectDataSubRecord)obj.SubRecords[0];
-            if (!tailRec.ContainsKey(cod.ObjectId))
+            if (!tailRec.TryGetValue(cod.ObjectId, out NoteRecord byObj))
                 return null;
-            return tailRec[(cod.ObjectId)];
+            return byObj;
         }
     }
 }
