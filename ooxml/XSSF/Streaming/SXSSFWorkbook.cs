@@ -66,14 +66,14 @@ namespace NPOI.XSSF.Streaming
         private static readonly POILogger logger = POILogFactory.GetLogger(typeof(SXSSFWorkbook));
 
         public const int DEFAULT_WINDOW_SIZE = 100;
-        private XSSFWorkbook _wb;
+        private readonly XSSFWorkbook _wb;
         public XSSFWorkbook XssfWorkbook
         {
             get { return _wb; }
         }
 
-        private Dictionary<SXSSFSheet, XSSFSheet> _sxFromXHash = new Dictionary<SXSSFSheet, XSSFSheet>();
-        private Dictionary<XSSFSheet, SXSSFSheet> _xFromSxHash = new Dictionary<XSSFSheet, SXSSFSheet>();
+        private readonly Dictionary<SXSSFSheet, XSSFSheet> _sxFromXHash = new Dictionary<SXSSFSheet, XSSFSheet>();
+        private readonly Dictionary<XSSFSheet, SXSSFSheet> _xFromSxHash = new Dictionary<XSSFSheet, SXSSFSheet>();
 
         private int _randomAccessWindowSize = DEFAULT_WINDOW_SIZE;
 
@@ -102,9 +102,15 @@ namespace NPOI.XSSF.Streaming
         private bool _compressTmpFiles = false;
 
         /// <summary>
+        /// setting this flag On allows to write large files;
+        /// however, this can lead to compatibility issues
+        /// </summary>
+        private UseZip64 _useZip64 = UseZip64.Off;
+
+        /// <summary>
         /// shared string table - a cache of strings in this workbook.
         /// </summary>
-        private SharedStringsTable _sharedStringSource;
+        private readonly SharedStringsTable _sharedStringSource;
 
         public int ActiveSheetIndex
         {
@@ -150,6 +156,13 @@ namespace NPOI.XSSF.Streaming
             get { return XssfWorkbook.IsHidden; }
 
             set { XssfWorkbook.IsHidden = value; }
+        }
+
+        public UseZip64 UseZip64
+        {
+            get { return _useZip64; }
+
+            set { _useZip64 = value; }
         }
 
 
@@ -373,18 +386,18 @@ namespace NPOI.XSSF.Streaming
         }
 
 
-        private XSSFSheet GetXSSFSheet(SXSSFSheet sheet)
+        public XSSFSheet GetXSSFSheet(SXSSFSheet sheet)
         {
-            if (sheet != null && _sxFromXHash.ContainsKey(sheet))
-                return _sxFromXHash[sheet];
+            if (sheet != null && _sxFromXHash.TryGetValue(sheet, out XSSFSheet xssfSheet))
+                return xssfSheet;
             else
                 return null;
         }
 
-        private SXSSFSheet GetSXSSFSheet(XSSFSheet sheet)
+        public SXSSFSheet GetSXSSFSheet(XSSFSheet sheet)
         {
-            if (sheet != null && _xFromSxHash.ContainsKey(sheet))
-                return _xFromSxHash[sheet];
+            if (sheet != null && _xFromSxHash.TryGetValue(sheet, out SXSSFSheet sxssfSheet))
+                return sxssfSheet;
             else
                 return null;
         }
@@ -434,7 +447,7 @@ namespace NPOI.XSSF.Streaming
             return null;
         }
 
-        private void InjectData(FileInfo zipfile, Stream outStream)
+        private void InjectData(FileInfo zipfile, Stream outStream, bool leaveOpen)
         {
             // don't use ZipHelper.openZipFile here - see #59743
             ZipFile zip = new ZipFile(zipfile.FullName);
@@ -443,7 +456,8 @@ namespace NPOI.XSSF.Streaming
                 ZipOutputStream zos = new ZipOutputStream(outStream);
                 try
                 {
-                    zos.UseZip64 = UseZip64.Off;
+                    zos.IsStreamOwner = !leaveOpen;
+                    zos.UseZip64 = _useZip64;
                     //ZipEntrySource zipEntrySource = new ZipFileZipEntrySource(zip);
                     //var en =  zipEntrySource.Entries;
                     var en = zip.GetEnumerator();
@@ -755,10 +769,6 @@ namespace NPOI.XSSF.Streaming
         }
         public void Write(Stream stream, bool leaveOpen = false)
         {
-            this.Write(stream);
-        }
-        public void Write(Stream stream)
-        {
             FlushSheets();
 
             //Save the template
@@ -777,7 +787,7 @@ namespace NPOI.XSSF.Streaming
 
                 //Substitute the template entries with the generated sheet data files
                 
-                InjectData(tmplFile, stream);
+                InjectData(tmplFile, stream, leaveOpen);
             }
             finally
             {
@@ -935,11 +945,18 @@ namespace NPOI.XSSF.Streaming
             return XssfWorkbook.IsSheetVeryHidden(sheetIx);
         }
 
-        public void SetSheetHidden(int sheetIx, SheetState hidden)
+        public SheetVisibility GetSheetVisibility(int sheetIx)
+        {
+            return _wb.GetSheetVisibility(sheetIx);
+        }
+
+        [Obsolete]
+        public void SetSheetHidden(int sheetIx, SheetVisibility hidden)
         {
             XssfWorkbook.SetSheetHidden(sheetIx, hidden);
         }
 
+        [Obsolete]
         public void SetSheetHidden(int sheetIx, int hidden)
         {
             XssfWorkbook.SetSheetHidden(sheetIx, hidden);
@@ -949,7 +966,10 @@ namespace NPOI.XSSF.Streaming
         {
             XssfWorkbook.AddToolPack(toopack);
         }
-
+        public void SetSheetVisibility(int sheetIx, SheetVisibility visibility)
+        {
+            _wb.SetSheetVisibility(sheetIx, visibility);
+        }
 
         /// <summary>
         /// Returns the spreadsheet version (EXCLE2007) of this workbook
@@ -975,7 +995,7 @@ namespace NPOI.XSSF.Streaming
 
         void IDisposable.Dispose()
         {
-            this.Close();
+            this.Dispose();
         }
 
 
@@ -985,8 +1005,8 @@ namespace NPOI.XSSF.Streaming
         private class SheetEnumerator<T> : IEnumerator<T> where T : class, ISheet
         {
             private XSSFWorkbook _wb;
-            private SXSSFWorkbook _xwb;
-            private IEnumerator<ISheet> it;
+            private readonly SXSSFWorkbook _xwb;
+            private readonly IEnumerator<ISheet> it;
             public SheetEnumerator(XSSFWorkbook wb, SXSSFWorkbook xwb)
             {
                 this._wb = wb;

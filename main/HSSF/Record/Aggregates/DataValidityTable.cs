@@ -30,12 +30,12 @@ namespace NPOI.HSSF.Record.Aggregates
     public class DataValidityTable : RecordAggregate
     {
 
-        private DVALRecord _headerRec;
+        private readonly DVALRecord _headerRec;
         /**
          * The list of data validations for the current sheet.
          * Note - this may be empty (contrary to OOO documentation)
          */
-        private IList _validationList;
+        private readonly IList _validationList;
 
         public DataValidityTable(RecordStream rs)
         {
@@ -71,6 +71,12 @@ namespace NPOI.HSSF.Record.Aggregates
         {
             _validationList.Add(dvRecord);
             _headerRec.DVRecNo = (_validationList.Count);
+        }
+
+        public void RemoveDataValidation(DVRecord dvRecord)
+        {
+            _validationList.Remove(dvRecord);
+            _headerRec.DVRecNo = _validationList.Count;
         }
     }
 }

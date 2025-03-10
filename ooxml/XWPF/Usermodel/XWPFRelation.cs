@@ -28,7 +28,7 @@ namespace NPOI.XWPF.UserModel
         /**
          * A map to lookup POIXMLRelation by its relation type
          */
-        private static Dictionary<String, XWPFRelation> _table = new Dictionary<String, XWPFRelation>();
+        private static readonly Dictionary<String, XWPFRelation> _table = new Dictionary<String, XWPFRelation>();
 
 
         public static XWPFRelation DOCUMENT = new XWPFRelation(
@@ -222,14 +222,7 @@ namespace NPOI.XWPF.UserModel
         private XWPFRelation(String type, String rel, String defaultName, Type cls)
             : base(type, rel, defaultName, cls)
         {
-            if (_table.ContainsKey(rel))
-            {
-                _table[rel] = this;
-            }
-            else
-            {
-                _table.Add(rel, this);
-            }
+            _table[rel] = this;
         }
 
         /**
@@ -241,8 +234,8 @@ namespace NPOI.XWPF.UserModel
          */
         public static XWPFRelation GetInstance(String rel)
         {
-            if (_table.ContainsKey(rel))
-                return _table[(rel)];
+            if (_table.TryGetValue(rel, out XWPFRelation instance))
+                return instance;
             return null;
         }
 

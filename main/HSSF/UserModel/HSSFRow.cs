@@ -290,7 +290,8 @@ namespace NPOI.HSSF.UserModel
             cells.Values.CopyTo(cellsToRemove, 0);
             foreach (ICell cell in cellsToRemove)
             {
-                RemoveCell(cell, true);
+                if(cell != null)
+                    RemoveCell(cell, true);
             }
         }
 
@@ -427,10 +428,10 @@ namespace NPOI.HSSF.UserModel
         /// <returns>Cell representing that column or null if Undefined.</returns>
         private ICell RetrieveCell(int cellnum)
         {
-            if (!cells.ContainsKey(cellnum))
+            if (!cells.TryGetValue(cellnum, out ICell cell))
                 return null;
             //if (cellnum < 0 || cellnum >= cells.Count) return null;
-            return cells[cellnum];
+            return cell;
         }
 
         /// <summary>
@@ -631,6 +632,7 @@ namespace NPOI.HSSF.UserModel
                 if (value == -1)
                 {
                     row.Height = unchecked(((short)(0xFF | 0x8000)));
+                    row.BadFontHeight = (false);
                 }
                 else
                 {

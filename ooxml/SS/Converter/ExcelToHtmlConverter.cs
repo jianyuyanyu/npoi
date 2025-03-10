@@ -34,7 +34,7 @@ namespace NPOI.SS.Converter
 
     public class ExcelToHtmlConverter
     {
-        POILogger logger = POILogFactory.GetLogger(typeof(ExcelToHtmlConverter));
+        readonly POILogger logger = POILogFactory.GetLogger(typeof(ExcelToHtmlConverter));
         public ExcelToHtmlConverter()
         {
             XmlDocument doc = new XmlDocument();
@@ -42,21 +42,21 @@ namespace NPOI.SS.Converter
             cssClassTable = htmlDocumentFacade.GetOrCreateCssClass("table", "t",
                     "border-collapse:collapse;border-spacing:0;");
         }
-        protected static int GetColumnWidth(ISheet sheet, int columnIndex)
+        protected static double GetColumnWidth(ISheet sheet, int columnIndex)
         {
             return ExcelToHtmlUtils.GetColumnWidthInPx(sheet.GetColumnWidth(columnIndex));
         }
         //private HSSFDataFormatter _formatter = new HSSFDataFormatter();
-        private DataFormatter _formatter = new DataFormatter();
+        private readonly DataFormatter _formatter = new DataFormatter();
         private string cssClassContainerCell = null;
 
         private string cssClassContainerDiv = null;
 
-        private string cssClassTable;
+        private readonly string cssClassTable;
 
-        private Dictionary<short, string> excelStyleToClass = new Dictionary<short, string>();
+        private readonly Dictionary<short, string> excelStyleToClass = new Dictionary<short, string>();
 
-        private HtmlDocumentFacade htmlDocumentFacade;
+        private readonly HtmlDocumentFacade htmlDocumentFacade;
 
         private bool outputColumnHeaders = true;
         /// <summary>
@@ -295,7 +295,7 @@ namespace NPOI.SS.Converter
 
                 ICell cell = (ICell)row.GetCell(colIx);
 
-                int divWidthPx = 0;
+                double divWidthPx = 0;
                 if (UseDivsToSpan)
                 {
                     divWidthPx = GetColumnWidth(sheet, colIx);
@@ -481,7 +481,7 @@ namespace NPOI.SS.Converter
         }
 
         protected bool ProcessCell(ICell cell, XmlElement tableCellElement,
-                int normalWidthPx, int maxSpannedWidthPx, float normalHeightPt)
+                double normalWidthPx, double maxSpannedWidthPx, float normalHeightPt)
         {
             ICellStyle cellStyle = cell.CellStyle as ICellStyle;
 
@@ -631,8 +631,8 @@ namespace NPOI.SS.Converter
         {
             short cellStyleKey = cellStyle.Index;
 
-            if(excelStyleToClass.ContainsKey(cellStyleKey))
-                return excelStyleToClass[cellStyleKey];
+            if(excelStyleToClass.TryGetValue(cellStyleKey, out string name))
+                return name;
 
             String cssStyle = BuildStyle(workbook, cellStyle);
             String cssClass = htmlDocumentFacade.GetOrCreateCssClass("td", "c",
@@ -682,7 +682,7 @@ namespace NPOI.SS.Converter
                 else if (cellStyle.FillPattern == FillPattern.SolidForeground)
                 {
                     //cellStyle
-                    IndexedColors clr=IndexedColors.ValueOf(cellStyle.FillForegroundColor);
+                    IndexedColors clr=IndexedColors.TryValueOf(cellStyle.FillForegroundColor);
                     string hexstring=null;
                     if(clr!=null)
                     {
@@ -698,7 +698,7 @@ namespace NPOI.SS.Converter
                 }
                 else
                 {
-                    IndexedColors clr = IndexedColors.ValueOf(cellStyle.FillBackgroundColor);
+                    IndexedColors clr = IndexedColors.TryValueOf(cellStyle.FillBackgroundColor);
                     string hexstring = null;
                     if (clr != null)
                     {
@@ -752,7 +752,7 @@ namespace NPOI.SS.Converter
             }
             else 
             {
-                IndexedColors clr = IndexedColors.ValueOf(borderColor);
+                IndexedColors clr = IndexedColors.TryValueOf(borderColor);
                 if (clr != null)
                 {
                    borderStyle.Append(' ');
@@ -803,7 +803,7 @@ namespace NPOI.SS.Converter
             }
             else
             {
-                IndexedColors clr = IndexedColors.ValueOf(font.Color);
+                IndexedColors clr = IndexedColors.TryValueOf(font.Color);
                 string hexstring = null;
                 if (clr != null)
                 {

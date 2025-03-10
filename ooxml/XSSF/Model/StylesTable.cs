@@ -40,25 +40,24 @@ namespace NPOI.XSSF.Model
      */
     public class StylesTable : POIXMLDocumentPart
     {
-        private SortedDictionary<short, String> numberFormats = new SortedDictionary<short, String>();
-        private bool[] usedNumberFormats = new bool[SpreadsheetVersion.EXCEL2007.MaxCellStyles];
-        private List<XSSFFont> fonts = new List<XSSFFont>();
-        private List<XSSFCellFill> fills = new List<XSSFCellFill>();
-        private List<XSSFCellBorder> borders = new List<XSSFCellBorder>();
-        private List<CT_Xf> styleXfs = new List<CT_Xf>();
-        private List<CT_Xf> xfs = new List<CT_Xf>();
+        private readonly SortedDictionary<short, String> numberFormats = new SortedDictionary<short, String>();
+        private readonly List<XSSFFont> fonts = new List<XSSFFont>();
+        private readonly List<XSSFCellFill> fills = new List<XSSFCellFill>();
+        private readonly List<XSSFCellBorder> borders = new List<XSSFCellBorder>();
+        private readonly List<CT_Xf> styleXfs = new List<CT_Xf>();
+        private readonly List<CT_Xf> xfs = new List<CT_Xf>();
 
-        private List<CT_Dxf> dxfs = new List<CT_Dxf>();
-        private Dictionary<string, ITableStyle> tableStyles = new Dictionary<string, ITableStyle>();
-        private IIndexedColorMap indexedColors = new DefaultIndexedColorMap();
+        private readonly List<CT_Dxf> dxfs = new List<CT_Dxf>();
+        private readonly Dictionary<string, ITableStyle> tableStyles = new Dictionary<string, ITableStyle>();
+        private readonly IIndexedColorMap indexedColors = new DefaultIndexedColorMap();
         /**
          * The first style id available for use as a custom style
          */
         public static int FIRST_CUSTOM_STYLE_ID = BuiltinFormats.FIRST_USER_DEFINED_FORMAT_INDEX + 1;
         // Is this right? Number formats (XSSFDataFormat) and cell styles (XSSFCellStyle) are different. What's up with the plus 1?
-        private static int MAXIMUM_STYLE_ID = SpreadsheetVersion.EXCEL2007.MaxCellStyles;
+        private static readonly int MAXIMUM_STYLE_ID = SpreadsheetVersion.EXCEL2007.MaxCellStyles;
 
-        private static short FIRST_USER_DEFINED_NUMBER_FORMAT_ID = BuiltinFormats.FIRST_USER_DEFINED_FORMAT_INDEX;
+        private static readonly short FIRST_USER_DEFINED_NUMBER_FORMAT_ID = BuiltinFormats.FIRST_USER_DEFINED_FORMAT_INDEX;
         /**
          * Depending on the version of Excel, the maximum number of number formats in a workbook is between 200 and 250
          * See https://support.office.com/en-us/article/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3
@@ -269,17 +268,13 @@ namespace NPOI.XSSF.Model
         // ===========================================================
         //  Start of style related Getters and Setters
         // ===========================================================
-        /**
-         * Get number format string given its id
-         * 
-         * @param idx number format id
-         * @return number format code
-         */
-         [Obsolete("deprecated POI 3.14-beta2. Use {@link #getNumberFormatAt(short)} instead.")]
+
+        [Obsolete("To be removed NPOI 2.8. GetNumberFormatAt(short) instead.")]
         public String GetNumberFormatAt(int idx)
         {
-            return GetNumberFormatAt((short)idx);
+            return GetNumberFormatAt((short) idx);
         }
+        
         /**
          * Get number format string given its id
          * 
@@ -288,8 +283,8 @@ namespace NPOI.XSSF.Model
          */
         public String GetNumberFormatAt(short fmtId)
         {
-            if (numberFormats.ContainsKey(fmtId))
-                return numberFormats[fmtId];
+            if (numberFormats.TryGetValue(fmtId, out string at))
+                return at;
             else
                 return null;
         }
@@ -459,12 +454,20 @@ namespace NPOI.XSSF.Model
             return PutFont(font, false);
         }
 
+        /**
+         *
+         * @param idx style index
+         * @return XSSFCellStyle or null if idx is out of bounds for xfs array
+         */
         public XSSFCellStyle GetStyleAt(int idx)
         {
             int styleXfId = 0;
 
-            if (xfs.Count == 0) //in case there is no default style
+            if (idx < 0 || idx >= xfs.Count)
+            {
+                //BUG-60343
                 return null;
+            }
 
             // 0 is the empty default
             if (xfs[idx].xfId > 0)
@@ -886,10 +889,13 @@ namespace NPOI.XSSF.Model
             ctXf.fontId = 0;
             ctXf.fillId = 0;
             ctXf.borderId = 0;
-            ctXf.xfId = 0;
+            if (xfSize > 0)
+            {
+                ctXf.xfId = 0; //default styleXf
+            }
             
             int indexXf = PutCellXf(ctXf);
-            return new XSSFCellStyle(indexXf - 1, xfSize - 1, this, theme);
+            return new XSSFCellStyle(indexXf - 1, ctXf.xfIdSpecified ? (int)ctXf.xfId : -1, this, theme);
         }
 
         /**

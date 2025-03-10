@@ -29,9 +29,9 @@ namespace NPOI.SS.Formula.Functions
      */
     public abstract class MultiOperandNumericFunction : Function
     {
-        static double[] EMPTY_DOUBLE_ARRAY = { };
-        private bool _isReferenceBoolCounted;
-        private bool _isBlankCounted;
+        static readonly double[] EMPTY_DOUBLE_ARRAY = { };
+        private readonly bool _isReferenceBoolCounted;
+        private readonly bool _isBlankCounted;
 
         protected MultiOperandNumericFunction(bool isReferenceBoolCounted, bool isBlankCounted)
         {
@@ -109,7 +109,7 @@ namespace NPOI.SS.Formula.Functions
             }
         }
 
-        private const int DEFAULT_MAX_NUM_OPERANDS = 30;
+        private static readonly int DEFAULT_MAX_NUM_OPERANDS = SpreadsheetVersion.EXCEL2007.MaxFunctionArgs;
 
         /**
          * Maximum number of operands accepted by this function.

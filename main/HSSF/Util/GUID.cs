@@ -15,15 +15,15 @@ namespace NPOI.HSSF.Util
         public const int ENCODED_SIZE = 16;
 
         /** 4 bytes - little endian */
-        private int _d1;
+        private readonly int _d1;
         /** 2 bytes - little endian */
-        private int _d2;
+        private readonly int _d2;
         /** 2 bytes - little endian */
-        private int _d3;
+        private readonly int _d3;
         /**
          * 8 bytes - serialized as big endian,  stored with inverted endianness here
          */
-        private long _d4;
+        private readonly long _d4;
 
         public GUID(ILittleEndianInput in1) 
             :this(in1.ReadInt(), in1.ReadUShort(), in1.ReadUShort(), in1.ReadLong())
@@ -83,17 +83,15 @@ namespace NPOI.HSSF.Util
         {
             get{
                 //return _d4;
-                byte[] buf;
-
-                using (MemoryStream ms = new MemoryStream(8))
+                byte[] result = new byte[sizeof(long) / sizeof(byte)];
+                long l = _d4;
+                for (int i = result.Length - 1; i >= 0; i--)
                 {
-                    BinaryWriter bw = new BinaryWriter(ms);
-                    bw.Write(_d4);
-                    buf = ms.ToArray();
-                    bw.Close();
+                    result[i] = (byte)(l & 0xFF);
+                    l >>= 8;
                 }
-                Array.Reverse(buf);
-                return new LittleEndianByteArrayInputStream(buf).ReadLong();
+
+                return LittleEndian.GetLong(result, 0);
             }
         }
 

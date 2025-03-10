@@ -35,7 +35,7 @@ namespace NPOI.OpenXml4Net.OPC
         /**
          * Flag to know if this part is a relationship.
          */
-        private bool _isRelationshipPart;
+        private readonly bool _isRelationshipPart;
 
         /**
          * Flag to know if this part has been logically deleted.
@@ -473,17 +473,10 @@ namespace NPOI.OpenXml4Net.OPC
          */
         public bool IsRelationshipExists(PackageRelationship rel)
         {
-            try
+            foreach (PackageRelationship r in _relationships)
             {
-                foreach (PackageRelationship r in this.Relationships)
-                {
-                    if (r == rel)
-                        return true;
-                }
-            }
-            catch (InvalidFormatException)
-            { 
-            
+                if (r == rel)
+                    return true;
             }
             return false;
         }
