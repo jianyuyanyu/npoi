@@ -18,7 +18,7 @@
 using NPOI.OpenXml4Net.OPC;
 using System;
 using NPOI.OpenXml4Net.Exceptions;
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 namespace TestCases.OpenXml4Net.OPC.Compliance
 {
     /**
@@ -69,7 +69,7 @@ namespace TestCases.OpenXml4Net.OPC.Compliance
         [Test]
         public void TestPartNameDerivationReadingAssert_Failure()
         {
-            String filename = "OPCCompliance_DerivedPartNameFail.docx";
+            String filename = "OPCCompliance_DerivedPartNameFAIL.docx";
             try
             {
                 OPCPackage.Open(POIDataSamples.GetOpenXML4JInstance().OpenResourceAsStream(filename));

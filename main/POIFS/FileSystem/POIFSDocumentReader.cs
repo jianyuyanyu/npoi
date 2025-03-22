@@ -40,8 +40,8 @@ namespace NPOI.POIFS.FileSystem
     {
         private bool _closed;
         private int _current_offset;
-        private OPOIFSDocument _document;
-        private int _document_size;
+        private readonly OPOIFSDocument _document;
+        private readonly int _document_size;
         private byte[] _tiny_buffer;
         private const int _EOD = 0;
 
@@ -55,11 +55,11 @@ namespace NPOI.POIFS.FileSystem
             this._document_size = document.Size;
             this._closed = false;
             this._tiny_buffer = null;
-            if (!(document is DocumentNode))
+            if (document is not DocumentNode node)
             {
                 throw new IOException("Cannot open internal document storage");
             }
-            this._document = ((DocumentNode)document).Document;
+            this._document = node.Document;
         }
         /// <summary>
         /// Create an InputStream from the specified Document

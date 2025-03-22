@@ -18,20 +18,17 @@
 namespace TestCases.POIFS.FileSystem
 {
     using System;
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     using TestCases;
     using System.IO;
     using System.Collections.Generic;
     using NPOI.Util;
     using NPOI.POIFS.FileSystem;
 
-
-
     [TestFixture]
     public class TestOle10Native
     {
         private static POIDataSamples dataSamples = POIDataSamples.GetPOIFSInstance();
-
 
         [Test]
         public void TestOleNative()
@@ -40,8 +37,8 @@ namespace TestCases.POIFS.FileSystem
 
             Ole10Native ole = Ole10Native.CreateFromEmbeddedOleObject(fs);
 
-            Assert.AreEqual("File1.svg", ole.Label);
-            Assert.AreEqual("D:\\Documents and Settings\\rsc\\My Documents\\file1.svg", ole.Command);
+            ClassicAssert.AreEqual("File1.svg", ole.Label);
+            ClassicAssert.AreEqual("D:\\Documents and Settings\\rsc\\My Documents\\file1.svg", ole.Command);
         }
 
         [Test]
@@ -59,7 +56,7 @@ namespace TestCases.POIFS.FileSystem
 
             foreach (FileStream f in files)
             {
-                NPOIFSFileSystem fs = new NPOIFSFileSystem(f,null, true, true);
+                NPOIFSFileSystem fs = new NPOIFSFileSystem(f, null, true, true);
                 List<Entry> entries = new List<Entry>();
                 FindOle10(entries, fs.Root, "/", "");
 
@@ -76,7 +73,7 @@ namespace TestCases.POIFS.FileSystem
                     ole.WriteOut(bosAct);
 
                     //assertThat(bosExp.ToByteArray(), EqualTo(bosAct.ToByteArray()));
-                    Assert.IsTrue(Arrays.Equals(bosExp.ToArray(), bosAct.ToArray()));
+                    ClassicAssert.IsTrue(Arrays.Equals(bosExp.ToArray(), bosAct.ToArray()));
                 }
 
                 fs.Close();
@@ -97,7 +94,7 @@ namespace TestCases.POIFS.FileSystem
             }
         }*/
 
-        void FindOle10(List<Entry> entries, DirectoryNode dn, String path, String filename)
+        private void FindOle10(List<Entry> entries, DirectoryNode dn, String path, String filename)
         {
             IEnumerator<Entry> iter = dn.Entries;
             while (iter.MoveNext())
@@ -112,6 +109,21 @@ namespace TestCases.POIFS.FileSystem
                 {
                     FindOle10(entries, (DirectoryNode)e, path + e.Name + "/", filename);
                 }
+            }
+        }
+
+        [Test]
+        public void TestOleNativeOOM()
+        {
+            POIFSFileSystem fs = new POIFSFileSystem(dataSamples.OpenResourceAsStream("60256.bin"));
+            try
+            {
+                Ole10Native.CreateFromEmbeddedOleObject(fs);
+                Assert.Fail("Should have thrown exception because OLENative lacks a length parameter");
+            }
+            catch (Ole10NativeException e)
+            {
+                ClassicAssert.IsTrue(e.Message.IndexOf("declared data length") > -1);
             }
         }
     }

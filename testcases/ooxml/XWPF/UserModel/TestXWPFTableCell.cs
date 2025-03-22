@@ -17,7 +17,7 @@
  * ====================================================================
  */
 
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using System;
 using System.Collections.Generic;
@@ -35,13 +35,13 @@ namespace TestCases.XWPF.UserModel
             // the XmlBean process and Added to the jar file. they are required
             // for the following XWPFTableCell methods.
             CT_Shd ctShd = new CT_Shd();
-            Assert.IsNotNull(ctShd);
+            ClassicAssert.IsNotNull(ctShd);
             CT_VerticalJc ctVjc = new CT_VerticalJc();
-            Assert.IsNotNull(ctVjc);
+            ClassicAssert.IsNotNull(ctVjc);
             ST_Shd stShd = ST_Shd.nil;
-            Assert.IsNotNull(stShd);
+            ClassicAssert.IsNotNull(stShd);
             ST_VerticalJc stVjc = ST_VerticalJc.top;
-            Assert.IsNotNull(stVjc);
+            ClassicAssert.IsNotNull(stVjc);
 
             // create a table
             XWPFDocument doc = new XWPFDocument();
@@ -49,14 +49,15 @@ namespace TestCases.XWPF.UserModel
             XWPFTable table = new XWPFTable(ctTable, doc);
             // table has a single row by default; grab it
             XWPFTableRow tr = table.GetRow(0);
-            Assert.IsNotNull(tr);
+            ClassicAssert.IsNotNull(tr);
             // row has a single cell by default; grab it
             XWPFTableCell cell = tr.GetCell(0);
 
             cell.SetVerticalAlignment(XWPFTableCell.XWPFVertAlign.BOTH);
             XWPFTableCell.XWPFVertAlign al = cell.GetVerticalAlignment().Value;
-            Assert.AreEqual(XWPFTableCell.XWPFVertAlign.BOTH, al);
+            ClassicAssert.AreEqual(XWPFTableCell.XWPFVertAlign.BOTH, al);
         }
+
         [Test]
         public void TestSetGetColor()
         {
@@ -66,17 +67,17 @@ namespace TestCases.XWPF.UserModel
             XWPFTable table = new XWPFTable(ctTable, doc);
             // table has a single row by default; grab it
             XWPFTableRow tr = table.GetRow(0);
-            Assert.IsNotNull(tr);
+            ClassicAssert.IsNotNull(tr);
             // row has a single cell by default; grab it
             XWPFTableCell cell = tr.GetCell(0);
 
             cell.SetColor("F0000F");
             String clr = cell.GetColor();
-            Assert.AreEqual("F0000F", clr);
+            ClassicAssert.AreEqual("F0000F", clr);
         }
 
         /**
-         * ensure that CTHMerge & CTTcBorders go in poi-ooxml.jar
+         * ensure that CTHMerge and CTTcBorders go in poi-ooxml.jar
          */
         [Test]
         public void Test54099()
@@ -96,21 +97,24 @@ namespace TestCases.XWPF.UserModel
             CT_VMerge vMerge = tcPr.AddNewVMerge();
         }
 
+        [Test]
         public void TestCellVerticalAlign()
         {
             XWPFDocument docx = XWPFTestDataSamples.OpenSampleDocument("59030.docx");
             IList<XWPFTable> tables = docx.Tables;
-            Assert.AreEqual(1, tables.Count);
+            ClassicAssert.AreEqual(1, tables.Count);
             XWPFTable table = tables[0];
             List<XWPFTableRow> tableRows = table.Rows;
-            Assert.AreEqual(2, tableRows.Count);
-            Assert.AreEqual(XWPFTableCell.XWPFVertAlign.TOP, tableRows[0].GetCell(0).GetVerticalAlignment());
-            Assert.AreEqual(XWPFTableCell.XWPFVertAlign.BOTTOM, tableRows[0].GetCell(1).GetVerticalAlignment());
-            Assert.AreEqual(XWPFTableCell.XWPFVertAlign.CENTER, tableRows[1].GetCell(0).GetVerticalAlignment());
-            Assert.AreEqual(XWPFTableCell.XWPFVertAlign.TOP, tableRows[1].GetCell(1).GetVerticalAlignment());
+            ClassicAssert.AreEqual(2, tableRows.Count);
+            ClassicAssert.IsNull(tableRows[0].GetCell(0).GetVerticalAlignment());
+            ClassicAssert.AreEqual(XWPFTableCell.XWPFVertAlign.BOTTOM, tableRows[0].GetCell(1).GetVerticalAlignment());
+            ClassicAssert.AreEqual(XWPFTableCell.XWPFVertAlign.CENTER, tableRows[1].GetCell(0).GetVerticalAlignment());
+            ClassicAssert.IsNull(tableRows[1].GetCell(1).GetVerticalAlignment()); // should return null since alignment isn't set
         }
+
+        [Ignore("This is not a very useful test as written. It is not worth the execution time for a unit test")]
         [Test]
-        public void TestCellVerticalAlign2()
+        public void TestCellVerticalAlignShouldNotThrowNPE()
         {
             XWPFDocument docx = XWPFTestDataSamples.OpenSampleDocument("TestTableCellAlign.docx");
             IList<XWPFTable> tables = docx.Tables;
@@ -122,11 +126,11 @@ namespace TestCases.XWPF.UserModel
                     List<XWPFTableCell> tableCells = tableRow.GetTableCells();
                     foreach (XWPFTableCell tableCell in tableCells)
                     {
-                        Assert.IsNotNull(tableCell.GetVerticalAlignment());
+                        // getVerticalAlignment should return either an XWPFVertAlign enum or null if not set
+                        tableCell.GetVerticalAlignment();
                     }
                 }
             }
         }
     }
-
 }

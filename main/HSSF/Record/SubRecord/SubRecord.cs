@@ -76,13 +76,13 @@ namespace NPOI.HSSF.Record
             }
         }
         /**
- * Wether this record terminates the sub-record stream.
- * There are two cases when this method must be overridden and return <c>true</c>
- *  - EndSubRecord (sid = 0x00)
- *  - LbsDataSubRecord (sid = 0x12)
- *
- * @return whether this record is the last in the sub-record stream
- */
+         * Wether this record terminates the sub-record stream.
+         * There are two cases when this method must be overridden and return <c>true</c>
+         *  - EndSubRecord (sid = 0x00)
+         *  - LbsDataSubRecord (sid = 0x12)
+         *
+         * @return whether this record is the last in the sub-record stream
+         */
         public virtual bool IsTerminating
         {
             get
@@ -97,8 +97,8 @@ namespace NPOI.HSSF.Record
      public class UnknownSubRecord : SubRecord
      {
 
-         private int _sid;
-         private byte[] _data;
+         private readonly int _sid;
+         private readonly byte[] _data;
 
          public UnknownSubRecord(ILittleEndianInput in1, int sid, int size)
          {

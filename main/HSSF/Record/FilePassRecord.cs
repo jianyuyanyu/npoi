@@ -33,8 +33,8 @@ namespace NPOI.HSSF.Record
         private const int ENCRYPTION_XOR = 0;
         private const int ENCRYPTION_OTHER = 1;
 
-        private int _encryptionType;
-        private KeyData _keyData;
+        private readonly int _encryptionType;
+        private readonly KeyData _keyData;
 
         private interface KeyData : ICloneable
         {
@@ -281,15 +281,15 @@ namespace NPOI.HSSF.Record
 
         public Rc4KeyData GetRc4KeyData()
         {
-            return (_keyData is Rc4KeyData)
-                ? (Rc4KeyData)_keyData
+            return (_keyData is Rc4KeyData data)
+                ? data
                 : null;
         }
 
         public XorKeyData GetXorKeyData()
         {
-            return (_keyData is XorKeyData)
-                ? (XorKeyData)_keyData
+            return (_keyData is XorKeyData data)
+                ? data
                 : null;
         }
 

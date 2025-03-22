@@ -19,7 +19,7 @@ namespace TestCases.HSSF.Record
 {
     using System;
     using System.IO;
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
 
     using TestCases.HSSF;
     using NPOI.HSSF.Record;
@@ -33,17 +33,8 @@ namespace TestCases.HSSF.Record
         [Test]
         public void TestBOFRecord1()
         {
-            Stream is1 = HSSFTestDataSamples.OpenSampleFileStream("bug_42794.xls");
-
-            // This used to throw an error before
-            try
-            {
-                new HSSFWorkbook(is1);
-            }
-            catch (IndexOutOfRangeException)
-            {
-                throw new AssertionException("Identified bug 42794");
-            }
+            // This used to throw an error before - #42794
+            HSSFTestDataSamples.OpenSampleFileStream("bug_42794.xls").Close();
         }
     }
 

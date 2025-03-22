@@ -95,7 +95,7 @@ namespace NPOI.HSSF.UserModel
 
             opt.SetEscherProperty(new EscherBoolProperty(EscherProperties.GROUPSHAPE__PRINT, 0x080000));
 
-            EscherRecord anchor = Anchor.GetEscherAnchor();
+            EscherRecord anchor = (Anchor as HSSFAnchor).GetEscherAnchor();
             clientData.RecordId = (EscherClientDataRecord.RECORD_ID);
             clientData.Options = ((short)0x0000);
 
@@ -191,7 +191,7 @@ namespace NPOI.HSSF.UserModel
             {
                 logger.Log(POILogger.ERROR, "HSSFPolygon must have at least one point");
             }
-            EscherArrayProperty verticesProp = new EscherArrayProperty(EscherProperties.GEOMETRY__VERTICES, false, new byte[0]);
+            EscherArrayProperty verticesProp = new EscherArrayProperty(EscherProperties.GEOMETRY__VERTICES, false, System.Array.Empty<byte>());
             verticesProp.NumberOfElementsInArray = (xPoints.Length + 1);
             verticesProp.NumberOfElementsInMemory = (xPoints.Length + 1);
             verticesProp.SizeOfElements = unchecked((short)(0xFFF0));

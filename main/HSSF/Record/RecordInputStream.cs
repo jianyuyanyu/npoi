@@ -49,17 +49,18 @@ namespace NPOI.HSSF.Record
             return recordClass.Name;
         }
     }
-    internal class SimpleHeaderInput : BiffHeaderInput
+
+    internal sealed class SimpleHeaderInput : BiffHeaderInput
     {
 
-        private ILittleEndianInput _lei;
+        private readonly ILittleEndianInput _lei;
 
         internal static ILittleEndianInput GetLEI(Stream in1)
         {
-            if (in1 is ILittleEndianInput)
+            if (in1 is ILittleEndianInput input)
             {
                 // accessing directly is an optimisation
-                return (ILittleEndianInput)in1;
+                return input;
             }
             // less optimal, but should work OK just the same. Often occurs in junit tests.
             return new LittleEndianInputStream(in1);
@@ -107,9 +108,9 @@ namespace NPOI.HSSF.Record
         private long pos = 0;
 
         /** Header {@link LittleEndianInput} facet of the wrapped {@link InputStream} */
-        private BiffHeaderInput _bhi;
+        private readonly BiffHeaderInput _bhi;
         /** Data {@link LittleEndianInput} facet of the wrapped {@link InputStream} */
-        private ILittleEndianInput _dataInput;
+        private readonly ILittleEndianInput _dataInput;
         /** the record identifier of the BIFF record currently being read */
 
         //protected byte[] data = new byte[MAX_RECORD_DATA_SIZE];
@@ -526,7 +527,7 @@ namespace NPOI.HSSF.Record
             int size = Remaining;
             if (size == 0)
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
             byte[] result = new byte[size];
             ReadFully(result);

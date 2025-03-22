@@ -14,15 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.Streaming;
 using NPOI.XSSF.UserModel;
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
+using System;
+using System.IO;
 
 namespace TestCases.XSSF.Streaming
 {
@@ -31,14 +28,21 @@ namespace TestCases.XSSF.Streaming
     {
         private SXSSFWorkbook _objectToTest { get; set; }
 
+        [TearDown]
+        public void CleanUp()
+        {
+            if (_objectToTest != null)
+                _objectToTest.Dispose();
+        }
+
         [Test]
         public void
             CallingEmptyConstructorShouldInstanstiateNewXssfWorkbookDefaultRowAccessWindowSizeCompressTempFilesAsFalseAndUseSharedStringsTableFalse
             ()
         {
             _objectToTest = new SXSSFWorkbook();
-            Assert.AreEqual(100, _objectToTest.RandomAccessWindowSize);
-            Assert.NotNull(_objectToTest.XssfWorkbook);
+            ClassicAssert.AreEqual(100, _objectToTest.RandomAccessWindowSize);
+            ClassicAssert.NotNull(_objectToTest.XssfWorkbook);
         }
 
         [Test]
@@ -47,8 +51,8 @@ namespace TestCases.XSSF.Streaming
             ()
         {
             _objectToTest = new SXSSFWorkbook(null);
-            Assert.AreEqual(100, _objectToTest.RandomAccessWindowSize);
-            Assert.NotNull(_objectToTest.XssfWorkbook);
+            ClassicAssert.AreEqual(100, _objectToTest.RandomAccessWindowSize);
+            ClassicAssert.NotNull(_objectToTest.XssfWorkbook);
         }
 
         [Test]
@@ -63,9 +67,9 @@ namespace TestCases.XSSF.Streaming
             var sheet = wb.CreateSheet("test1");
 
             _objectToTest = new SXSSFWorkbook(wb);
-            Assert.AreEqual(100, _objectToTest.RandomAccessWindowSize);
-            Assert.AreEqual("test", _objectToTest.XssfWorkbook.GetName("test").NameName);
-            Assert.AreEqual(1, _objectToTest.NumberOfSheets);
+            ClassicAssert.AreEqual(100, _objectToTest.RandomAccessWindowSize);
+            ClassicAssert.AreEqual("test", _objectToTest.XssfWorkbook.GetName("test").NameName);
+            ClassicAssert.AreEqual(1, _objectToTest.NumberOfSheets);
         }
 
         [Test]
@@ -74,8 +78,10 @@ namespace TestCases.XSSF.Streaming
             _objectToTest = new SXSSFWorkbook(null, 100, true);
             var result = _objectToTest.CreateSheetDataWriter();
 
-            Assert.IsTrue(result is GZIPSheetDataWriter);
+            ClassicAssert.IsTrue(result is GZIPSheetDataWriter);
 
+            if (result != null)
+                result.Close();
         }
 
         [Test]
@@ -84,8 +90,10 @@ namespace TestCases.XSSF.Streaming
             _objectToTest = new SXSSFWorkbook();
             var result = _objectToTest.CreateSheetDataWriter();
 
-            Assert.IsTrue(result is SheetDataWriter);
+            ClassicAssert.IsTrue(result is SheetDataWriter);
 
+            if (result != null)
+                result.Close();
         }
 
         [Test]
@@ -97,8 +105,8 @@ namespace TestCases.XSSF.Streaming
 
             _objectToTest.SetSheetOrder("test2", 0);
 
-            Assert.AreEqual("test2", _objectToTest.GetSheetName(0));
-            Assert.AreEqual("test1", _objectToTest.GetSheetName(1));
+            ClassicAssert.AreEqual("test2", _objectToTest.GetSheetName(0));
+            ClassicAssert.AreEqual("test1", _objectToTest.GetSheetName(1));
         }
 
         [Test]
@@ -110,8 +118,7 @@ namespace TestCases.XSSF.Streaming
 
             _objectToTest.SetSelectedTab(0);
 
-            Assert.IsTrue(_objectToTest.GetSheetAt(0).IsSelected);
-
+            ClassicAssert.IsTrue(_objectToTest.GetSheetAt(0).IsSelected);
         }
 
         [Test]
@@ -123,8 +130,7 @@ namespace TestCases.XSSF.Streaming
 
             _objectToTest.SetSelectedTab(0);
 
-            Assert.IsTrue(_objectToTest.GetSheetAt(0).IsSelected);
-
+            ClassicAssert.IsTrue(_objectToTest.GetSheetAt(0).IsSelected);
         }
 
         [Test]
@@ -132,10 +138,9 @@ namespace TestCases.XSSF.Streaming
         {
             _objectToTest = new SXSSFWorkbook();
             _objectToTest.CreateSheet("test1");
-            _objectToTest.SetSheetName(0,"renamed");
-            
-            Assert.AreEqual("renamed", _objectToTest.GetSheetAt(0).SheetName);
+            _objectToTest.SetSheetName(0, "renamed");
 
+            ClassicAssert.AreEqual("renamed", _objectToTest.GetSheetAt(0).SheetName);
         }
 
         [Test]
@@ -149,9 +154,9 @@ namespace TestCases.XSSF.Streaming
             var first = _objectToTest.GetSheetIndex("test0");
             var second = _objectToTest.GetSheetIndex("test1");
             var third = _objectToTest.GetSheetIndex("test2");
-            Assert.AreEqual(0, first);
-            Assert.AreEqual(1, second);
-            Assert.AreEqual(2, third);
+            ClassicAssert.AreEqual(0, first);
+            ClassicAssert.AreEqual(1, second);
+            ClassicAssert.AreEqual(2, third);
         }
 
         [Test]
@@ -162,7 +167,7 @@ namespace TestCases.XSSF.Streaming
 
             var index = _objectToTest.GetSheetIndex(sheet);
 
-            Assert.AreEqual(0, index);
+            ClassicAssert.AreEqual(0, index);
         }
 
         [Test]
@@ -171,8 +176,8 @@ namespace TestCases.XSSF.Streaming
             _objectToTest = new SXSSFWorkbook();
             var sheet = _objectToTest.CreateSheet("test");
 
-            Assert.NotNull(sheet);
-            Assert.AreEqual("test",sheet.SheetName);
+            ClassicAssert.NotNull(sheet);
+            ClassicAssert.AreEqual("test", sheet.SheetName);
         }
 
         [Test]
@@ -182,9 +187,9 @@ namespace TestCases.XSSF.Streaming
             var sheet = _objectToTest.CreateSheet();
             var sheet2 = _objectToTest.CreateSheet();
 
-            Assert.NotNull(sheet);
-            Assert.AreEqual("Sheet0", sheet.SheetName);
-            Assert.AreEqual("Sheet1", sheet2.SheetName);
+            ClassicAssert.NotNull(sheet);
+            ClassicAssert.AreEqual("Sheet0", sheet.SheetName);
+            ClassicAssert.AreEqual("Sheet1", sheet2.SheetName);
         }
 
         [Test]
@@ -197,11 +202,9 @@ namespace TestCases.XSSF.Streaming
             var sheet1 = _objectToTest.GetSheet("1");
             var sheet2 = _objectToTest.GetSheet("2");
 
-            Assert.AreEqual("1", sheet1.SheetName);
-            Assert.AreEqual("2", sheet2.SheetName);
-
+            ClassicAssert.AreEqual("1", sheet1.SheetName);
+            ClassicAssert.AreEqual("2", sheet2.SheetName);
         }
-
 
         [Test]
         public void IfGivenTheIndexOfAnExistingSheetShouldReturnTheSheet()
@@ -213,9 +216,8 @@ namespace TestCases.XSSF.Streaming
             var sheet1 = _objectToTest.GetSheetAt(0);
             var sheet2 = _objectToTest.GetSheetAt(1);
 
-            Assert.AreEqual("1", sheet1.SheetName);
-            Assert.AreEqual("2", sheet2.SheetName);
-
+            ClassicAssert.AreEqual("1", sheet1.SheetName);
+            ClassicAssert.AreEqual("2", sheet2.SheetName);
         }
 
         [Test]
@@ -227,18 +229,18 @@ namespace TestCases.XSSF.Streaming
 
             _objectToTest.RemoveSheetAt(0);
             var sheet = _objectToTest.GetSheetAt(0);
-            Assert.IsTrue(_objectToTest.NumberOfSheets == 1);
-            Assert.AreEqual("2", sheet.SheetName);
+            ClassicAssert.IsTrue(_objectToTest.NumberOfSheets == 1);
+            ClassicAssert.AreEqual("2", sheet.SheetName);
 
         }
 
         [Test]
         public void IfAFontIsCreatedItShouldBeReturnedAndAddedToTheExistingWorkbook()
         {
-            _objectToTest=new SXSSFWorkbook();
+            _objectToTest = new SXSSFWorkbook();
             var font = _objectToTest.CreateFont();
 
-            Assert.NotNull(font);
+            ClassicAssert.NotNull(font);
         }
 
         [Test]
@@ -248,7 +250,7 @@ namespace TestCases.XSSF.Streaming
             _objectToTest.CreateFont();
 
             var font = _objectToTest.GetFontAt(0);
-            Assert.NotNull(font);
+            ClassicAssert.NotNull(font);
         }
 
         [Test]
@@ -257,7 +259,7 @@ namespace TestCases.XSSF.Streaming
             _objectToTest = new SXSSFWorkbook();
             var cellStyle = _objectToTest.CreateCellStyle();
 
-            Assert.NotNull(cellStyle);
+            ClassicAssert.NotNull(cellStyle);
         }
 
         [Test]
@@ -267,7 +269,7 @@ namespace TestCases.XSSF.Streaming
             _objectToTest.CreateFont();
 
             var cellStyle = _objectToTest.GetCellStyleAt(0);
-            Assert.NotNull(cellStyle);
+            ClassicAssert.NotNull(cellStyle);
         }
 
         [Test]
@@ -277,11 +279,11 @@ namespace TestCases.XSSF.Streaming
             var sheets = 1;
             var rows = 10;
             var cols = 10;
-            AddCells(_objectToTest, sheets,rows,cols,CellType.Numeric);
+            AddCells(_objectToTest, sheets, rows, cols, CellType.Numeric);
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "numericTest.xlsx");
             WriteFile(savePath, _objectToTest);
-           
-            Assert.True(File.Exists(savePath));
+
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
 
@@ -294,10 +296,10 @@ namespace TestCases.XSSF.Streaming
             var cols = 10;
             AddCells(_objectToTest, sheets, rows, cols, CellType.Numeric);
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "numericTest.xlsx");
-            var reSavePath = Path.Combine(TestContext.CurrentContext.TestDirectory , "numericTest2.xlsx");
+            var reSavePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "numericTest2.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
 
             var xssfWorkbook = new XSSFWorkbook(savePath);
 
@@ -321,7 +323,7 @@ namespace TestCases.XSSF.Streaming
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "plainStringTest.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
 
@@ -336,7 +338,7 @@ namespace TestCases.XSSF.Streaming
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "boolTest.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
 
@@ -351,7 +353,7 @@ namespace TestCases.XSSF.Streaming
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "blankTest.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
 
@@ -366,7 +368,7 @@ namespace TestCases.XSSF.Streaming
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "formulaTest.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
 
@@ -381,7 +383,7 @@ namespace TestCases.XSSF.Streaming
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "errorTest.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
 
@@ -398,7 +400,7 @@ namespace TestCases.XSSF.Streaming
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "maxCellsWorksheet.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
 
@@ -415,7 +417,7 @@ namespace TestCases.XSSF.Streaming
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "maxCellsWorksheetZip.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
 
@@ -431,7 +433,7 @@ namespace TestCases.XSSF.Streaming
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "largeWorksheet.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
 
@@ -447,10 +449,9 @@ namespace TestCases.XSSF.Streaming
             var savePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "largeGzipWorksheet.xlsx");
             WriteFile(savePath, _objectToTest);
 
-            Assert.True(File.Exists(savePath));
+            ClassicAssert.True(File.Exists(savePath));
             File.Delete(savePath);
         }
-
 
         private void AddCells(IWorkbook wb, int sheets, int rows, int columns, CellType type)
         {
@@ -462,13 +463,12 @@ namespace TestCases.XSSF.Streaming
                     var row = sheet.CreateRow(k);
                     for (int i = 0; i < columns; i++)
                     {
-                        WriteCellValue(row, type, i, i); 
+                        WriteCellValue(row, type, i, i);
                     }
                 }
             }
         }
 
-        
         private void WriteFile(string saveAsPath, SXSSFWorkbook wb)
         {
             //Passing SXSSFWorkbook because IWorkbook does not implement .Dispose which cleans ups temporary files.
@@ -505,6 +505,33 @@ namespace TestCases.XSSF.Streaming
             else if (type == CellType.Formula)
             {
                 row.CreateCell(col).SetCellFormula("SUM(A1:A2)");
+            }
+        }
+
+        [Test]
+        public void StreamShouldBeLeavedOpen()
+        {
+            using (SXSSFWorkbook workbook = new SXSSFWorkbook())
+            {
+                ISheet sheet = workbook.CreateSheet("Sheet1");
+
+                // Write a large number of rows and columns to cause OutOfMemoryException
+                for (int rowNumber = 0; rowNumber < 10; rowNumber++) // Increase this number for more rows
+                {
+                    IRow row = sheet.CreateRow(rowNumber);
+                    for (int colNumber = 0; colNumber < 100; colNumber++) // Increase this number for more columns
+                    {
+                        ICell cell = row.CreateCell(colNumber);
+                        cell.SetCellValue($"Row {rowNumber + 1}, Column {colNumber + 1}");
+                    }
+                }
+
+                // Write the workbook data to a MemoryStream
+                using (var stream = new MemoryStream())
+                {
+                    workbook.Write(stream, true);
+                    ClassicAssert.IsTrue(stream.CanRead);
+                }
             }
         }
     }

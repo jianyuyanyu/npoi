@@ -48,16 +48,16 @@ namespace NPOI.SS.Formula
     public class WorkbookEvaluator
     {
 
-        private IEvaluationWorkbook _workbook;
+        private readonly IEvaluationWorkbook _workbook;
         private EvaluationCache _cache;
         private int _workbookIx;
 
-        private IEvaluationListener _evaluationListener;
-        private Dictionary<IEvaluationSheet, int> _sheetIndexesBySheet;
-        private Dictionary<String, int> _sheetIndexesByName;
+        private readonly IEvaluationListener _evaluationListener;
+        private readonly Dictionary<IEvaluationSheet, int> _sheetIndexesBySheet;
+        private readonly Dictionary<String, int> _sheetIndexesByName;
         private CollaboratingWorkbooksEnvironment _collaboratingWorkbookEnvironment;
-        private IStabilityClassifier _stabilityClassifier;
-        private UDFFinder _udfFinder;
+        private readonly IStabilityClassifier _stabilityClassifier;
+        private readonly UDFFinder _udfFinder;
 
         private bool _ignoreMissingWorkbooks = false;
 
@@ -210,8 +210,8 @@ namespace NPOI.SS.Formula
         public int GetSheetIndex(IEvaluationSheet sheet)
         {
             int result = int.MinValue;
-            if(_sheetIndexesBySheet.ContainsKey(sheet))
-                result = _sheetIndexesBySheet[sheet];
+            if(_sheetIndexesBySheet.TryGetValue(sheet, out int value))
+                result = value;
             if (result == int.MinValue)
             {
                 int sheetIndex = _workbook.GetSheetIndex(sheet);
@@ -237,9 +237,9 @@ namespace NPOI.SS.Formula
         public int GetSheetIndex(String sheetName)
         {
             int result;
-            if (_sheetIndexesByName.ContainsKey(sheetName))
+            if (_sheetIndexesByName.TryGetValue(sheetName, out int value))
             {
-                result = _sheetIndexesByName[sheetName];
+                result = value;
             }
             else
             {
@@ -325,9 +325,8 @@ namespace NPOI.SS.Formula
             foreach(Ptg ptg in ptgs)
             {
                 // base class for cell reference "things"
-                if (ptg is RefPtgBase) {
-                RefPtgBase reference = (RefPtgBase)ptg;
-                // re-calculate cell references
+                if (ptg is RefPtgBase reference) {
+                    // re-calculate cell references
                 SpreadsheetVersion version = _workbook.GetSpreadsheetVersion();
                 if (reference.IsRowRelative)
                 {
@@ -520,7 +519,7 @@ namespace NPOI.SS.Formula
         private bool dbgEvaluationOutputForNextEval = false;
 
         // special logger for formula evaluation output (because of possibly very large output)
-        private POILogger EVAL_LOG = POILogFactory.GetLogger("POI.FormulaEval");
+        private readonly POILogger EVAL_LOG = POILogFactory.GetLogger("POI.FormulaEval");
         // current indent level for evalution; negative value for no output
         private int dbgEvaluationOutputIndent = -1;
 
@@ -561,9 +560,8 @@ namespace NPOI.SS.Formula
                 {
                     EVAL_LOG.Log(POILogger.INFO, dbgIndentStr + "  * ptg " + i + ": " + ptg.ToString()+", stack:"+stack);
                 }
-                if (ptg is AttrPtg)
+                if (ptg is AttrPtg attrPtg)
                 {
-                    AttrPtg attrPtg = (AttrPtg)ptg;
                     if (attrPtg.IsSum)
                     {
                         // Excel prefers To encode 'SUM()' as a tAttr Token, but this evaluator
@@ -630,13 +628,13 @@ namespace NPOI.SS.Formula
                                int dist = attrPtg.Data;
                                i += CountTokensToBeSkipped(ptgs, i, dist);
                                Ptg nextPtg = ptgs[i + 1];
-                               if (ptgs[i] is AttrPtg && nextPtg is FuncVarPtg &&
+                               if (ptgs[i] is AttrPtg && nextPtg is FuncVarPtg varPtg &&
                                    // in order to verify that there is no third param, we need to check 
                                    // if we really have the IF next or some other FuncVarPtg as third param, e.g. ROW()/COLUMN()!
-                                   ((FuncVarPtg)nextPtg).FunctionIndex == FunctionMetadataRegistry.FUNCTION_INDEX_IF)
+                                   varPtg.FunctionIndex == FunctionMetadataRegistry.FUNCTION_INDEX_IF)
                                {
                                    // this is an if statement without a false param (as opposed to MissingArgPtg as the false param)
-                                   i++;
+                                   //i++;
                                    stack.Push(arg0);
                                    stack.Push(BoolEval.FALSE);
                                }
@@ -678,10 +676,8 @@ namespace NPOI.SS.Formula
                     continue;
                 }
                 ValueEval opResult;
-                if (ptg is OperationPtg)
+                if (ptg is OperationPtg optg)
                 {
-                    OperationPtg optg = (OperationPtg)ptg;
-
                     if (optg is UnionPtg) { continue; }
 
                     int numops = optg.NumberOfOperands;
@@ -816,9 +812,9 @@ namespace NPOI.SS.Formula
             IEvaluationSheet evalSheet = ec.GetWorkbook().GetSheet(ec.SheetIndex);
             IEvaluationCell evalCell = evalSheet.GetCell(ec.RowIndex, ec.ColumnIndex);
 
-            if (evalCell.IsPartOfArrayFormulaGroup && evaluationResult is AreaEval)
+            if (evalCell.IsPartOfArrayFormulaGroup && evaluationResult is AreaEval eval)
             {
-                value = OperandResolver.GetElementFromArray((AreaEval)evaluationResult, evalCell);
+                value = OperandResolver.GetElementFromArray(eval, evalCell);
             }
             else
             {
@@ -837,42 +833,41 @@ namespace NPOI.SS.Formula
         {
             //  consider converting all these (ptg is XxxPtg) expressions To (ptg.GetType() == XxxPtg.class)
 
-            if (ptg is NamePtg)
+            if (ptg is NamePtg namePtg)
             {
                 // Named ranges, macro functions
-                NamePtg namePtg = (NamePtg)ptg;
                 IEvaluationName nameRecord = _workbook.GetName(namePtg);
                 return GetEvalForNameRecord(nameRecord, ec);
             }
-            if (ptg is NameXPtg) 
+            if (ptg is NameXPtg xPtg) 
             {
                 // Externally defined named ranges or macro functions
-                return ProcessNameEval(ec.GetNameXEval((NameXPtg)ptg), ec);
+                return ProcessNameEval(ec.GetNameXEval(xPtg), ec);
             }
-            if (ptg is NameXPxg)
+            if (ptg is NameXPxg pxg)
             {
                 // Externally defined named ranges or macro functions
-                return ProcessNameEval(ec.GetNameXEval((NameXPxg)ptg), ec);
+                return ProcessNameEval(ec.GetNameXEval(pxg), ec);
             }
-            if (ptg is IntPtg)
+            if (ptg is IntPtg intPtg)
             {
-                return new NumberEval(((IntPtg)ptg).Value);
+                return new NumberEval(intPtg.Value);
             }
-            if (ptg is NumberPtg)
+            if (ptg is NumberPtg numberPtg)
             {
-                return new NumberEval(((NumberPtg)ptg).Value);
+                return new NumberEval(numberPtg.Value);
             }
-            if (ptg is StringPtg)
+            if (ptg is StringPtg stringPtg)
             {
-                return new StringEval(((StringPtg)ptg).Value);
+                return new StringEval(stringPtg.Value);
             }
-            if (ptg is BoolPtg)
+            if (ptg is BoolPtg boolPtg)
             {
-                return BoolEval.ValueOf(((BoolPtg)ptg).Value);
+                return BoolEval.ValueOf(boolPtg.Value);
             }
-            if (ptg is ErrPtg)
+            if (ptg is ErrPtg errPtg)
             {
-                return ErrorEval.ValueOf(((ErrPtg)ptg).ErrorCode);
+                return ErrorEval.ValueOf(errPtg.ErrorCode);
             }
             if (ptg is MissingArgPtg)
             {
@@ -883,34 +878,31 @@ namespace NPOI.SS.Formula
             {
                 return ErrorEval.REF_INVALID;
             }
-            if (ptg is Ref3DPtg)
+            if (ptg is Ref3DPtg ref3DPtg)
             {
-                return ec.GetRef3DEval((Ref3DPtg)ptg);
+                return ec.GetRef3DEval(ref3DPtg);
             }
 
-            if (ptg is Ref3DPxg)
+            if (ptg is Ref3DPxg ref3DPxg)
             {
-                return ec.GetRef3DEval((Ref3DPxg)ptg);
+                return ec.GetRef3DEval(ref3DPxg);
             }
-            if (ptg is Area3DPtg) {
-               return ec.GetArea3DEval((Area3DPtg)ptg);
+            if (ptg is Area3DPtg area3DPtg) {
+               return ec.GetArea3DEval(area3DPtg);
            }
-           if (ptg is Area3DPxg) {
-               return ec.GetArea3DEval((Area3DPxg)ptg);
+           if (ptg is Area3DPxg area3DPxg) {
+               return ec.GetArea3DEval(area3DPxg);
            }
 
-            if (ptg is RefPtg)
+            if (ptg is RefPtg rptg)
             {
-                RefPtg rptg = (RefPtg)ptg;
                 return ec.GetRefEval(rptg.Row, rptg.Column);
             }
-            if (ptg is AreaPtg)
+            if (ptg is AreaPtg areaPtg)
             {
-                AreaPtg aptg = (AreaPtg)ptg;
-                return ec.GetAreaEval(aptg.FirstRow, aptg.FirstColumn, aptg.LastRow, aptg.LastColumn);
+                return ec.GetAreaEval(areaPtg.FirstRow, areaPtg.FirstColumn, areaPtg.LastRow, areaPtg.LastColumn);
             }
-            if (ptg is ArrayPtg) {
-                ArrayPtg aptg = (ArrayPtg)ptg;
+            if (ptg is ArrayPtg aptg) {
                 return ec.GetAreaValueEval(0, 0, aptg.RowCount - 1, aptg.ColumnCount - 1, aptg.GetTokenArrayValues());
             }
 
@@ -932,9 +924,9 @@ namespace NPOI.SS.Formula
 
         private ValueEval ProcessNameEval(ValueEval eval, OperationEvaluationContext ec)
         {
-            if (eval is ExternalNameEval)
+            if (eval is ExternalNameEval nameEval)
             {
-                IEvaluationName name = ((ExternalNameEval)eval).Name;
+                IEvaluationName name = nameEval.Name;
                 return GetEvalForNameRecord(name, ec);
             }
             return eval;

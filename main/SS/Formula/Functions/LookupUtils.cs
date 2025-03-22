@@ -31,10 +31,10 @@ namespace NPOI.SS.Formula.Functions
      * 
      * @author Josh Micich
      */
-    internal class LookupUtils
+    internal sealed class LookupUtils
     {
-        private static Dictionary<int, MatchMode> matchModeMap = new Dictionary<int, MatchMode>();
-        private static Dictionary<int, SearchMode> searchModeMap = new Dictionary<int, SearchMode>();
+        private static readonly Dictionary<int, MatchMode> matchModeMap = new Dictionary<int, MatchMode>();
+        private static readonly Dictionary<int, SearchMode> searchModeMap = new Dictionary<int, SearchMode>();
 
         static LookupUtils()
         {
@@ -49,19 +49,19 @@ namespace NPOI.SS.Formula.Functions
         }
         public static MatchMode GetMatchMode(int m)
         {
-            if (!matchModeMap.ContainsKey(m))
+            if (!matchModeMap.TryGetValue(m, out MatchMode mode))
             {
                 throw new ArgumentException("unknown match mode " + m);
             }
-            return matchModeMap[m];
+            return mode;
         }
         public static SearchMode GetSearchMode(int s)
         {
-            if (!searchModeMap.ContainsKey(s))
+            if (!searchModeMap.TryGetValue(s, out SearchMode mode))
             {
                 throw new ArgumentException("unknown search mode " + s);
             }
-            return searchModeMap[s];
+            return mode;
         }
         public enum MatchMode : int
         {
@@ -77,12 +77,12 @@ namespace NPOI.SS.Formula.Functions
             BinarySearchForward = 2,
             BinarySearchBackward = -2
         }
-        internal class RowVector : ValueVector
+        internal sealed class RowVector : ValueVector
         {
 
-            private AreaEval _tableArray;
-            private int _size;
-            private int _rowIndex;
+            private readonly AreaEval _tableArray;
+            private readonly int _size;
+            private readonly int _rowIndex;
 
             public RowVector(AreaEval tableArray, int rowIndex)
             {
@@ -115,12 +115,12 @@ namespace NPOI.SS.Formula.Functions
                 }
             }
         }
-        internal class ColumnVector : ValueVector
+        internal sealed class ColumnVector : ValueVector
         {
 
-            private AreaEval _tableArray;
-            private int _size;
-            private int _columnIndex;
+            private readonly AreaEval _tableArray;
+            private readonly int _size;
+            private readonly int _columnIndex;
 
             public ColumnVector(AreaEval tableArray, int columnIndex)
             {
@@ -154,10 +154,10 @@ namespace NPOI.SS.Formula.Functions
             }
         }
 
-        private class SheetVector : ValueVector
+        private sealed class SheetVector : ValueVector
         {
-            private RefEval _re;
-            private int _size;
+            private readonly RefEval _re;
+            private readonly int _size;
 
             public SheetVector(RefEval re)
             {
@@ -216,10 +216,10 @@ namespace NPOI.SS.Formula.Functions
         private class StringLookupComparer : LookupValueComparerBase
         {
 
-            protected String _value;
-            protected Regex _wildCardPattern;
-            protected bool _matchExact;
-            protected bool _isMatchFunction;
+            protected readonly String _value;
+            protected readonly Regex _wildCardPattern;
+            protected readonly bool _matchExact;
+            protected readonly bool _isMatchFunction;
 
             public StringLookupComparer(StringEval se, bool matchExact, bool isMatchFunction)
                 : base(se)
@@ -230,11 +230,13 @@ namespace NPOI.SS.Formula.Functions
                 _matchExact = matchExact;
                 _isMatchFunction = isMatchFunction;
             }
+
             protected virtual String ConvertToString(ValueEval other)
             {
                 StringEval se = (StringEval)other;
                 return se.StringValue;
             }
+
             protected override CompareResult CompareSameType(ValueEval other)
             {
                 String stringValue = ConvertToString(other);
@@ -247,18 +249,19 @@ namespace NPOI.SS.Formula.Functions
 
                 return CompareResult.ValueOf(String.Compare(_value, stringValue, true));
             }
+
             protected override String GetValueAsString()
             {
                 return _value;
             }
         }
-        private class TolerantStringLookupComparer : StringLookupComparer
+        private sealed class TolerantStringLookupComparer : StringLookupComparer
         {
             static StringEval ConvertToStringEval(ValueEval eval)
             {
-                if (eval is StringEval)
+                if (eval is StringEval stringEval)
                 {
-                    return (StringEval)eval;
+                    return stringEval;
                 }
                 String sv = OperandResolver.CoerceValueToString(eval);
                 return new StringEval(sv);
@@ -276,9 +279,9 @@ namespace NPOI.SS.Formula.Functions
             }
         }
 
-        private class NumberLookupComparer : LookupValueComparerBase
+        private sealed class NumberLookupComparer : LookupValueComparerBase
         {
-            private double _value;
+            private readonly double _value;
 
             public NumberLookupComparer(NumberEval ne)
                 : base(ne)
@@ -335,8 +338,7 @@ namespace NPOI.SS.Formula.Functions
                 throw EvaluationException.InvalidRef();
             }
             int oneBasedIndex;
-            if (veRowColIndexArg is StringEval) {
-                StringEval se = (StringEval)veRowColIndexArg;
+            if (veRowColIndexArg is StringEval se) {
                 String strVal = se.StringValue;
                 Double dVal = OperandResolver.ParseDouble(strVal);
                 if (Double.IsNaN(dVal)) {
@@ -363,13 +365,12 @@ namespace NPOI.SS.Formula.Functions
          */
         public static AreaEval ResolveTableArrayArg(ValueEval eval)
         {
-            if (eval is AreaEval)
+            if (eval is AreaEval areaEval)
             {
-                return (AreaEval)eval;
+                return areaEval;
             }
 
-            if (eval is RefEval) {
-                RefEval refEval = (RefEval)eval;
+            if (eval is RefEval refEval) {
                 // Make this cell ref look like a 1x1 area ref.
 
                 // It doesn't matter if eval is a 2D or 3D ref, because that detail is never asked of AreaEval.
@@ -403,16 +404,15 @@ namespace NPOI.SS.Formula.Functions
                 // this does not Get the default value
                 return false;
             }
-            if (valEval is BoolEval)
+            if (valEval is BoolEval boolEval)
             {
                 // Happy day flow 
-                BoolEval boolEval = (BoolEval)valEval;
                 return boolEval.BooleanValue;
             }
 
-            if (valEval is StringEval)
+            if (valEval is StringEval eval)
             {
-                String stringValue = ((StringEval)valEval).StringValue;
+                String stringValue = eval.StringValue;
                 if (stringValue.Length < 1)
                 {
                     // More trickiness:
@@ -433,9 +433,8 @@ namespace NPOI.SS.Formula.Functions
                 //// This Is in contrast to the code below,, where NumberEvals values (for 
                 //// example 0.01) *do* resolve to equivalent bool values.
             }
-            if (valEval is NumericValueEval)
+            if (valEval is NumericValueEval nve)
             {
-                NumericValueEval nve = (NumericValueEval)valEval;
                 // zero Is FALSE, everything else Is TRUE
                 return 0.0 != nve.NumberValue;
             }
@@ -724,17 +723,17 @@ namespace NPOI.SS.Formula.Functions
                 // empty string in the lookup column/row can only be matched by explicit emtpty string
                 return new NumberLookupComparer(NumberEval.ZERO);
             }
-            if (lookupValue is StringEval)
+            if (lookupValue is StringEval eval)
             {
-                return new StringLookupComparer((StringEval)lookupValue, matchExact, isMatchFunction);
+                return new StringLookupComparer(eval, matchExact, isMatchFunction);
             }
-            if (lookupValue is NumberEval)
+            if (lookupValue is NumberEval value)
             {
-                return new NumberLookupComparer((NumberEval)lookupValue);
+                return new NumberLookupComparer(value);
             }
-            if (lookupValue is BoolEval)
+            if (lookupValue is BoolEval boolEval)
             {
-                return new BooleanLookupComparer((BoolEval)lookupValue);
+                return new BooleanLookupComparer(boolEval);
             }
             throw new ArgumentException("Bad lookup value type (" + lookupValue.GetType().Name + ")");
         }
@@ -744,11 +743,11 @@ namespace NPOI.SS.Formula.Functions
             {
                 return new TolerantStringLookupComparer(new StringEval(""), matchExact, isMatchFunction);
             }
-            if (lookupValue is BoolEval) {
-                return new BooleanLookupComparer((BoolEval)lookupValue);
+            if (lookupValue is BoolEval eval) {
+                return new BooleanLookupComparer(eval);
             }
-            if (matchExact && lookupValue is NumberEval) {
-                return new NumberLookupComparer((NumberEval)lookupValue);
+            if (matchExact && lookupValue is NumberEval value) {
+                return new NumberLookupComparer(value);
             }
             return new TolerantStringLookupComparer(lookupValue, matchExact, isMatchFunction);
         }
@@ -766,10 +765,10 @@ namespace NPOI.SS.Formula.Functions
     */
     public class CompareResult
     {
-        private bool _isTypeMismatch;
-        private bool _isLessThan;
-        private bool _isEqual;
-        private bool _isGreaterThan;
+        private readonly bool _isTypeMismatch;
+        private readonly bool _isLessThan;
+        private readonly bool _isEqual;
+        private readonly bool _isGreaterThan;
 
         private CompareResult(bool IsTypeMismatch, int simpleCompareResult)
         {
@@ -868,7 +867,7 @@ namespace NPOI.SS.Formula.Functions
     * Encapsulates some standard binary search functionality so the Unusual Excel behaviour can
     * be clearly distinguished. 
     */
-    internal class BinarySearchIndexes
+    internal sealed class BinarySearchIndexes
     {
 
         private int _lowIx;
@@ -913,9 +912,9 @@ namespace NPOI.SS.Formula.Functions
             }
         }
     }
-    internal class BooleanLookupComparer : LookupValueComparerBase
+    internal sealed class BooleanLookupComparer : LookupValueComparerBase
     {
-        private bool _value;
+        private readonly bool _value;
 
         public BooleanLookupComparer(BoolEval be)
             : base(be)
@@ -967,7 +966,7 @@ namespace NPOI.SS.Formula.Functions
     internal abstract class LookupValueComparerBase : LookupValueComparer
     {
 
-        private Type _targetType;
+        private readonly Type _targetType;
         protected LookupValueComparerBase(ValueEval targetValue)
         {
             if (targetValue == null)

@@ -37,7 +37,7 @@ namespace NPOI.HSSF.Record
  * Excel encodes the same 8 bytes that would be field_4_value with various NaN
  * values that are decoded/encoded by this class. 
  */
-    internal class SpecialCachedValue
+    internal sealed class SpecialCachedValue
     {
         /** deliberately chosen by Excel in order to encode other values within Double NaNs */
         private const long BIT_MARKER = unchecked((long)0xFFFF000000000000L);
@@ -49,7 +49,7 @@ namespace NPOI.HSSF.Record
         public const int ERROR_CODE = 2;
         public const int EMPTY = 3;
 
-        private byte[] _variableData;
+        private readonly byte[] _variableData;
 
         private SpecialCachedValue(byte[] data)
         {
@@ -248,25 +248,25 @@ namespace NPOI.HSSF.Record
          * @param in the RecordInputstream to Read the record from
          */
 
-        public FormulaRecord(RecordInputStream in1):base(in1)
+        public FormulaRecord(RecordInputStream ris):base(ris)
         {
-                long valueLongBits  = in1.ReadLong();
-                field_5_options = in1.ReadShort();
+                long valueLongBits  = ris.ReadLong();
+                field_5_options = ris.ReadShort();
                 specialCachedValue = SpecialCachedValue.Create(valueLongBits);
                 if (specialCachedValue == null) {
                     field_4_value = BitConverter.Int64BitsToDouble(valueLongBits);
                 }
 
-                field_6_zero = in1.ReadInt();
-                int field_7_expression_len = in1.ReadShort();
+                field_6_zero = ris.ReadInt();
+                int field_7_expression_len = ris.ReadShort();
 
-                field_8_parsed_expr = NPOI.SS.Formula.Formula.Read(field_7_expression_len, in1,in1.Available());
+                field_8_parsed_expr = NPOI.SS.Formula.Formula.Read(field_7_expression_len, ris, ris.Available());
         }
         /**
- * @return <c>true</c> if this {@link FormulaRecord} is followed by a
- *  {@link StringRecord} representing the cached text result of the formula
- *  evaluation.
- */
+         * @return <c>true</c> if this {@link FormulaRecord} is followed by a
+         *  {@link StringRecord} representing the cached text result of the formula
+         *  evaluation.
+         */
         public bool HasCachedResultString
         {
             get
@@ -431,14 +431,13 @@ namespace NPOI.HSSF.Record
 
         public override bool Equals(Object obj)
         {
-            if (!(obj is CellValueRecordInterface))
+            if (obj is not CellValueRecordInterface loc)
             {
                 return false;
             }
-            CellValueRecordInterface loc = (CellValueRecordInterface)obj;
 
             if ((this.Row == loc.Row)
-                    && (this.Column == loc.Column))
+                && (this.Column == loc.Column))
             {
                 return true;
             }

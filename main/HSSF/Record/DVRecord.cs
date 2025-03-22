@@ -45,22 +45,22 @@ namespace NPOI.HSSF.Record
         public const short sid = 0x01BE;
         /** Option flags */
         private int _option_flags;
-        /** Title of the prompt box */
-        private UnicodeString _promptTitle;
-        /** Title of the error box */
-        private UnicodeString _errorTitle;
-        /** Text of the prompt box */
-        private UnicodeString _promptText;
-        /** Text of the error box */
-        private UnicodeString _errorText;
+        /** Title of the prompt box, cannot be longer than 32 chars */
+        private readonly UnicodeString _promptTitle;
+        /** Title of the error box, cannot be longer than 32 chars */
+        private readonly UnicodeString _errorTitle;
+        /** Text of the prompt box, cannot be longer than 255 chars */
+        private readonly UnicodeString _promptText;
+        /** Text of the error box, cannot be longer than 255 chars */
+        private readonly UnicodeString _errorText;
         /** Not used - Excel seems to always write 0x3FE0 */
-        private short _not_used_1 = 0x3FE0;
+        private readonly short _not_used_1 = 0x3FE0;
         /** Formula data for first condition (RPN token array without size field) */
-        private NPOI.SS.Formula.Formula _formula1;
+        private readonly NPOI.SS.Formula.Formula _formula1;
         /** Not used - Excel seems to always write 0x0000 */
-        private short _not_used_2 = 0x0000;
+        private readonly short _not_used_2 = 0x0000;
         /** Formula data for second condition (RPN token array without size field) */
-        private NPOI.SS.Formula.Formula _formula2;
+        private readonly NPOI.SS.Formula.Formula _formula2;
         /** Cell range address list with all affected ranges */
         private CellRangeAddressList _regions;
 
@@ -74,14 +74,14 @@ namespace NPOI.HSSF.Record
          * Option flags field
          * @see org.apache.poi.hssf.util.HSSFDataValidation utility class
          */
-        private BitField opt_data_type = new BitField(0x0000000F);
-        private BitField opt_error_style = new BitField(0x00000070);
-        private BitField opt_string_list_formula = new BitField(0x00000080);
-        private BitField opt_empty_cell_allowed = new BitField(0x00000100);
-        private BitField opt_suppress_dropdown_arrow = new BitField(0x00000200);
-        private BitField opt_show_prompt_on_cell_selected = new BitField(0x00040000);
-        private BitField opt_show_error_on_invalid_value = new BitField(0x00080000);
-        private BitField opt_condition_operator = new BitField(0x00F00000);
+        private readonly BitField opt_data_type = new BitField(0x0000000F);
+        private readonly BitField opt_error_style = new BitField(0x00000070);
+        private readonly BitField opt_string_list_formula = new BitField(0x00000080);
+        private readonly BitField opt_empty_cell_allowed = new BitField(0x00000100);
+        private readonly BitField opt_suppress_dropdown_arrow = new BitField(0x00000200);
+        private readonly BitField opt_show_prompt_on_cell_selected = new BitField(0x00040000);
+        private readonly BitField opt_show_error_on_invalid_value = new BitField(0x00080000);
+        private readonly BitField opt_condition_operator = new BitField(0x00F00000);
 
         public DVRecord()
         {
@@ -93,6 +93,24 @@ namespace NPOI.HSSF.Record
             Ptg[] formula1, Ptg[] formula2,
             CellRangeAddressList regions)
         {
+            // check length-limits
+            if (promptTitle != null && promptTitle.Length > 32)
+            {
+                throw new ArgumentOutOfRangeException("Prompt-title cannot be longer than 32 characters, but had: " + promptTitle);
+            }
+            if (promptText != null && promptText.Length > 255)
+            {
+                throw new ArgumentOutOfRangeException("Prompt-text cannot be longer than 255 characters, but had: " + promptText);
+            }
+
+            if (errorTitle != null && errorTitle.Length > 32)
+            {
+                throw new ArgumentOutOfRangeException("Error-title cannot be longer than 32 characters, but had: " + errorTitle);
+            }
+            if (errorText != null && errorText.Length > 255)
+            {
+                throw new ArgumentOutOfRangeException("Error-text cannot be longer than 255 characters, but had: " + errorText);
+            }
 
             int flags = 0;
             flags = opt_data_type.SetValue(flags, validationType);
@@ -185,7 +203,35 @@ namespace NPOI.HSSF.Record
             set { this._option_flags = this.opt_data_type.SetValue(this._option_flags, value); }
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null || obj is not DVRecord dv)
+            {
+                return false;
+            }
 
+            return DataType == dv.DataType
+                   && ErrorStyle == dv.ErrorStyle
+                   && EmptyCellAllowed == dv.EmptyCellAllowed
+                   && ShowErrorOnInvalidValue == dv.ShowErrorOnInvalidValue
+                   && ShowPromptOnCellSelected == dv.ShowPromptOnCellSelected
+                   && SuppressDropdownArrow == dv.SuppressDropdownArrow
+                   && ListExplicitFormula == dv.ListExplicitFormula
+                   && ConditionOperator == dv.ConditionOperator
+                   && PromptTitle == dv.PromptTitle
+                   && PromptText == dv.PromptText
+                   && ErrorTitle == dv.ErrorTitle
+                   && ErrorText == dv.ErrorText
+                   && ((Formula1 == null && dv.Formula1 == null) 
+                       || Formula1 != null && dv.Formula1 != null 
+                                           && Formula1.ToString() == dv.Formula1.ToString())
+                   && ((Formula2 == null && dv.Formula2 == null) 
+                       || Formula2 != null && dv.Formula2 != null 
+                                           && Formula2.ToString() == dv.Formula2.ToString())
+                   && (CellRangeAddress == null && dv.CellRangeAddress == null
+                       || CellRangeAddress != null && dv.CellRangeAddress != null 
+                                                   && CellRangeAddress.ToString() == dv.CellRangeAddress.ToString());
+        }
 
         /**
          * Get the condition error style
@@ -361,12 +407,59 @@ namespace NPOI.HSSF.Record
 
         public override String ToString()
         {
-            /* @todo DVRecord string representation */
-            StringBuilder buffer = new StringBuilder();
-
-            return buffer.ToString();
+            StringBuilder sb = new StringBuilder();
+            sb.Append("[DV]\n");
+            sb.Append(" options=").Append(HexDump.ToHex(_option_flags));
+            sb.Append(" title-prompt=").Append(FormatTextTitle(_promptTitle));
+            sb.Append(" title-error=").Append(FormatTextTitle(_errorTitle));
+            sb.Append(" text-prompt=").Append(FormatTextTitle(_promptText));
+            sb.Append(" text-error=").Append(FormatTextTitle(_errorText));
+            sb.Append("\n");
+            AppendFormula(sb, "Formula 1:", _formula1);
+            AppendFormula(sb, "Formula 2:", _formula2);
+            sb.Append("Regions: ");
+            int nRegions = _regions.CountRanges();
+            for (int i = 0; i < nRegions; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append(", ");
+                }
+                CellRangeAddress addr = _regions.GetCellRangeAddress(i);
+                sb.Append('(').Append(addr.FirstRow).Append(',').Append(addr.LastRow);
+                sb.Append(',').Append(addr.FirstColumn).Append(',').Append(addr.LastColumn).Append(')');
+            }
+            sb.Append("\n");
+            sb.Append("[/DV]");
+            return sb.ToString();
         }
 
+        private static String FormatTextTitle(UnicodeString us)
+        {
+            String str = us.String;
+            if (str.Length == 1 && str[0] == '\0')
+            {
+                return "'\\0'";
+            }
+            return str;
+        }
+
+        private static void AppendFormula(StringBuilder sb, String label, Formula f)
+        {
+            sb.Append(label);
+
+            if (f == null)
+            {
+                sb.Append("<empty>\n");
+                return;
+            }
+            Ptg[] ptgs = f.Tokens;
+            sb.Append('\n');
+            foreach (Ptg ptg in ptgs)
+            {
+                sb.Append('\t').Append(ptg.ToString()).Append('\n');
+            }
+        }
         public override void Serialize(ILittleEndianOutput out1)
         {
 

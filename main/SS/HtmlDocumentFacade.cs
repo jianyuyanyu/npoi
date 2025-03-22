@@ -30,8 +30,8 @@ namespace NPOI.SS
         protected XmlElement html;
 
         //Dictionary from tag name, to map linking known styles and css class names
-        private Dictionary<string, Dictionary<string, string>> stylesheet = new Dictionary<string, Dictionary<string, string>>();
-        private XmlElement stylesheetElement;
+        private readonly Dictionary<string, Dictionary<string, string>> stylesheet = new Dictionary<string, Dictionary<string, string>>();
+        private readonly XmlElement stylesheetElement;
 
         protected XmlElement title;
         protected XmlText titleText;
@@ -91,7 +91,7 @@ namespace NPOI.SS
             string addition = GetOrCreateCssClass(element.Name, classNamePrefix, style);
             string newClassValue = string.IsNullOrEmpty(exising) ? addition
                     : (exising + " " + addition);
-            element.GetAttribute("class", newClassValue);
+            element.SetAttribute("class", newClassValue);
         }
 
         public XmlElement CreateBlock()
@@ -216,9 +216,9 @@ namespace NPOI.SS
             Dictionary<string, string> styleToClassName = stylesheet[tagName];
 
             string knownClass;
-            if (styleToClassName.ContainsKey(style))
+            if (styleToClassName.TryGetValue(style, out string value))
             {
-                knownClass = styleToClassName[style];
+                knownClass = value;
                 return knownClass;
             }
 

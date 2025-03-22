@@ -24,9 +24,10 @@ namespace TestCases.DDF
     using System.Collections;
     using System.IO;
 
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     using NPOI.DDF;
     using NPOI.Util;
+    using System.Collections.Generic;
 
     /**
      * @author Glen Stampoultzis  (glens @ superlinksoftware.com)
@@ -48,14 +49,13 @@ namespace TestCases.DDF
                     ;
             byte[] data = HexRead.ReadFromString(dataStr);
             EscherPropertyFactory f = new EscherPropertyFactory();
-            IList props = f.CreateProperties(data, 0, (short)3);
+            IList<EscherProperty> props = f.CreateProperties(data, 0, (short)3);
             EscherComplexProperty p1 = (EscherComplexProperty)props[0];
-            Assert.AreEqual(unchecked((short)0xC141), p1.Id);
-            Assert.AreEqual("[01, 02, 03]", HexDump.ToHex(p1.ComplexData));
-
+            ClassicAssert.AreEqual(unchecked((short)0xC141), p1.Id);
+            ClassicAssert.AreEqual("[01, 02, 03]", HexDump.ToHex(p1.ComplexData));
             EscherComplexProperty p3 = (EscherComplexProperty)props[2];
-            Assert.AreEqual(unchecked((short)0xC141), p3.Id);
-            Assert.AreEqual("[01, 02, 03]", HexDump.ToHex(p3.ComplexData));
+            ClassicAssert.AreEqual(unchecked((short)0xC141), p3.Id);
+            ClassicAssert.AreEqual("[01, 02, 03]", HexDump.ToHex(p3.ComplexData));
 
 
         }

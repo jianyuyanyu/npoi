@@ -39,8 +39,8 @@ namespace NPOI.SS.Util
         /** A constant for references to the first cell in a sheet. */
         public static CellAddress A1 = new CellAddress(0, 0);
 
-        private int _row;
-        private int _col;
+        private readonly int _row;
+        private readonly int _col;
 
         /**
          * Create a new CellAddress object.
@@ -78,11 +78,12 @@ namespace NPOI.SS.Util
                 }
             }
 
-            String sCol = address.Substring(0, loc).ToUpper();
-            String sRow = address.Substring(loc);
+            ReadOnlySpan<char> sCol = address.AsSpan(0, loc);
+            ReadOnlySpan<char> sRow = address.AsSpan(loc);
 
             // FIXME: breaks if Address Contains a sheet name or dollar signs from an absolute CellReference
-            this._row = int.Parse(sRow) - 1;
+            CellReferenceParser.TryParsePositiveInt32Fast(sRow, out var rowNumber);
+            this._row = rowNumber - 1;
             this._col = CellReference.ConvertColStringToIndex(sCol);
         }
 
@@ -95,6 +96,16 @@ namespace NPOI.SS.Util
                 : this(reference.Row, reference.Col)
         {
 
+        }
+
+        /**
+         * Create a new CellAddress object
+         * 
+         * @param address a CellAddress
+         */
+        public CellAddress(CellAddress address)
+            : this(address.Row, address.Column)
+        {
         }
 
         /**
@@ -164,14 +175,13 @@ namespace NPOI.SS.Util
             {
                 return true;
             }
-            if (!(o is CellAddress))
+            if (o is not CellAddress other)
             {
                 return false;
             }
 
-            CellAddress other = (CellAddress)o;
             return _row == other._row
-                    && _col == other._col
+                   && _col == other._col
             ;
         }
 

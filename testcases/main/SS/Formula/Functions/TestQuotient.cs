@@ -18,7 +18,7 @@ namespace TestCases.SS.Formula.Functions
 {
 
     using NPOI.SS.Formula.Eval;
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     using NPOI.SS.Formula.Functions;
     using System;
     using NPOI.HSSF.UserModel;
@@ -41,19 +41,20 @@ namespace TestCases.SS.Formula.Functions
         private static void ConfirmValue(String msg, String numerator, String denominator, String expected)
         {
             ValueEval result = invokeValue(numerator, denominator);
-            Assert.AreEqual(typeof(NumberEval), result.GetType());
-            Assert.AreEqual(expected, ((NumberEval)result).StringValue, msg);
+            ClassicAssert.AreEqual(typeof(NumberEval), result.GetType());
+            ClassicAssert.AreEqual(expected, ((NumberEval)result).StringValue, msg);
         }
 
         private static void ConfirmValueError(String msg, String numerator, String denominator, ErrorEval numError)
         {
             ValueEval result = invokeValue(numerator, denominator);
-            Assert.AreEqual(typeof(ErrorEval), result.GetType());
-            Assert.AreEqual(numError, result, msg);
+            ClassicAssert.AreEqual(typeof(ErrorEval), result.GetType());
+            ClassicAssert.AreEqual(numError, result, msg);
         }
         [Test]
         public void TestBasic()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             ConfirmValue("int portion of 5/2 (2)", "5", "2", "2");
             ConfirmValue("int portion of 4.5/3.1 (1)", "4.5", "3.1", "1");
 
@@ -65,6 +66,7 @@ namespace TestCases.SS.Formula.Functions
         [Test]
         public void TestErrors()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             ConfirmValueError("numerator is nonnumeric", "ABCD", "", ErrorEval.VALUE_INVALID);
             ConfirmValueError("denominator is nonnumeric", "", "ABCD", ErrorEval.VALUE_INVALID);
 

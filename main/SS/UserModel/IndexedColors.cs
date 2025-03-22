@@ -85,8 +85,8 @@ namespace NPOI.SS.UserModel
         public static readonly IndexedColors Grey80Percent;
         public static readonly IndexedColors Automatic;
 
-        private int index;
-        private HSSFColor hssfColor;
+        private readonly int index;
+        private readonly HSSFColor hssfColor;
         
 
         IndexedColors(int idx, HSSFColor color)
@@ -94,8 +94,8 @@ namespace NPOI.SS.UserModel
             index = idx;
             this.hssfColor = color;
         }
-        static Dictionary<string, IndexedColors> mappingName = null;
-        static Dictionary<int, IndexedColors> mappingIndex = null;
+        static readonly Dictionary<string, IndexedColors> mappingName = null;
+        static readonly Dictionary<int, IndexedColors> mappingIndex = null;
         static IndexedColors()
         {
             Black = new IndexedColors(8, new HSSFColor.Black());
@@ -191,7 +191,7 @@ namespace NPOI.SS.UserModel
             mappingName.Add("darkteal", IndexedColors.DarkTeal);
             mappingName.Add("seagreen", IndexedColors.SeaGreen);
             mappingName.Add("darkgreen", IndexedColors.DarkGreen);
-            mappingName.Add("olivergreen", IndexedColors.OliveGreen);
+            mappingName.Add("olivegreen", IndexedColors.OliveGreen);
             mappingName.Add("brown", IndexedColors.Brown);
             mappingName.Add("plum", IndexedColors.Plum);
             mappingName.Add("indigo", IndexedColors.Indigo);
@@ -249,6 +249,15 @@ namespace NPOI.SS.UserModel
             mappingIndex.Add(63, IndexedColors.Grey80Percent);
             mappingIndex.Add(64, IndexedColors.Automatic);
         }
+
+        public static IndexedColors TryValueOf(int index)
+        {
+            if (mappingIndex.TryGetValue(index, out IndexedColors of))
+                return of;
+
+            return null;
+        }
+
         public static IndexedColors ValueOf(string colorName)
         {
             if (mappingName.ContainsKey(colorName.ToLower()))
@@ -256,11 +265,15 @@ namespace NPOI.SS.UserModel
 
             return null;
         }
+
         public static IndexedColors ValueOf(int index)
         {
-            if(mappingIndex.ContainsKey(index))
-                return mappingIndex[index];
-            throw new ArgumentException("Illegal IndexedColor index: " + index);
+            var indexedColors = TryValueOf(index);
+            
+            if(indexedColors == null)
+                throw new ArgumentException("Illegal IndexedColor index: " + index);
+
+            return indexedColors;
         }
 
         /**

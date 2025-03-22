@@ -51,8 +51,8 @@ namespace NPOI.HSSF.Record.Aggregates
         private Record _bitmap;
         private HeaderFooterRecord _headerFooter;
 
-        private List<HeaderFooterRecord> _sviewHeaderFooters = new List<HeaderFooterRecord>();
-        private List<PLSAggregate> _plsRecords;
+        private readonly List<HeaderFooterRecord> _sviewHeaderFooters = new List<HeaderFooterRecord>();
+        private readonly List<PLSAggregate> _plsRecords;
 
         private Record _printSize;
 
@@ -661,20 +661,20 @@ namespace NPOI.HSSF.Record.Aggregates
             {
                 foreach (RecordBase rb in sheetRecords)
                 {
-                    if (rb is CustomViewSettingsRecordAggregate)
+                    if (rb is CustomViewSettingsRecordAggregate cv)
                     {
-                        CustomViewSettingsRecordAggregate cv = (CustomViewSettingsRecordAggregate)rb;
                         cv.VisitContainedRecords(new CustomRecordVisitor1(cv,hf,_sviewHeaderFooters,hfGuidMap));
                     }
                 }
             }
         }
-        private class CustomRecordVisitor1 : RecordVisitor
+
+        private sealed class CustomRecordVisitor1 : RecordVisitor
         {
-            CustomViewSettingsRecordAggregate _cv;
-            HeaderFooterRecord _hf;
-            List<HeaderFooterRecord> _sviewHeaderFooters;
-            Dictionary<String, HeaderFooterRecord> _hfGuidMap;
+            readonly CustomViewSettingsRecordAggregate _cv;
+            readonly HeaderFooterRecord _hf;
+            readonly List<HeaderFooterRecord> _sviewHeaderFooters;
+            readonly Dictionary<String, HeaderFooterRecord> _hfGuidMap;
             public CustomRecordVisitor1(CustomViewSettingsRecordAggregate cv, HeaderFooterRecord hf, 
                 List<HeaderFooterRecord> sviewHeaderFooter, Dictionary<String, HeaderFooterRecord> hfGuidMap)
             {

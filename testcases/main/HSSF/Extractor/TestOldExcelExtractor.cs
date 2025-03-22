@@ -17,16 +17,17 @@
 
 namespace TestCases.HSSF.Extractor
 {
-    using System;
-    using NPOI.HSSF;
-    using TestCases;
-    using NUnit.Framework;
-    using System.IO;
-    using TestCases.HSSF;
+    using NPOI;
     using NPOI.HSSF.Extractor;
     using NPOI.POIFS.FileSystem;
     using NPOI.Util;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
+    using System;
+    using System.IO;
     using System.Text;
+    using TestCases;
+    using TestCases.HSSF;
+    using System.Threading;
 
     /**
      * Unit tests for the Excel 5/95 and Excel 4 (and older) text 
@@ -40,6 +41,11 @@ namespace TestCases.HSSF.Extractor
             FileInfo file = HSSFTestDataSamples.GetSampleFile(sampleFileName);
 
             return new OldExcelExtractor(file);
+        }
+
+        public TestOldExcelExtractor()
+        {
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
         }
 
         [Test]
@@ -62,8 +68,8 @@ namespace TestCases.HSSF.Extractor
             AssertContains(text, "1981/82");
 
             // Check the type
-            Assert.AreEqual(3, extractor.BiffVersion);
-            Assert.AreEqual(0x10, extractor.FileType);
+            ClassicAssert.AreEqual(3, extractor.BiffVersion);
+            ClassicAssert.AreEqual(0x10, extractor.FileType);
 
             extractor.Close();
         }
@@ -71,7 +77,7 @@ namespace TestCases.HSSF.Extractor
         public void TestSimpleExcel3NoReading()
         {
             OldExcelExtractor extractor = CreateExtractor("testEXCEL_3.xls");
-            Assert.IsNotNull(extractor);
+            ClassicAssert.IsNotNull(extractor);
 
             extractor.Close();
         }
@@ -93,8 +99,8 @@ namespace TestCases.HSSF.Extractor
             AssertContains(text, "784");
 
             // Check the type
-            Assert.AreEqual(4, extractor.BiffVersion);
-            Assert.AreEqual(0x10, extractor.FileType);
+            ClassicAssert.AreEqual(4, extractor.BiffVersion);
+            ClassicAssert.AreEqual(0x10, extractor.FileType);
 
             extractor.Close();
         }
@@ -120,8 +126,8 @@ namespace TestCases.HSSF.Extractor
                 AssertContains(text, "Sheet: Feuil3");
 
                 // Check the type
-                Assert.AreEqual(5, extractor.BiffVersion);
-                Assert.AreEqual(0x05, extractor.FileType);
+                ClassicAssert.AreEqual(5, extractor.BiffVersion);
+                ClassicAssert.AreEqual(0x05, extractor.FileType);
 
                 extractor.Close();
             }
@@ -209,52 +215,49 @@ namespace TestCases.HSSF.Extractor
 
                 OldExcelExtractor extractor = new OldExcelExtractor(f);
                 String text = extractor.Text;
-                Assert.IsNotNull(text);
-                Assert.IsTrue(text.Length > 100);
+                ClassicAssert.IsNotNull(text);
+                ClassicAssert.IsTrue(text.Length > 100);
 
                 extractor.Close();
             }
         }
 
-        [Test]
-        public void TestOpenInvalidFile()
+        [Test]//(expected=OfficeXmlFileException.class)
+        public void TestOpenInvalidFile1() => Assert.Throws<OfficeXmlFileException>(() =>
         {
             // a file that exists, but is a different format
-            try
-            {
-                CreateExtractor("WithVariousData.xlsx");
-                Assert.Fail("Should catch Exception here");
-            }
-            catch (OfficeXmlFileException)
-            {
-                // expected here
-            }
+            CreateExtractor("WithVariousData.xlsx");
+        });
+
+        [Test]//(expected=RecordFormatException.class)
+        public void TestOpenInvalidFile2() => Assert.Throws<RecordFormatException>(() =>
+        {
             // a completely different type of file
+            CreateExtractor("48936-strings.txt");
+        });
+
+        [Test]//(expected=FileNotFoundException.class)
+        public void TestOpenInvalidFile3() => Assert.Throws<NotSupportedException>(() =>
+        {
+            // a POIFS file which is not a Workbook
+            Stream @is = POIDataSamples.GetDocumentInstance().OpenResourceAsStream("47304.doc");
             try
             {
-                CreateExtractor("48936-strings.txt");
-                Assert.Fail("Should catch Exception here");
+                new OldExcelExtractor(@is).Close();
             }
-            catch (RecordFormatException)
+            finally
             {
-                // expected here
+                @is.Close();
             }
-        }
-        [Test]
-        public void TestOpenNonExistingFile()
+        });
+
+        [Test]//(expected= EmptyFileException.class)
+        public void TestOpenNonExistingFile() => Assert.Throws<FileNotFoundException>(() =>
         {
             // a file that exists, but is a different format
-            try
-            {
-                OldExcelExtractor extractor = new OldExcelExtractor(new FileInfo("notexistingfile.xls"));
-                extractor.Close();
-                Assert.Fail("Should catch Exception here");
-            }
-            catch (FileNotFoundException)
-            {
-                // expected here
-            }
-        }
+            OldExcelExtractor extractor = new OldExcelExtractor(new FileInfo("notexistingfile.xls"));
+            extractor.Close();
+        });
 
         [Test]
         public void TestInputStream()
@@ -265,7 +268,7 @@ namespace TestCases.HSSF.Extractor
             {
                 OldExcelExtractor extractor = new OldExcelExtractor(stream);
                 String text = extractor.Text;
-                Assert.IsNotNull(text);
+                ClassicAssert.IsNotNull(text);
                 extractor.Close();
             }
             finally
@@ -382,14 +385,32 @@ namespace TestCases.HSSF.Extractor
                 out1.Close();
                 }
                 String string1 = Encoding.UTF8.GetString(out1.ToByteArray());
-                Assert.IsTrue(string1.Contains("Table C-13--Lemons"), "Had: " + string1);
+                ClassicAssert.IsTrue(string1.Contains("Table C-13--Lemons"), "Had: " + string1);
             }
             finally
             {
                 Console.SetOut(save);
             }
         }
-
+        [Test]
+        public void TestEncryptionException()
+        {
+            //test file derives from Common Crawl
+            FileInfo file = HSSFTestDataSamples.GetSampleFile("60284.xls");
+            OldExcelExtractor ex = new OldExcelExtractor(file);
+            ClassicAssert.AreEqual(5, ex.BiffVersion);
+            ClassicAssert.AreEqual(5, ex.FileType);
+            try
+            {
+                var x = ex.Text;
+                Assert.Fail();
+            }
+            catch (EncryptedDocumentException)
+            {
+                ClassicAssert.IsTrue(true, "correct exception thrown");
+            }
+            ex.Close();
+        }
     }
 
 }

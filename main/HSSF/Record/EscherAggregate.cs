@@ -27,10 +27,10 @@ namespace NPOI.HSSF.Record
     using System.Collections.Generic;
     using System.IO;
 
-    internal class SerializationListener : EscherSerializationListener
+    internal sealed class SerializationListener : EscherSerializationListener
     {
-        IList<int> spEndingOffsets;
-        IList<EscherRecord> records;
+        readonly IList<int> spEndingOffsets;
+        readonly IList<EscherRecord> records;
         EscherRecord record;
 
         public SerializationListener(IList<int> spEndingOffsets, IList<EscherRecord> records, EscherRecord e)
@@ -58,9 +58,10 @@ namespace NPOI.HSSF.Record
 
         #endregion
     }
-    internal class RecordSizeListener : EscherSerializationListener
+
+    internal sealed class RecordSizeListener : EscherSerializationListener
     {
-        IList<int> spEndingOffsets;
+        readonly IList<int> spEndingOffsets;
         EscherRecord record;
 
         public RecordSizeListener(IList<int> spEndingOffsets, EscherRecord e)
@@ -343,7 +344,7 @@ namespace NPOI.HSSF.Record
         protected HSSFPatriarch patriarch;
 
         /** Maps shape container objects to their OBJ records */
-        private Dictionary<EscherRecord, Record> shapeToObj = new Dictionary<EscherRecord, Record>();
+        private readonly Dictionary<EscherRecord, Record> shapeToObj = new Dictionary<EscherRecord, Record>();
         private DrawingManager2 drawingManager;
         //private short drawingGroupId;
 
@@ -665,9 +666,9 @@ namespace NPOI.HSSF.Record
         private static short GetSid(List<RecordBase> records, int loc)
         {
             RecordBase record = records[(loc)];
-            if (record is Record)
+            if (record is Record record1)
             {
-                return ((Record)record).Sid;
+                return record1.Sid;
             }
             else
             {
@@ -803,9 +804,9 @@ namespace NPOI.HSSF.Record
 
         
 
-        internal class CustomEscherRecordFactory : DefaultEscherRecordFactory
+        internal sealed class CustomEscherRecordFactory : DefaultEscherRecordFactory
         {
-            List<EscherRecord> shapeRecords;
+            readonly List<EscherRecord> shapeRecords;
             public CustomEscherRecordFactory(List<EscherRecord> shapeRecords)
             {
                 this.shapeRecords = shapeRecords;
@@ -1298,10 +1299,7 @@ namespace NPOI.HSSF.Record
 
         internal void AddTailRecord(NoteRecord note)
         {
-            if (tailRec.ContainsKey(note.ShapeId))
-                tailRec.Add(note.ShapeId, note);
-            else
-                tailRec[note.ShapeId] = note;
+            tailRec[note.ShapeId] = note;
         }
         /**
      * @return unmodifiable copy of tail records. We need to access them when building shapes.
@@ -1320,9 +1318,9 @@ namespace NPOI.HSSF.Record
         internal NoteRecord GetNoteRecordByObj(ObjRecord obj)
         {
             CommonObjectDataSubRecord cod = (CommonObjectDataSubRecord)obj.SubRecords[0];
-            if (!tailRec.ContainsKey(cod.ObjectId))
+            if (!tailRec.TryGetValue(cod.ObjectId, out NoteRecord byObj))
                 return null;
-            return tailRec[(cod.ObjectId)];
+            return byObj;
         }
     }
 }

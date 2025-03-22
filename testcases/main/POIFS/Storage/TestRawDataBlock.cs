@@ -29,7 +29,7 @@ using System;
 using System.IO;
 using System.Collections;
 
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 using NPOI.POIFS.Storage;
 using NPOI.Util;
 using NPOI.POIFS.FileSystem;
@@ -67,13 +67,13 @@ namespace TestCases.POIFS.Storage
             }
             RawDataBlock block = new RawDataBlock(new MemoryStream(data));
 
-            Assert.IsTrue(!block.EOF, "Should not be at EOF");
+            ClassicAssert.IsTrue(!block.EOF, "Should not be at EOF");
             byte[] out_data = block.Data;
 
-            Assert.AreEqual(data.Length, out_data.Length, "Should be same Length");
+            ClassicAssert.AreEqual(data.Length, out_data.Length, "Should be same Length");
             for (int j = 0; j < 512; j++)
             {
-                Assert.AreEqual(data[j],
+                ClassicAssert.AreEqual(data[j],
                              out_data[j], "Should be same value at offset " + j);
             }
         }
@@ -89,7 +89,7 @@ namespace TestCases.POIFS.Storage
             byte[] data = new byte[0];
             RawDataBlock block = new RawDataBlock(new MemoryStream(data));
 
-            Assert.IsTrue(block.EOF, "Should be at EOF");
+            ClassicAssert.IsTrue(block.EOF, "Should be at EOF");
             try
             {
                 byte[] a = block.Data;
@@ -110,9 +110,16 @@ namespace TestCases.POIFS.Storage
         public void TestShortConstructor()
         {
             //// Get the logger to be used
-            DummyPOILogger logger = (DummyPOILogger)POILogFactory.GetLogger(typeof(RawDataBlock));
-            logger.Reset(); // the logger may have been used before
-            Assert.AreEqual(0, logger.logged.Count);
+            POILogger logger = POILogFactory.GetLogger(typeof(RawDataBlock));
+            if (!(logger is DummyPOILogger dummyPoiLogger))
+            {
+                // NET Core
+                Assert.Ignore("Logger configuration not working under NET Core");
+                return;
+            }
+
+            dummyPoiLogger.Reset(); // the logger may have been used before
+            ClassicAssert.AreEqual(0, dummyPoiLogger.logged.Count);
 
             // Test for various data sizes
             for (int k = 1; k <= 512; k++)
@@ -125,18 +132,18 @@ namespace TestCases.POIFS.Storage
                 }
                 RawDataBlock block = null;
 
-                logger.Reset();
-                Assert.AreEqual(0, logger.logged.Count);
+                dummyPoiLogger.Reset();
+                ClassicAssert.AreEqual(0, dummyPoiLogger.logged.Count);
 
                 // Have it created
                 block = new RawDataBlock(new MemoryStream(data));
-                Assert.IsNotNull(block);
+                ClassicAssert.IsNotNull(block);
 
                 // Check for the warning Is there for <512
                 if (k < 512)
                 {
-                    Assert.AreEqual(
-                            1, logger.logged.Count, "Warning on " + k + " byte short block"
+                    ClassicAssert.AreEqual(
+                            1, dummyPoiLogger.logged.Count, "Warning on " + k + " byte short block"
                     );
 
                     // Build the expected warning message, and check
@@ -146,14 +153,14 @@ namespace TestCases.POIFS.Storage
                         bts += "s";
                     }
 
-                    Assert.AreEqual(
-                            (String)logger.logged[0],
+                    ClassicAssert.AreEqual(
+                            (String)dummyPoiLogger.logged[0],
                             "7 - Unable to read entire block; " + bts + " read before EOF; expected 512 bytes. Your document was either written by software that ignores the spec, or has been truncated!"
                     );
                 }
                 else
                 {
-                    Assert.AreEqual(0, logger.logged.Count);
+                    ClassicAssert.AreEqual(0, dummyPoiLogger.logged.Count);
                 }
             }
         }
@@ -167,9 +174,17 @@ namespace TestCases.POIFS.Storage
         public void TestSlowInputStream()
         {
             // Get the logger to be used
-            DummyPOILogger logger = (DummyPOILogger)POILogFactory.GetLogger(typeof(RawDataBlock));
-            logger.Reset(); // the logger may have been used before
-            Assert.AreEqual(0, logger.logged.Count);
+            POILogger logger = POILogFactory.GetLogger(typeof(RawDataBlock));
+
+            if (!(logger is DummyPOILogger dummyPoiLogger))
+            {
+                // NET Core
+                Assert.Ignore("Logger configuration not working under NET Core");
+                return;
+            }
+
+            dummyPoiLogger.Reset(); // the logger may have been used before
+            ClassicAssert.AreEqual(0, dummyPoiLogger.logged.Count);
 
             // Test for various ok data sizes
             for (int k = 1; k < 512; k++)
@@ -184,7 +199,7 @@ namespace TestCases.POIFS.Storage
                 //  even if it dribbles through
                 RawDataBlock block =
                     new RawDataBlock(new SlowInputStream(data, 512));   //k is changed to 512
-                Assert.IsFalse(block.EOF);
+                ClassicAssert.IsFalse(block.EOF);
             }
 
             // But if there wasn't enough data available, will
@@ -197,15 +212,15 @@ namespace TestCases.POIFS.Storage
                     data[j] = (byte)j;
                 }
 
-                logger.Reset();
-                Assert.AreEqual(0, logger.logged.Count);
+                dummyPoiLogger.Reset();
+                ClassicAssert.AreEqual(0, dummyPoiLogger.logged.Count);
 
                 // Should complain, as there Isn't enough data
                 RawDataBlock block =
                     new RawDataBlock(new SlowInputStream(data, k));
-                Assert.IsNotNull(block);
-                Assert.AreEqual(
-                        1, logger.logged.Count, "Warning on " + k + " byte short block"
+                ClassicAssert.IsNotNull(block);
+                ClassicAssert.AreEqual(
+                        1, dummyPoiLogger.logged.Count, "Warning on " + k + " byte short block"
                 );
             }
         }

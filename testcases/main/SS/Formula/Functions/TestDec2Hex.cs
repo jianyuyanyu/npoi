@@ -18,7 +18,7 @@
 using NPOI.SS.Formula.Eval;
 using NPOI.SS.Formula.Functions;
 using System;
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 using NPOI.SS.Formula;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
@@ -33,6 +33,10 @@ namespace TestCases.SS.Formula.Functions
     [TestFixture]
     public class TestDec2Hex
     {
+        public TestDec2Hex()
+        {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
+        }
 
         private static ValueEval invokeValue(String number1, String number2)
         {
@@ -53,22 +57,22 @@ namespace TestCases.SS.Formula.Functions
         private static void ConfirmValue(String msg, String number1, String number2, String expected)
         {
             ValueEval result = invokeValue(number1, number2);
-            Assert.AreEqual(typeof(StringEval), result.GetType());
-            Assert.AreEqual(expected, ((StringEval)result).StringValue, msg);
+            ClassicAssert.AreEqual(typeof(StringEval), result.GetType());
+            ClassicAssert.AreEqual(expected, ((StringEval)result).StringValue, msg);
         }
 
         private static void ConfirmValue(String msg, String number1, String expected)
         {
             ValueEval result = invokeValue(number1);
-            Assert.AreEqual(typeof(StringEval), result.GetType());
-            Assert.AreEqual(expected, ((StringEval)result).StringValue, msg);
+            ClassicAssert.AreEqual(typeof(StringEval), result.GetType());
+            ClassicAssert.AreEqual(expected, ((StringEval)result).StringValue, msg);
         }
 
         private static void ConfirmValueError(String msg, String number1, String number2, ErrorEval numError)
         {
             ValueEval result = invokeValue(number1, number2);
-            Assert.AreEqual(typeof(ErrorEval), result.GetType());
-            Assert.AreEqual(numError, result, msg);
+            ClassicAssert.AreEqual(typeof(ErrorEval), result.GetType());
+            ClassicAssert.AreEqual(numError, result, msg);
         }
         [Test]
         public void TestBasic()
@@ -86,23 +90,23 @@ namespace TestCases.SS.Formula.Functions
             ConfirmValue("Converts normal decimal number to hexadecimal", "100", "64");
 
             String maxInt = Int32.MaxValue.ToString();
-            Assert.AreEqual("2147483647", maxInt);
+            ClassicAssert.AreEqual("2147483647", maxInt);
             ConfirmValue("Converts INT_MAX to hexadecimal", maxInt, "7FFFFFFF");
 
             String minInt = Int32.MinValue.ToString();
-            Assert.AreEqual("-2147483648", minInt);
+            ClassicAssert.AreEqual("-2147483648", minInt);
             ConfirmValue("Converts INT_MIN to hexadecimal", minInt, "FF80000000");
 
             String maxIntPlusOne = (((long)Int32.MaxValue) + 1).ToString();
-            Assert.AreEqual("2147483648", maxIntPlusOne);
+            ClassicAssert.AreEqual("2147483648", maxIntPlusOne);
             ConfirmValue("Converts INT_MAX + 1 to hexadecimal", maxIntPlusOne, "80000000");
 
             String maxLong = (549755813887).ToString();
-            Assert.AreEqual("549755813887", maxLong);
+            ClassicAssert.AreEqual("549755813887", maxLong);
             ConfirmValue("Converts the max supported value to hexadecimal", maxLong, "7FFFFFFFFF");
 
             String minLong = (-549755813888L).ToString();
-            Assert.AreEqual("-549755813888", minLong);
+            ClassicAssert.AreEqual("-549755813888", minLong);
             ConfirmValue("Converts the min supported value to hexadecimal", minLong, "FF80000000");
 
         }
@@ -124,8 +128,8 @@ namespace TestCases.SS.Formula.Functions
             ValueEval[] args = new ValueEval[] { ErrorEval.VALUE_INVALID };
             ValueEval result = new Dec2Hex().Evaluate(args, ctx);
 
-            Assert.AreEqual(typeof(ErrorEval), result.GetType());
-            Assert.AreEqual(ErrorEval.VALUE_INVALID, result);
+            ClassicAssert.AreEqual(typeof(ErrorEval), result.GetType());
+            ClassicAssert.AreEqual(ErrorEval.VALUE_INVALID, result);
         }
 
         private OperationEvaluationContext CreateContext()
@@ -162,8 +166,8 @@ namespace TestCases.SS.Formula.Functions
             ValueEval[] args = new ValueEval[] { ctx.GetRefEval(0, 0) };
             ValueEval result = new Dec2Hex().Evaluate(args, -1, -1);
 
-            Assert.AreEqual(typeof(StringEval), result.GetType(), "Had: " + result.ToString());
-            Assert.AreEqual("7B", ((StringEval)result).StringValue);
+            ClassicAssert.AreEqual(typeof(StringEval), result.GetType(), "Had: " + result.ToString());
+            ClassicAssert.AreEqual("7B", ((StringEval)result).StringValue);
         }
 
         [Test]
@@ -174,8 +178,8 @@ namespace TestCases.SS.Formula.Functions
             ValueEval[] args = new ValueEval[] { ctx.GetRefEval(0, 0), ctx.GetRefEval(0, 1) };
             ValueEval result = new Dec2Hex().Evaluate(args, -1, -1);
 
-            Assert.AreEqual(typeof(StringEval), result.GetType(), "Had: " + result.ToString());
-            Assert.AreEqual("0000007B", ((StringEval)result).StringValue);
+            ClassicAssert.AreEqual(typeof(StringEval), result.GetType(), "Had: " + result.ToString());
+            ClassicAssert.AreEqual("0000007B", ((StringEval)result).StringValue);
         }
 
         [Test]
@@ -186,8 +190,8 @@ namespace TestCases.SS.Formula.Functions
             ValueEval[] args = new ValueEval[] { ctx.GetRefEval(0, 0), ctx.GetRefEval(0, 1) };
             ValueEval result = new Dec2Hex().Evaluate(args, ctx);
 
-            Assert.AreEqual(typeof(StringEval), result.GetType(), "Had: " + result.ToString());
-            Assert.AreEqual("0000007B", ((StringEval)result).StringValue);
+            ClassicAssert.AreEqual(typeof(StringEval), result.GetType(), "Had: " + result.ToString());
+            ClassicAssert.AreEqual("0000007B", ((StringEval)result).StringValue);
         }
 
         [Test]
@@ -198,8 +202,8 @@ namespace TestCases.SS.Formula.Functions
             ValueEval[] args = new ValueEval[] { ctx.GetRefEval(0, 0), ctx.GetRefEval(0, 1), ctx.GetRefEval(0, 1) };
             ValueEval result = new Dec2Hex().Evaluate(args, -1, -1);
 
-            Assert.AreEqual(typeof(ErrorEval), result.GetType());
-            Assert.AreEqual(ErrorEval.VALUE_INVALID, result);
+            ClassicAssert.AreEqual(typeof(ErrorEval), result.GetType());
+            ClassicAssert.AreEqual(ErrorEval.VALUE_INVALID, result);
         }
 
         [Test]
@@ -210,8 +214,8 @@ namespace TestCases.SS.Formula.Functions
             ValueEval[] args = new ValueEval[] { ctx.GetRefEval(0, 0), ctx.GetRefEval(0, 1), ctx.GetRefEval(0, 1) };
             ValueEval result = new Dec2Hex().Evaluate(args, ctx);
 
-            Assert.AreEqual(typeof(ErrorEval), result.GetType());
-            Assert.AreEqual(ErrorEval.VALUE_INVALID, result);
+            ClassicAssert.AreEqual(typeof(ErrorEval), result.GetType());
+            ClassicAssert.AreEqual(ErrorEval.VALUE_INVALID, result);
         }
 
         [Test]
@@ -222,8 +226,8 @@ namespace TestCases.SS.Formula.Functions
             ValueEval[] args = new ValueEval[] { ctx.GetRefEval(0, 0), ErrorEval.NULL_INTERSECTION };
             ValueEval result = new Dec2Hex().Evaluate(args, -1, -1);
 
-            Assert.AreEqual(typeof(ErrorEval), result.GetType());
-            Assert.AreEqual(ErrorEval.NULL_INTERSECTION, result);
+            ClassicAssert.AreEqual(typeof(ErrorEval), result.GetType());
+            ClassicAssert.AreEqual(ErrorEval.NULL_INTERSECTION, result);
         }
 
         [Test]
@@ -234,8 +238,8 @@ namespace TestCases.SS.Formula.Functions
             ValueEval[] args = new ValueEval[] { ctx.GetRefEval(0, 0), ctx.GetRefEval(0, 2) };
             ValueEval result = new Dec2Hex().Evaluate(args, -1, -1);
 
-            Assert.AreEqual(typeof(ErrorEval), result.GetType());
-            Assert.AreEqual(ErrorEval.NUM_ERROR, result);
+            ClassicAssert.AreEqual(typeof(ErrorEval), result.GetType());
+            ClassicAssert.AreEqual(ErrorEval.NUM_ERROR, result);
         }
 
         [Test]
@@ -246,8 +250,8 @@ namespace TestCases.SS.Formula.Functions
             ValueEval[] args = new ValueEval[] { ctx.GetRefEval(0, 0), ctx.GetRefEval(1, 0) };
             ValueEval result = new Dec2Hex().Evaluate(args, -1, -1);
 
-            Assert.AreEqual(typeof(ErrorEval), result.GetType());
-            Assert.AreEqual(ErrorEval.VALUE_INVALID, result);
+            ClassicAssert.AreEqual(typeof(ErrorEval), result.GetType());
+            ClassicAssert.AreEqual(ErrorEval.VALUE_INVALID, result);
         }
 
         [Test]
@@ -256,12 +260,12 @@ namespace TestCases.SS.Formula.Functions
             for (int i = -512; i < 512; i++)
             {
                 ValueEval result = invokeValue(i.ToString());
-                Assert.AreEqual(typeof(StringEval), result.GetType(), "Had: " + result.ToString());
+                ClassicAssert.AreEqual(typeof(StringEval), result.GetType(), "Had: " + result.ToString());
 
                 ValueEval back = invokeBack(((StringEval)result).StringValue);
-                Assert.AreEqual(typeof(NumberEval), back.GetType(), "Had: " + back.ToString());
+                ClassicAssert.AreEqual(typeof(NumberEval), back.GetType(), "Had: " + back.ToString());
 
-                Assert.AreEqual(i.ToString(),
+                ClassicAssert.AreEqual(i.ToString(),
                         ((NumberEval)back).StringValue);
             }
         }

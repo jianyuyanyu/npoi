@@ -530,11 +530,11 @@ namespace NPOI.XSSF.UserModel
       */
         private void SetCellReferences()
         {
-            String ref1 = ctTable.@ref;
+            string ref1 = ctTable.@ref;
             if (ref1 != null) {
-                String[] boundaries = ref1.Split(new char[] { ':' }, 2);
-                String from = boundaries[0];
-                String to = boundaries[1];
+                string[] boundaries = ref1.Split(new char[] { ':' }, 2);
+                string from = boundaries[0];
+                string to = boundaries.Length == 2 ? boundaries[1] : boundaries[0];
                 startCellReference = new CellReference(from);
                 endCellReference = new CellReference(to);
             }
@@ -655,8 +655,8 @@ namespace NPOI.XSSF.UserModel
             // but the escape is not present in the column definition
             int idx = -1;
             string testKey = columnHeader.Replace("'", "").ToUpper(CultureInfo.CurrentCulture);
-            if (columnMap.ContainsKey(testKey))
-                idx = columnMap[testKey];
+            if (columnMap.TryGetValue(testKey, out int value))
+                idx = value;
             return idx;
         }
         /// <summary>

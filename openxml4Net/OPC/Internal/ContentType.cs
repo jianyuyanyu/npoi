@@ -203,7 +203,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         public override bool Equals(Object obj)
         {
-            return (!(obj is ContentType))
+            return (obj is not ContentType)
                     || (this.ToString().Equals(obj.ToString(), StringComparison.InvariantCultureIgnoreCase));
         }
 
@@ -257,7 +257,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
         public String[] GetParameterKeys()
         {
             if (parameters == null)
-                return new String[0];
+                return Array.Empty<String>();
             List<string> keys = new List<string>();
             keys.AddRange(parameters.Keys);
             return keys.ToArray();

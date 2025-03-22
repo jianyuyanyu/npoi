@@ -2,25 +2,23 @@
 {
     using System;
 
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     using NPOI.SS.UserModel;
     using NPOI.SS.UserModel.Charts;
     using NPOI.SS.Util;
     using NPOI.XSSF.UserModel;
 
     /**
-     * @author Martin Andersson
+     * Tests for XSSF Line Charts
      */
     [TestFixture]
     public class TestXSSFLineChartData
     {
-        [SetUp]
-        public void Setup()
+        private static readonly object[][] plotData = new object[2][]
         {
-            plotData[0] = new string[] {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
-            plotData[1] = new object[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-        }
-        private object[][] plotData = new object[2][];
+            new string[] {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"},
+            new object[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
+        };
 
         [Test]
         public void TestOneSeriePlot()
@@ -41,12 +39,12 @@
             IChartDataSource<double> ys = DataSources.FromNumericCellRange(sheet, CellRangeAddress.ValueOf("A2:J2"));
             ILineChartSeries<string, double> series = lineChartData.AddSeries(xs, ys);
 
-            Assert.IsNotNull(series);
-            Assert.AreEqual(1, lineChartData.GetSeries().Count);
-            Assert.IsTrue(lineChartData.GetSeries().Contains(series));
+            ClassicAssert.IsNotNull(series);
+            ClassicAssert.AreEqual(1, lineChartData.GetSeries().Count);
+            ClassicAssert.IsTrue(lineChartData.GetSeries().Contains(series));
 
             chart.Plot(lineChartData, bottomAxis, leftAxis);
+            wb.Close();
         }
     }
-
 }

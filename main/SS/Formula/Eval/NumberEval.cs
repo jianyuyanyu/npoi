@@ -35,19 +35,19 @@ namespace NPOI.SS.Formula.Eval
 
         public static readonly NumberEval ZERO = new NumberEval(0);
 
-        private double _value;
+        private readonly double _value;
         private String _stringValue;
 
 
         public NumberEval(Ptg ptg)
         {
-            if (ptg is IntPtg)
+            if (ptg is IntPtg intPtg)
             {
-                this._value = ((IntPtg)ptg).Value;
+                this._value = intPtg.Value;
             }
-            else if (ptg is NumberPtg)
+            else if (ptg is NumberPtg numberPtg)
             {
-                this._value = ((NumberPtg)ptg).Value;
+                this._value = numberPtg.Value;
             }
         }
 
@@ -89,11 +89,8 @@ namespace NPOI.SS.Formula.Eval
         }
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(GetType().Name).Append(" [");
-            sb.Append(this.StringValue);
-            sb.Append("]");
-            return sb.ToString();
+            return GetType().Name + " [" +
+                StringValue + "]";
         }
     }
 }
