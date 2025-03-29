@@ -117,8 +117,7 @@ namespace NPOI.SS.Formula.Atp
                     {
                         if (string.IsNullOrEmpty(notFound))
                         {
-                            if (returnEval is AreaEval) {
-                                AreaEval area = (AreaEval)returnEval;
+                            if (returnEval is AreaEval area) {
                                 int width = area.Width;
                                 if (isSingleValue || width <= 1)
                                 {
@@ -137,13 +136,12 @@ namespace NPOI.SS.Formula.Atp
                         return e.GetErrorEval();
                     }
                 }
-                if (returnEval is AreaEval) {
-                    AreaEval area = (AreaEval)returnEval;
+                if (returnEval is AreaEval eval) {
                     if (isSingleValue)
                     {
-                        return area.GetRelativeValue(matchedRow, 0);
+                        return eval.GetRelativeValue(matchedRow, 0);
                     }
-                    return area.Offset(matchedRow, matchedRow, 0, area.Width - 1);
+                    return eval.Offset(matchedRow, matchedRow, 0, eval.Width - 1);
                 } else
                 {
                     return returnEval;
@@ -157,8 +155,8 @@ namespace NPOI.SS.Formula.Atp
 
         class NotFoundAreaEval : AreaEval
         {
-            private int _width;
-            private string _notFound;
+            private readonly int _width;
+            private readonly string _notFound;
             public NotFoundAreaEval(string notFound, int width)
             {
                 _width = width;
@@ -268,6 +266,10 @@ namespace NPOI.SS.Formula.Atp
                 return false;
             }
 
+            public bool IsRowHidden(int rowIndex)
+            {
+                return false;
+            }
             public AreaEval Offset(int relFirstRowIx, int relLastRowIx, int relFirstColIx, int relLastColIx)
             {
                 throw null;

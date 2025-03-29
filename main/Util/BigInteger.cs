@@ -15,7 +15,7 @@ namespace NPOI.Util
          *
          * @serial
          */
-        private int _signum;
+        private readonly int _signum;
 
         /**
          * The magnitude of this BigInteger, in <i>big-endian</i> order: the
@@ -91,8 +91,8 @@ namespace NPOI.Util
         public const long INFLATED = long.MinValue;
         public const int Min_RADIX = 2;
         public const int Max_RADIX = 36;
-        private static BigInteger[] posConst = new BigInteger[Max_CONSTANT + 1];
-        private static BigInteger[] negConst = new BigInteger[Max_CONSTANT + 1];
+        private static readonly BigInteger[] posConst = new BigInteger[Max_CONSTANT + 1];
+        private static readonly BigInteger[] negConst = new BigInteger[Max_CONSTANT + 1];
         private static readonly String[] zeros = new String[64];
         //Constructors
         static BigInteger()
@@ -400,7 +400,7 @@ namespace NPOI.Util
          *
          * @since   1.2
          */
-        public static readonly BigInteger ZERO = new BigInteger(new int[0], 0);
+        public static readonly BigInteger ZERO = new BigInteger(Array.Empty<int>(), 0);
 
         /**
          * The BigInteger constant one.
@@ -1172,10 +1172,9 @@ namespace NPOI.Util
             if (Object.ReferenceEquals(x, this))
                 return true;
 
-            if (!(x is BigInteger) || (null == x))
+            if (x is not BigInteger xInt || (null == x))
                 return false;
 
-            BigInteger xInt = (BigInteger)x;
             if (xInt._signum != _signum)
                 return false;
 
@@ -1738,7 +1737,7 @@ namespace NPOI.Util
         }
         #endregion
     }
-    internal class MutableBigInteger
+    internal sealed class MutableBigInteger
     {
         /**
          * Holds the magnitude of this MutableBigInteger in big endian order.

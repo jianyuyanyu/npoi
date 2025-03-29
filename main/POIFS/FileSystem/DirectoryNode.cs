@@ -484,7 +484,7 @@ namespace NPOI.POIFS.FileSystem
         /// Gets or Sets the storage clsid for the directory entry
         /// </summary>
         /// <value>The storage ClassID.</value>
-        public ClassID StorageClsid
+        public HPSF.ClassID StorageClsid
         {
             set{
                 this.Property.StorageClsid=value;
@@ -550,11 +550,11 @@ namespace NPOI.POIFS.FileSystem
         /// Get an array of objects, some of which may implement POIFSViewable
         /// </summary>
         /// <value>an array of Object; may not be null, but may be empty</value>
-        public Array ViewableArray
+        public Object[] ViewableArray
         {
             get
             {
-                return new Object[0];
+                return Array.Empty<Object>();
             }
         }
 
@@ -564,11 +564,11 @@ namespace NPOI.POIFS.FileSystem
         /// </summary>
         /// <value>an Iterator; may not be null, but may have an empty
         /// back end store</value>
-        public IEnumerator ViewableIterator
+        public IEnumerator<Object> ViewableIterator
         {
             get
-                {
-                ArrayList components = new ArrayList();
+            {
+                List<Object> components = new List<Object>();
 
                 components.Add(Property);
                 components.AddRange(this._entries);

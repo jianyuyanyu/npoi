@@ -132,9 +132,9 @@ namespace NPOI.XSSF.UserModel
             }
             return -1;
         }
-        private class FakeExternalLinksTable : ExternalLinksTable
+        private sealed class FakeExternalLinksTable : ExternalLinksTable
         {
-            private String fileName;
+            private readonly String fileName;
             internal FakeExternalLinksTable(string fileName)
             {
                 this.fileName = fileName;
@@ -426,12 +426,12 @@ namespace NPOI.XSSF.UserModel
             return _uBook.GetUDFFinder();
         }
 
-        private class Name : IEvaluationName
+        private sealed class Name : IEvaluationName
         {
 
-            private XSSFName _nameRecord;
-            private int _index;
-            private IFormulaParsingWorkbook _fpBook;
+            private readonly XSSFName _nameRecord;
+            private readonly int _index;
+            private readonly IFormulaParsingWorkbook _fpBook;
 
             public Name(XSSFName name, int index, IFormulaParsingWorkbook fpBook)
             {

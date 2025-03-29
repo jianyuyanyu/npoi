@@ -46,9 +46,9 @@ namespace NPOI.HSSF.Record
         private const int OPT_ICONIFIED_PICTURE_LINK = 0x8000;
 
 
-        private short field_1_option_flag;
+        private readonly short field_1_option_flag;
         private short field_2_ixals;
-        private short field_3_not_used;
+        private readonly short field_3_not_used;
         private String field_4_name;
         private Formula field_5_name_definition; 
 
@@ -57,15 +57,15 @@ namespace NPOI.HSSF.Record
          * (seems to be only applicable to DDE links)<br/>
          * Logically this is a 2-D array, which has been flattened into 1-D array here.
          */
-        private Object[] _ddeValues;
+        private readonly Object[] _ddeValues;
         /**
          * (logical) number of columns in the {@link #_ddeValues} array
          */
-        private int _nColumns;
+        private readonly int _nColumns;
         /**
          * (logical) number of rows in the {@link #_ddeValues} array
          */
-        private int _nRows;
+        private readonly int _nRows;
         public ExternalNameRecord()
         {
             field_2_ixals = 0;
@@ -308,7 +308,7 @@ namespace NPOI.HSSF.Record
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("[EXTERNALNAME]\n");
-            sb.Append("    .options      = ").Append(field_1_option_flag).Append("\n");
+            sb.Append("    .options = ").Append(field_1_option_flag).Append("\n");
             sb.Append("    .ix      = ").Append(field_2_ixals).Append("\n");
             sb.Append("    .name    = ").Append(field_4_name).Append("\n");
             if (field_5_name_definition != null)
@@ -317,7 +317,7 @@ namespace NPOI.HSSF.Record
                 for (int i = 0; i < ptgs.Length; i++)
                 {
                     Ptg ptg = ptgs[i];
-                    sb.Append(ptg.ToString()).Append(ptg.RVAType).Append("\n");
+                    sb.Append("    .namedef = ").Append(ptg.ToString()).Append(ptg.RVAType).Append("\n");
                 }
             }
             sb.Append("[/EXTERNALNAME]\n");

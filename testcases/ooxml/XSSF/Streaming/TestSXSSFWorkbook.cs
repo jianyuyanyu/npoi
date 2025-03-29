@@ -28,7 +28,7 @@ namespace TestCases.XSSF.Streaming
     using NPOI.XSSF.Model;
     using NPOI.XSSF.Streaming;
     using NPOI.XSSF.UserModel;
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     using System;
     using System.IO;
     using TestCases;
@@ -42,15 +42,12 @@ namespace TestCases.XSSF.Streaming
         public TestSXSSFWorkbook()
                 : base(SXSSFITestDataProvider.instance)
         {
-
         }
-
         [TearDown]
         public void TearDown()
         {
             //((SXSSFITestDataProvider)_testDataProvider).Cleanup();
         }
-
         /**
          * cloning of sheets is not supported in SXSSF
          */
@@ -63,9 +60,9 @@ namespace TestCases.XSSF.Streaming
                 base.CloneSheet();
                 Assert.Fail("expected exception");
             }
-            catch (RuntimeException e)
+            catch(RuntimeException e)
             {
-                Assert.AreEqual("NotImplemented", e.Message);
+                ClassicAssert.AreEqual("NotImplemented", e.Message);
             }
         }
         [Test]
@@ -76,9 +73,9 @@ namespace TestCases.XSSF.Streaming
                 base.SheetClone();
                 Assert.Fail("expected exception");
             }
-            catch (RuntimeException e)
+            catch(RuntimeException e)
             {
-                Assert.AreEqual("NotImplemented", e.Message);
+                ClassicAssert.AreEqual("NotImplemented", e.Message);
             }
         }
         /**
@@ -99,14 +96,14 @@ namespace TestCases.XSSF.Streaming
             xssfWb1.CreateSheet("S1");
             SXSSFWorkbook wb1 = new SXSSFWorkbook(xssfWb1);
             XSSFWorkbook xssfWb2 = SXSSFITestDataProvider.instance.WriteOutAndReadBack(wb1) as XSSFWorkbook;
-            Assert.IsTrue(wb1.Dispose());
+            ClassicAssert.IsTrue(wb1.Dispose());
 
             SXSSFWorkbook wb2 = new SXSSFWorkbook(xssfWb2);
-            Assert.AreEqual(1, wb2.NumberOfSheets);
+            ClassicAssert.AreEqual(1, wb2.NumberOfSheets);
             ISheet sheet = wb2.GetSheetAt(0);
-            Assert.IsNotNull(sheet);
-            Assert.AreEqual("S1", sheet.SheetName);
-            Assert.IsTrue(wb2.Dispose());
+            ClassicAssert.IsNotNull(sheet);
+            ClassicAssert.AreEqual("S1", sheet.SheetName);
+            ClassicAssert.IsTrue(wb2.Dispose());
             xssfWb2.Close();
             xssfWb1.Close();
 
@@ -121,7 +118,7 @@ namespace TestCases.XSSF.Streaming
 
             SharedStringsTable sss = POITestCase.GetFieldValue<SharedStringsTable, SXSSFWorkbook>(typeof(SXSSFWorkbook), wb, typeof(SharedStringsTable), "_sharedStringSource");
 
-            Assert.IsNotNull(sss);
+            ClassicAssert.IsNotNull(sss);
 
             IRow row = wb.CreateSheet("S1").CreateRow(0);
 
@@ -131,23 +128,23 @@ namespace TestCases.XSSF.Streaming
 
             XSSFWorkbook xssfWorkbook = SXSSFITestDataProvider.instance.WriteOutAndReadBack(wb) as XSSFWorkbook;
             sss = POITestCase.GetFieldValue<SharedStringsTable, SXSSFWorkbook>(typeof(SXSSFWorkbook), wb, typeof(SharedStringsTable), "_sharedStringSource");
-            Assert.AreEqual(2, sss.UniqueCount);
-            Assert.IsTrue(wb.Dispose());
+            ClassicAssert.AreEqual(2, sss.UniqueCount);
+            ClassicAssert.IsTrue(wb.Dispose());
 
             ISheet sheet1 = xssfWorkbook.GetSheetAt(0);
-            Assert.AreEqual("S1", sheet1.SheetName);
-            Assert.AreEqual(1, sheet1.PhysicalNumberOfRows);
+            ClassicAssert.AreEqual("S1", sheet1.SheetName);
+            ClassicAssert.AreEqual(1, sheet1.PhysicalNumberOfRows);
             row = sheet1.GetRow(0);
-            Assert.IsNotNull(row);
+            ClassicAssert.IsNotNull(row);
             ICell cell = row.GetCell(0);
-            Assert.IsNotNull(cell);
-            Assert.AreEqual("A", cell.StringCellValue);
+            ClassicAssert.IsNotNull(cell);
+            ClassicAssert.AreEqual("A", cell.StringCellValue);
             cell = row.GetCell(1);
-            Assert.IsNotNull(cell);
-            Assert.AreEqual("B", cell.StringCellValue);
+            ClassicAssert.IsNotNull(cell);
+            ClassicAssert.AreEqual("B", cell.StringCellValue);
             cell = row.GetCell(2);
-            Assert.IsNotNull(cell);
-            Assert.AreEqual("A", cell.StringCellValue);
+            ClassicAssert.IsNotNull(cell);
+            ClassicAssert.AreEqual("A", cell.StringCellValue);
 
             xssfWorkbook.Close();
             wb.Close();
@@ -164,7 +161,7 @@ namespace TestCases.XSSF.Streaming
             cell.SetCellValue("value 2_1_1");
             SXSSFWorkbook wb1 = new SXSSFWorkbook(xssfWb1);
             XSSFWorkbook xssfWb2 = SXSSFITestDataProvider.instance.WriteOutAndReadBack(wb1) as XSSFWorkbook;
-            Assert.IsTrue(wb1.Dispose());
+            ClassicAssert.IsTrue(wb1.Dispose());
             xssfWb1.Close();
 
             SXSSFWorkbook wb2 = new SXSSFWorkbook(xssfWb2);
@@ -189,39 +186,39 @@ namespace TestCases.XSSF.Streaming
             XSSFWorkbook xssfWb3 = SXSSFITestDataProvider.instance.WriteOutAndReadBack(wb2) as XSSFWorkbook;
             wb2.Close();
 
-            Assert.AreEqual(3, xssfWb3.NumberOfSheets);
+            ClassicAssert.AreEqual(3, xssfWb3.NumberOfSheets);
             // Verify sheet 1
             sheet1 = xssfWb3.GetSheetAt(0);
-            Assert.AreEqual("S1", sheet1.SheetName);
-            Assert.AreEqual(1, sheet1.PhysicalNumberOfRows);
+            ClassicAssert.AreEqual("S1", sheet1.SheetName);
+            ClassicAssert.AreEqual(1, sheet1.PhysicalNumberOfRows);
             row1_1 = sheet1.GetRow(1);
-            Assert.IsNotNull(row1_1);
+            ClassicAssert.IsNotNull(row1_1);
             cell1_1_1 = row1_1.GetCell(1);
-            Assert.IsNotNull(cell1_1_1);
-            Assert.AreEqual("value 1_1_1", cell1_1_1.StringCellValue);
+            ClassicAssert.IsNotNull(cell1_1_1);
+            ClassicAssert.AreEqual("value 1_1_1", cell1_1_1.StringCellValue);
             // Verify sheet 2
             sheet2 = xssfWb3.GetSheetAt(1);
-            Assert.AreEqual("S2", sheet2.SheetName);
-            Assert.AreEqual(2, sheet2.PhysicalNumberOfRows);
+            ClassicAssert.AreEqual("S2", sheet2.SheetName);
+            ClassicAssert.AreEqual(2, sheet2.PhysicalNumberOfRows);
             IRow row2_1 = sheet2.GetRow(1);
-            Assert.IsNotNull(row2_1);
+            ClassicAssert.IsNotNull(row2_1);
             ICell cell2_1_1 = row2_1.GetCell(1);
-            Assert.IsNotNull(cell2_1_1);
-            Assert.AreEqual("value 2_1_1", cell2_1_1.StringCellValue);
+            ClassicAssert.IsNotNull(cell2_1_1);
+            ClassicAssert.AreEqual("value 2_1_1", cell2_1_1.StringCellValue);
             row2_2 = sheet2.GetRow(2);
-            Assert.IsNotNull(row2_2);
+            ClassicAssert.IsNotNull(row2_2);
             cell2_2_1 = row2_2.GetCell(1);
-            Assert.IsNotNull(cell2_2_1);
-            Assert.AreEqual("value 2_2_1", cell2_2_1.StringCellValue);
+            ClassicAssert.IsNotNull(cell2_2_1);
+            ClassicAssert.AreEqual("value 2_2_1", cell2_2_1.StringCellValue);
             // Verify sheet 3
             sheet3 = xssfWb3.GetSheetAt(2);
-            Assert.AreEqual("S3", sheet3.SheetName);
-            Assert.AreEqual(1, sheet3.PhysicalNumberOfRows);
+            ClassicAssert.AreEqual("S3", sheet3.SheetName);
+            ClassicAssert.AreEqual(1, sheet3.PhysicalNumberOfRows);
             row3_1 = sheet3.GetRow(1);
-            Assert.IsNotNull(row3_1);
+            ClassicAssert.IsNotNull(row3_1);
             cell3_1_1 = row3_1.GetCell(1);
-            Assert.IsNotNull(cell3_1_1);
-            Assert.AreEqual("value 3_1_1", cell3_1_1.StringCellValue);
+            ClassicAssert.IsNotNull(cell3_1_1);
+            ClassicAssert.AreEqual("value 3_1_1", cell3_1_1.StringCellValue);
 
             xssfWb2.Close();
             xssfWb3.Close();
@@ -231,96 +228,98 @@ namespace TestCases.XSSF.Streaming
         [Test]
         public void SheetdataWriter()
         {
-            SXSSFWorkbook wb = new SXSSFWorkbook();
-            SXSSFSheet sh = wb.CreateSheet() as SXSSFSheet;
-            SheetDataWriter wr = sh.SheetDataWriter;
-            Assert.IsTrue(wr.GetType() == typeof(SheetDataWriter));
-            FileInfo tmp = wr.TempFileInfo;
-            Assert.IsTrue(tmp.Name.StartsWith("poi-sxssf-sheet"));
-            Assert.IsTrue(tmp.Name.EndsWith(".xml"));
-            Assert.IsTrue(wb.Dispose());
-            wb.Close();
+            using(SXSSFWorkbook wb = new SXSSFWorkbook())
+            {
+                SXSSFSheet sh = wb.CreateSheet() as SXSSFSheet;
+                SheetDataWriter wr = sh.SheetDataWriter;
+                ClassicAssert.IsTrue(wr.GetType() == typeof(SheetDataWriter));
+                FileInfo tmp = wr.TempFileInfo;
+                ClassicAssert.IsTrue(tmp.Name.StartsWith("poi-sxssf-sheet"));
+                ClassicAssert.IsTrue(tmp.Name.EndsWith(".xml"));
+            }
 
-            wb = new SXSSFWorkbook();
-            wb.CompressTempFiles = (/*setter*/true);
-            sh = wb.CreateSheet() as SXSSFSheet;
-            wr = sh.SheetDataWriter;
-            Assert.IsTrue(wr.GetType() == typeof(GZIPSheetDataWriter));
-            tmp = wr.TempFileInfo;
-            Assert.IsTrue(tmp.Name.StartsWith("poi-sxssf-sheet-xml"));
-            Assert.IsTrue(tmp.Name.EndsWith(".gz"));
-            Assert.IsTrue(wb.Dispose());
-            wb.Close();
+            using(var wb2 = new SXSSFWorkbook())
+            {
+                wb2.CompressTempFiles = (/*setter*/true);
+                var sh2 = wb2.CreateSheet() as SXSSFSheet;
+                var wr2 = sh2.SheetDataWriter;
+                ClassicAssert.IsTrue(wr2.GetType() == typeof(GZIPSheetDataWriter));
+                var tmp2 = wr2.TempFileInfo;
+                ClassicAssert.IsTrue(tmp2.Name.StartsWith("poi-sxssf-sheet-xml"));
+                ClassicAssert.IsTrue(tmp2.Name.EndsWith(".gz"));
+            }
 
             //Test escaping of Unicode control characters
-            wb = new SXSSFWorkbook();
-            wb.CreateSheet("S1").CreateRow(0).CreateCell(0).SetCellValue("value\u0019");
-            XSSFWorkbook xssfWorkbook = SXSSFITestDataProvider.instance.WriteOutAndReadBack(wb) as XSSFWorkbook;
-            ICell cell = xssfWorkbook.GetSheet("S1").GetRow(0).GetCell(0);
-            Assert.AreEqual("value?", cell.StringCellValue);
-
-            Assert.IsTrue(wb.Dispose());
-            wb.Close();
-            xssfWorkbook.Close();
+            using(var wb3 = new SXSSFWorkbook())
+            {
+                wb3.CreateSheet("S1").CreateRow(0).CreateCell(0).SetCellValue("value\u0019");
+                using(var xssfWorkbook = SXSSFITestDataProvider.instance.WriteOutAndReadBack(wb3) as XSSFWorkbook)
+                {
+                    ICell cell = xssfWorkbook.GetSheet("S1").GetRow(0).GetCell(0);
+                    ClassicAssert.AreEqual("value?", cell.StringCellValue);
+                }
+            }
+            ;
         }
 
         [Test]
         public void GzipSheetdataWriter()
         {
-            SXSSFWorkbook wb = new SXSSFWorkbook();
-            wb.CompressTempFiles = true;
-            int rowNum = 1000;
-            int sheetNum = 5;
-            for (int i = 0; i < sheetNum; i++)
+            using(var wb = new SXSSFWorkbook())
             {
-                ISheet sh = wb.CreateSheet("sheet" + i);
-                for (int j = 0; j < rowNum; j++)
+                wb.CompressTempFiles = true;
+                int rowNum = 1000;
+                int sheetNum = 5;
+                for(int i = 0; i < sheetNum; i++)
                 {
-                    IRow row = sh.CreateRow(j);
-                    ICell cell1 = row.CreateCell(0);
-                    cell1.SetCellValue(new CellReference(cell1).FormatAsString());
+                    ISheet sh = wb.CreateSheet("sheet" + i);
+                    for(int j = 0; j < rowNum; j++)
+                    {
+                        IRow row = sh.CreateRow(j);
+                        ICell cell1 = row.CreateCell(0);
+                        cell1.SetCellValue(new CellReference(cell1).FormatAsString());
 
-                    ICell cell2 = row.CreateCell(1);
-                    cell2.SetCellValue(i);
+                        ICell cell2 = row.CreateCell(1);
+                        cell2.SetCellValue(i);
 
-                    ICell cell3 = row.CreateCell(2);
-                    cell3.SetCellValue(j);
+                        ICell cell3 = row.CreateCell(2);
+                        cell3.SetCellValue(j);
+                    }
+                }
+
+
+                using(XSSFWorkbook xwb = SXSSFITestDataProvider.instance.WriteOutAndReadBack(wb) as XSSFWorkbook)
+                {
+                    for(int i = 0; i < sheetNum; i++)
+                    {
+                        ISheet sh = xwb.GetSheetAt(i);
+                        ClassicAssert.AreEqual("sheet" + i, sh.SheetName);
+                        for(int j = 0; j < rowNum; j++)
+                        {
+                            IRow row = sh.GetRow(j);
+                            ClassicAssert.IsNotNull(row, "row[" + j + "]");
+                            ICell cell1 = row.GetCell(0);
+                            ClassicAssert.AreEqual(new CellReference(cell1).FormatAsString(), cell1.StringCellValue);
+
+                            ICell cell2 = row.GetCell(1);
+                            ClassicAssert.AreEqual(i, (int) cell2.NumericCellValue);
+
+                            ICell cell3 = row.GetCell(2);
+                            ClassicAssert.AreEqual(j, (int) cell3.NumericCellValue);
+                        }
+                    }
                 }
             }
-
-            XSSFWorkbook xwb = SXSSFITestDataProvider.instance.WriteOutAndReadBack(wb) as XSSFWorkbook;
-            for (int i = 0; i < sheetNum; i++)
-            {
-                ISheet sh = xwb.GetSheetAt(i);
-                Assert.AreEqual("sheet" + i, sh.SheetName);
-                for (int j = 0; j < rowNum; j++)
-                {
-                    IRow row = sh.GetRow(j);
-                    Assert.IsNotNull(row, "row[" + j + "]");
-                    ICell cell1 = row.GetCell(0);
-                    Assert.AreEqual(new CellReference(cell1).FormatAsString(), cell1.StringCellValue);
-
-                    ICell cell2 = row.GetCell(1);
-                    Assert.AreEqual(i, (int)cell2.NumericCellValue);
-
-                    ICell cell3 = row.GetCell(2);
-                    Assert.AreEqual(j, (int)cell3.NumericCellValue);
-                }
-            }
-
-            Assert.IsTrue(wb.Dispose());
-            xwb.Close();
-            wb.Close();
         }
 
         protected static void assertWorkbookDispose(SXSSFWorkbook wb)
         {
             int rowNum = 1000;
             int sheetNum = 5;
-            for (int i = 0; i < sheetNum; i++)
+            for(int i = 0; i < sheetNum; i++)
             {
                 ISheet sh = wb.CreateSheet("sheet" + i);
-                for (int j = 0; j < rowNum; j++)
+                for(int j = 0; j < rowNum; j++)
                 {
                     IRow row = sh.CreateRow(j);
                     ICell cell1 = row.CreateCell(0);
@@ -334,18 +333,18 @@ namespace TestCases.XSSF.Streaming
                 }
             }
 
-            foreach (ISheet sheet in wb)
+            foreach(ISheet sheet in wb)
             {
                 SXSSFSheet sxSheet = (SXSSFSheet)sheet;
-                Assert.IsTrue(sxSheet.SheetDataWriter.TempFileInfo.Exists);
+                ClassicAssert.IsTrue(sxSheet.SheetDataWriter.TempFileInfo.Exists);
             }
 
-            Assert.IsTrue(wb.Dispose());
+            ClassicAssert.IsTrue(wb.Dispose());
 
-            foreach (ISheet sheet in wb)
+            foreach(ISheet sheet in wb)
             {
                 SXSSFSheet sxSheet = (SXSSFSheet)sheet;
-                Assert.IsFalse(sxSheet.SheetDataWriter.TempFileInfo.Exists);
+                ClassicAssert.IsFalse(sxSheet.SheetDataWriter.TempFileInfo.Exists);
             }
         }
 
@@ -384,14 +383,14 @@ namespace TestCases.XSSF.Streaming
         {
             FileInfo out1 = new FileInfo("Test.xlsx");
             out1.Delete();
-            for (int i = 0; i < 2; i++)
+            for(int i = 0; i < 2; i++)
             {
                 Console.WriteLine("Iteration " + i);
                 SXSSFWorkbook wb;
-                if (out1.Exists)
+                if(out1.Exists)
                 {
                     wb = new SXSSFWorkbook(
-                            (XSSFWorkbook)WorkbookFactory.Create(out1.FullName));
+                            (XSSFWorkbook) WorkbookFactory.Create(out1.FullName));
                 }
                 else
                 {
@@ -401,7 +400,7 @@ namespace TestCases.XSSF.Streaming
                 try
                 {
                     FileStream outSteam = new FileStream(out1.FullName, FileMode.Create, FileAccess.ReadWrite);
-                    if (i == 0)
+                    if(i == 0)
                     {
                         populateWorkbook(wb);
                     }
@@ -416,12 +415,12 @@ namespace TestCases.XSSF.Streaming
                     }
 
                     wb.Write(outSteam);
-                    // Assert.IsTrue(wb.Dispose());
+                    // ClassicAssert.IsTrue(wb.Dispose());
                     outSteam.Close();
                 }
                 finally
                 {
-                    Assert.IsTrue(wb.Dispose());
+                    ClassicAssert.IsTrue(wb.Dispose());
                 }
                 wb.Close();
             }
@@ -431,10 +430,10 @@ namespace TestCases.XSSF.Streaming
         private static void populateWorkbook(IWorkbook wb)
         {
             ISheet sh = wb.CreateSheet();
-            for (int rownum = 0; rownum < 100; rownum++)
+            for(int rownum = 0; rownum < 100; rownum++)
             {
                 IRow row = sh.CreateRow(rownum);
-                for (int cellnum = 0; cellnum < 10; cellnum++)
+                for(int cellnum = 0; cellnum < 10; cellnum++)
                 {
                     ICell cell = row.CreateCell(cellnum);
                     String Address = new CellReference(cell).FormatAsString();
@@ -445,7 +444,7 @@ namespace TestCases.XSSF.Streaming
 
         private static void saveTwice(IWorkbook wb)
         {
-            for (int i = 0; i < 2; i++)
+            for(int i = 0; i < 2; i++)
             {
                 try
                 {
@@ -453,7 +452,7 @@ namespace TestCases.XSSF.Streaming
                     wb.Write(out1, false);
                     out1.Close();
                 }
-                catch (Exception e)
+                catch(Exception e)
                 {
                     throw new Exception("ERROR: failed on " + (i + 1)
                             + "th time calling " + wb.GetType().Name
@@ -469,19 +468,19 @@ namespace TestCases.XSSF.Streaming
             XSSFWorkbook workBook = XSSFTestDataSamples.OpenSampleWorkbook("sample.xlsx");
             SXSSFWorkbook streamingWorkBook = new SXSSFWorkbook(workBook, 10);
             ISheet sheet = streamingWorkBook.GetSheet("Sheet1");
-            for (int rowNum = 10; rowNum < 1000000; rowNum++)
+            for(int rowNum = 10; rowNum < 1000000; rowNum++)
             {
                 IRow row = sheet.CreateRow(rowNum);
-                for (int cellNum = 0; cellNum < 700; cellNum++)
+                for(int cellNum = 0; cellNum < 700; cellNum++)
                 {
                     ICell cell = row.CreateCell(cellNum);
                     cell.SetCellValue("somEvalue");
                 }
 
-                if (rowNum % 100 == 0)
+                if(rowNum % 100 == 0)
                 {
                     Console.Write(".");
-                    if (rowNum % 10000 == 0)
+                    if(rowNum % 10000 == 0)
                     {
                         Console.WriteLine(rowNum);
                     }
@@ -525,11 +524,11 @@ namespace TestCases.XSSF.Streaming
             }
             finally
             {
-                if (xwb != null)
+                if(xwb != null)
                 {
                     xwb.Close();
                 }
-                if (wb != null)
+                if(wb != null)
                 {
                     wb.Close();
                 }
@@ -555,10 +554,10 @@ namespace TestCases.XSSF.Streaming
             char[] useless = new char[32767];
             Arrays.Fill(useless, ' ');
 
-            for (int row = 0; row < 1; row++)
+            for(int row = 0; row < 1; row++)
             {
                 IRow r = s.CreateRow(row);
-                for (int col = 0; col < 10; col++)
+                for(int col = 0; col < 10; col++)
                 {
                     char[] prefix = HexDump.ToHex(row * 1000 + col).ToCharArray();
                     Arrays.Fill(useless, 0, 10, ' ');
@@ -593,14 +592,14 @@ namespace TestCases.XSSF.Streaming
 
             String sheetName = "Test SXSSF";
             ISheet s = wb.CreateSheet(sheetName);
-            for (int i = 0; i < 10; i++)
+            for(int i = 0; i < 10; i++)
             {
                 IRow r = s.CreateRow(i);
                 r.CreateCell(0).SetCellValue(true);
                 r.CreateCell(1).SetCellValue(2.4);
                 r.CreateCell(2).SetCellValue("Test Row " + i);
             }
-            Assert.AreEqual(10, s.LastRowNum);
+            ClassicAssert.AreEqual(10, s.LastRowNum);
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             wb.Write(bos);
@@ -609,9 +608,9 @@ namespace TestCases.XSSF.Streaming
 
             xssf = new XSSFWorkbook(new ByteArrayInputStream(bos.ToByteArray()));
             s = xssf.GetSheet(sheetName);
-            Assert.AreEqual(10, s.LastRowNum);
-            Assert.AreEqual(true, s.GetRow(0).GetCell(0).BooleanCellValue);
-            Assert.AreEqual("Test Row 9", s.GetRow(9).GetCell(2).StringCellValue);
+            ClassicAssert.AreEqual(10, s.LastRowNum);
+            ClassicAssert.AreEqual(true, s.GetRow(0).GetCell(0).BooleanCellValue);
+            ClassicAssert.AreEqual("Test Row 9", s.GetRow(9).GetCell(2).StringCellValue);
         }
 
     }

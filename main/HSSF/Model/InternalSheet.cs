@@ -136,9 +136,9 @@ namespace NPOI.HSSF.Model
             for (int i = 0; i < this.records.Count; i++)
             {
                 RecordBase rb = (RecordBase)this.records[i];
-                if (rb is RecordAggregate)
+                if (rb is RecordAggregate aggregate)
                 {
-                    ((RecordAggregate)rb).VisitContainedRecords(new RecordCloner(clonedRecords));
+                    aggregate.VisitContainedRecords(new RecordCloner(clonedRecords));
                     continue;
                 }
 
@@ -177,9 +177,9 @@ namespace NPOI.HSSF.Model
             return new InternalSheet(rs);
         }
 
-        private class RecordCloner : RecordVisitor
+        private sealed class RecordCloner : RecordVisitor
         {
-            private IList<Record> _destList;
+            private readonly IList<Record> _destList;
 
             public RecordCloner(IList<Record> destList)
             {
@@ -450,9 +450,9 @@ namespace NPOI.HSSF.Model
             //    log.Log(POILogger.DEBUG, "sheet createSheet (existing file) exited");
 
         }
-        private class RecordVisitor1:RecordVisitor
+        private sealed class RecordVisitor1:RecordVisitor
         {
-            List<RecordBase> _records;
+            readonly List<RecordBase> _records;
             public RecordVisitor1(List<RecordBase> recs)
             {
                 _records=recs;
@@ -1220,7 +1220,7 @@ namespace NPOI.HSSF.Model
          * @return default column width
          */
 
-        public int DefaultColumnWidth
+        public double DefaultColumnWidth
         {
             get { return defaultcolwidth.ColWidth; }
             set { defaultcolwidth.ColWidth = (short)value; }
@@ -1292,7 +1292,7 @@ namespace NPOI.HSSF.Model
          * @param column - the column number
          * @param width (in Units of 1/256th of a Char width)
          */
-        public void SetColumnWidth(int column, int width)
+        public void SetColumnWidth(int column, double width)
         {
             if (width > 255 * 256) 
                    throw new ArgumentException("The maximum column width for an individual cell is 255 characters.");
@@ -1332,12 +1332,12 @@ namespace NPOI.HSSF.Model
             SetColumn(column, (short)styleIndex, null, null, null, null);
         }
 
-        public void SetColumn(int column, int width, int level, bool hidden, bool collapsed)
+        public void SetColumn(int column, double width, int level, bool hidden, bool collapsed)
         {
             _columnInfos.SetColumn(column, 0, width, level, hidden, collapsed);
         }
 
-        public void SetColumn(int column, short? xfStyle, int? width, int? level, bool? hidden, bool? collapsed)
+        public void SetColumn(int column, short? xfStyle, double? width, int? level, bool? hidden, bool? collapsed)
         {
             _columnInfos.SetColumn(column, xfStyle, width, level, hidden, collapsed);
         }
@@ -1648,11 +1648,11 @@ namespace NPOI.HSSF.Model
             for (int i = 0; i < max; i++)
             {
                 Object rb = records[i];
-                if (!(rb is Record))
+                if (rb is not Record record)
                 {
                     continue;
                 }
-                Record record = (Record)rb;
+
                 if (record.Sid == sid)
                 {
                     return i;
@@ -2182,17 +2182,16 @@ namespace NPOI.HSSF.Model
             for (int k = 0; k < records.Count; k++)
             {
                 RecordBase record = records[k];
-                if (record is RecordAggregate)
+                if (record is RecordAggregate agg)
                 {
-                    RecordAggregate agg = (RecordAggregate)record;
                     agg.VisitContainedRecords(ptv);
                     sheetOffset += agg.RecordSize;
                 }
                 else
                 {
-                    if (record is DefaultColWidthRecord)
+                    if (record is DefaultColWidthRecord widthRecord)
                     {
-                        ((DefaultColWidthRecord)record).offsetForFilePointer = sheetOffset;
+                        widthRecord.offsetForFilePointer = sheetOffset;
                     }
                     ptv.VisitRecord((Record)record);
                     sheetOffset += record.RecordSize;
@@ -2316,9 +2315,9 @@ namespace NPOI.HSSF.Model
             for (int i = records.Count - 1; i >= 0; i--)
             {
                 RecordBase rec = records[i];
-                if (rec is NoteRecord)
+                if (rec is NoteRecord record)
                 {
-                    temp.Add((NoteRecord)rec);
+                    temp.Add(record);
                 }
             }
             if (temp.Count < 1)
@@ -2339,7 +2338,7 @@ namespace NPOI.HSSF.Model
 
     public class UnsupportedBOFType : RecordFormatException
     {
-        private BOFRecordType type;
+        private readonly BOFRecordType type;
         public UnsupportedBOFType(BOFRecordType type)
             : base("BOF not of a supported type, found " + type)
         {

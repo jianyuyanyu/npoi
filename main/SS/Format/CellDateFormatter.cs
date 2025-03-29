@@ -33,7 +33,7 @@ namespace NPOI.SS.Format
         private bool amPmUpper;
         private bool ShowM;
         private bool ShowAmPm;
-        private FormatBase dateFmt;
+        private readonly FormatBase dateFmt;
         private String sFmt;
         private int millisecondPartLength = 0;
 
@@ -50,9 +50,9 @@ namespace NPOI.SS.Format
             EXCEL_EPOCH_TIME = c.TimeOfDay;
         }
 
-        private class DatePartHandler : CellFormatPart.IPartHandler
+        private sealed class DatePartHandler : CellFormatPart.IPartHandler
         {
-            private CellDateFormatter _formatter;
+            private readonly CellDateFormatter _formatter;
             private int mStart = -1;
             private int mLen;
             private int hStart = -1;

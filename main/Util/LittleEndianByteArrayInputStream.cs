@@ -20,13 +20,13 @@ namespace NPOI.Util
     using System;
 
     /// <summary>
-    /// Adapts a plain byte array to <see cref="T:NPOI.Util.ILittleEndianInput"/>
+    /// Adapts a plain byte array to <see cref="NPOI.Util.ILittleEndianInput"/>
     /// </summary>
     /// <remarks>@author Josh Micich</remarks>
     public class LittleEndianByteArrayInputStream : ILittleEndianInput
     {
-        private byte[] _buf;
-        private int _endIndex;
+        private readonly byte[] _buf;
+        private readonly int _endIndex;
         private int _ReadIndex;
 
         public LittleEndianByteArrayInputStream(byte[] buf, int startOffset, int maxReadLen)

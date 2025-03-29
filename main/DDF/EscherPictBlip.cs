@@ -84,11 +84,11 @@ namespace NPOI.DDF
             // 0xFE means no compression
             if (field_6_fCompression == 0)
             {
-                field_pictureData = InflatePictureData(raw_pictureData);
+                PictureData = InflatePictureData(raw_pictureData);
             }
             else
             {
-                field_pictureData = raw_pictureData;
+                PictureData = raw_pictureData;
             }
 
             return bytesAfterHeader + HEADER_SIZE;
@@ -259,40 +259,28 @@ namespace NPOI.DDF
         // filtering is always 254 according to available docs, so no point giving it a Setter method.
 
         /// <summary>
-        /// Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+        /// Returns a <see cref="System.String"/> that represents the current <see cref="System.Object"/>.
         /// </summary>
         /// <returns>
-        /// A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+        /// A <see cref="System.String"/> that represents the current <see cref="System.Object"/>.
         /// </returns>
         public override String ToString()
         {
             String nl = Environment.NewLine;
 
-            String extraData;
-            using (MemoryStream b = new MemoryStream())
-            {
-                try
-                {
-                    HexDump.Dump(this.field_pictureData, 0, b, 0);
-                    extraData = b.ToString();
-                }
-                catch (Exception e)
-                {
-                    extraData = e.ToString();
-                }
-                return GetType().Name + ":" + nl +
-                        "  RecordId: 0x" + HexDump.ToHex(RecordId) + nl +
-                        "  Version: 0x" + HexDump.ToHex(Version) + '\n' +
-                        "  Instance: 0x" + HexDump.ToHex(Instance) + '\n' +
-                        "  UID: 0x" + HexDump.ToHex(field_1_UID) + nl +
-                        "  Uncompressed Size: " + HexDump.ToHex(field_2_cb) + nl +
-                        "  Bounds: " + Bounds + nl +
-                        "  Size in EMU: " + SizeEMU + nl +
-                        "  Compressed Size: " + HexDump.ToHex(field_5_cbSave) + nl +
-                        "  Compression: " + HexDump.ToHex(field_6_fCompression) + nl +
-                        "  Filter: " + HexDump.ToHex(field_7_fFilter) + nl +
-                        "  Extra Data:" + nl + extraData;
-            }
+            String extraData = HexDump.ToHex(PictureData, 32);
+            return GetType().Name + ":" + nl +
+                    "  RecordId: 0x" + HexDump.ToHex(RecordId) + nl +
+                    "  Version: 0x" + HexDump.ToHex(Version) + '\n' +
+                    "  Instance: 0x" + HexDump.ToHex(Instance) + '\n' +
+                    "  UID: 0x" + HexDump.ToHex(field_1_UID) + nl +
+                    "  Uncompressed Size: " + HexDump.ToHex(field_2_cb) + nl +
+                    "  Bounds: " + Bounds + nl +
+                    "  Size in EMU: " + SizeEMU + nl +
+                    "  Compressed Size: " + HexDump.ToHex(field_5_cbSave) + nl +
+                    "  Compression: " + HexDump.ToHex(field_6_fCompression) + nl +
+                    "  Filter: " + HexDump.ToHex(field_7_fFilter) + nl +
+                    "  Extra Data:" + nl + extraData;
         }
 
         public override String ToXml(String tab)

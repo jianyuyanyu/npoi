@@ -26,7 +26,7 @@ namespace NPOI.SS.Formula.Atp
      * 
      * @author jfaenomoto@gmail.com
      */
-    internal class ArgumentsEvaluator
+    internal sealed class ArgumentsEvaluator
     {
 
         public static ArgumentsEvaluator instance = new ArgumentsEvaluator();
@@ -49,9 +49,9 @@ namespace NPOI.SS.Formula.Atp
         {
             ValueEval ve = OperandResolver.GetSingleValue(arg, srcCellRow, (short)srcCellCol);
 
-            if (ve is StringEval)
+            if (ve is StringEval eval)
             {
-                String strVal = ((StringEval)ve).StringValue;
+                String strVal = eval.StringValue;
                 Double dVal = OperandResolver.ParseDouble(strVal);
                 if (!Double.IsNaN(dVal))
                 {
@@ -76,17 +76,16 @@ namespace NPOI.SS.Formula.Atp
         {
             if (arg == null)
             {
-                return new double[0];
+                return Array.Empty<double>();
             }
 
             if (arg is StringEval)
             {
                 return new double[] { EvaluateDateArg(arg, srcCellRow, srcCellCol) };
             }
-            else if (arg is AreaEvalBase)
+            else if (arg is AreaEvalBase area)
             {
                 List<Double> valuesList = new List<Double>();
-                AreaEvalBase area = (AreaEvalBase)arg;
                 for (int i = area.FirstRow; i <= area.LastRow; i++)
                 {
                     for (int j = area.FirstColumn; j <= area.LastColumn; j++)

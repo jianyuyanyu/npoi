@@ -15,13 +15,16 @@
    limitations under the License.
 ==================================================================== */
 
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 using NPOI.SS.UserModel;
 using NPOI.SS.UserModel.Charts;
 using NPOI.XSSF.UserModel;
 
 namespace TestCases.XSSF.UserModel.Charts
 {
+    /**
+     * Tests ChartLegend
+     */
     [TestFixture]
     public class TestXSSFChartLegend
     {
@@ -36,8 +39,11 @@ namespace TestCases.XSSF.UserModel.Charts
             IChartLegend legend = chart.GetOrCreateLegend();
 
             legend.Position = LegendPosition.TopRight;
-            Assert.AreEqual(LegendPosition.TopRight, legend.Position);
+            ClassicAssert.AreEqual(LegendPosition.TopRight, legend.Position);
+
+            wb.Close();
         }
+
         [Test]
         public void Test_setOverlay_defaultChartLegend_expectOverlayInitialValueSetToFalse()
         {
@@ -52,7 +58,9 @@ namespace TestCases.XSSF.UserModel.Charts
             // Act
 
             // Assert
-            Assert.IsFalse(legend.IsOverlay);
+            ClassicAssert.IsFalse(legend.IsOverlay);
+
+            wb.Close();
         }
 
         [Test]
@@ -70,9 +78,9 @@ namespace TestCases.XSSF.UserModel.Charts
             legend.IsOverlay = (/*setter*/true);
 
             // Assert
-            Assert.IsTrue(legend.IsOverlay);
-        }
+            ClassicAssert.IsTrue(legend.IsOverlay);
 
+            wb.Close();
+        }
     }
 }
-

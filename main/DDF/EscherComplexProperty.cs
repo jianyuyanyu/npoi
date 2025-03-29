@@ -32,7 +32,7 @@ namespace NPOI.DDF
     /// </summary>
     public class EscherComplexProperty : EscherProperty
     {
-        protected byte[] _complexData = new byte[0];
+        private byte[] _complexData = Array.Empty<byte>();
 
         /// <summary>
         /// Create a complex property using the property id and a byte array containing the complex
@@ -102,6 +102,17 @@ namespace NPOI.DDF
             get { return _complexData; }
         }
 
+        protected void ResizeComplexData(int newSize, int bytesToKeep)
+        {
+            if (newSize == _complexData.Length)
+            {
+                return;
+            }
+            byte[] newArray = new byte[newSize];
+            Array.Copy(_complexData, 0, newArray, 0, Math.Min(bytesToKeep, newSize));
+            _complexData = newArray;
+        }
+
         /// <summary>
         /// Determine whether this property is equal to another property.
         /// </summary>
@@ -110,9 +121,7 @@ namespace NPOI.DDF
         public override bool Equals(Object o)
         {
             if (this == o) return true;
-            if (o == null || !(o is EscherComplexProperty)) return false;
-
-            EscherComplexProperty escherComplexProperty = (EscherComplexProperty)o;
+            if (o == null || o is not EscherComplexProperty escherComplexProperty) return false;
 
             if (!Arrays.Equals(_complexData, escherComplexProperty._complexData)) return false;
 
@@ -132,7 +141,7 @@ namespace NPOI.DDF
         /// Serves as a hash function for a particular type.
         /// </summary>
         /// <returns>
-        /// A hash code for the current <see cref="T:System.Object"/>.
+        /// A hash code for the current <see cref="System.Object"/>.
         /// </returns>
         public override int GetHashCode()
         {
@@ -140,10 +149,10 @@ namespace NPOI.DDF
         }
 
         /// <summary>
-        /// Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+        /// Returns a <see cref="System.String"/> that represents the current <see cref="System.Object"/>.
         /// </summary>
         /// <returns>
-        /// A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+        /// A <see cref="System.String"/> that represents the current <see cref="System.Object"/>.
         /// </returns>
         public override String ToString()
         {

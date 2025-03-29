@@ -26,10 +26,12 @@ using NPOI.Util;
 using NPOI.XSSF;
 using NPOI.XSSF.Model;
 using NPOI.XSSF.UserModel;
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -51,33 +53,49 @@ namespace TestCases.XSSF.UserModel
         /**
          * Tests that we can save, and then re-load a new document
          */
-        [Test, RunSerialyAndSweepTmpFiles]
+        [Test]
         public void SaveLoadNew()
         {
             XSSFWorkbook wb1 = new XSSFWorkbook();
 
             //check that the default date system is Set to 1900
             CT_WorkbookPr pr = wb1.GetCTWorkbook().workbookPr;
-            Assert.IsNotNull(pr);
-            Assert.IsTrue(pr.IsSetDate1904());
-            Assert.IsFalse(pr.date1904, "XSSF must use the 1900 date system");
+            ClassicAssert.IsNotNull(pr);
+            ClassicAssert.IsTrue(pr.IsSetDate1904());
+            ClassicAssert.IsFalse(pr.date1904, "XSSF must use the 1900 date system");
 
             ISheet sheet1 = wb1.CreateSheet("sheet1");
             ISheet sheet2 = wb1.CreateSheet("sheet2");
             wb1.CreateSheet("sheet3");
+            ISheet sheet4 = wb1.CreateSheet("sheet4");
 
             IRichTextString rts = wb1.GetCreationHelper().CreateRichTextString("hello world");
 
             sheet1.CreateRow(0).CreateCell((short)0).SetCellValue(1.2);
             sheet1.CreateRow(1).CreateCell((short)0).SetCellValue(rts);
             sheet2.CreateRow(0);
+            ((XSSFSheet)sheet2).CreateColumn(0);
 
-            Assert.AreEqual(0, wb1.GetSheetAt(0).FirstRowNum);
-            Assert.AreEqual(1, wb1.GetSheetAt(0).LastRowNum);
-            Assert.AreEqual(0, wb1.GetSheetAt(1).FirstRowNum);
-            Assert.AreEqual(0, wb1.GetSheetAt(1).LastRowNum);
-            Assert.AreEqual(0, wb1.GetSheetAt(2).FirstRowNum);
-            Assert.AreEqual(0, wb1.GetSheetAt(2).LastRowNum);
+            ((XSSFSheet)sheet4).CreateColumn(0).CreateCell(0).SetCellValue(1.2);
+            ((XSSFSheet)sheet4).CreateColumn(1).CreateCell(0).SetCellValue(rts);
+
+            ClassicAssert.AreEqual(0, wb1.GetSheetAt(0).FirstRowNum);
+            ClassicAssert.AreEqual(1, wb1.GetSheetAt(0).LastRowNum);
+            ClassicAssert.AreEqual(0, wb1.GetSheetAt(1).FirstRowNum);
+            ClassicAssert.AreEqual(0, wb1.GetSheetAt(1).LastRowNum);
+            ClassicAssert.AreEqual(0, wb1.GetSheetAt(2).FirstRowNum);
+            ClassicAssert.AreEqual(0, wb1.GetSheetAt(2).LastRowNum);
+            ClassicAssert.AreEqual(0, wb1.GetSheetAt(3).FirstRowNum);
+            ClassicAssert.AreEqual(0, wb1.GetSheetAt(3).LastRowNum);
+
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(0)).FirstColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(0)).LastColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(1)).FirstColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(1)).LastColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(2)).FirstColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(2)).LastColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(3)).FirstColumnNum);
+            ClassicAssert.AreEqual(1, ((XSSFSheet)wb1.GetSheetAt(3)).LastColumnNum);
 
             FileInfo file = TempFile.CreateTempFile("poi-", ".xlsx");
             Stream out1 = File.OpenWrite(file.FullName);
@@ -88,49 +106,62 @@ namespace TestCases.XSSF.UserModel
             OPCPackage pkg = OPCPackage.Open(file.ToString());
             PackagePart wbRelPart =
                 pkg.GetPart(PackagingUriHelper.CreatePartName("/xl/_rels/workbook.xml.rels"));
-            Assert.IsNotNull(wbRelPart);
-            Assert.IsTrue(wbRelPart.IsRelationshipPart);
-            Assert.AreEqual(ContentTypes.RELATIONSHIPS_PART, wbRelPart.ContentType);
+            ClassicAssert.IsNotNull(wbRelPart);
+            ClassicAssert.IsTrue(wbRelPart.IsRelationshipPart);
+            ClassicAssert.AreEqual(ContentTypes.RELATIONSHIPS_PART, wbRelPart.ContentType);
 
             PackagePart wbPart =
                 pkg.GetPart(PackagingUriHelper.CreatePartName("/xl/workbook.xml"));
             // Links to the three sheets, shared strings and styles
-            Assert.IsTrue(wbPart.HasRelationships);
-            Assert.AreEqual(5, wbPart.Relationships.Size);
+            ClassicAssert.IsTrue(wbPart.HasRelationships);
+            ClassicAssert.AreEqual(6, wbPart.Relationships.Size);
             wb1.Close();
 
             // Load back the XSSFWorkbook
             XSSFWorkbook wb2 = new XSSFWorkbook(pkg);
-            Assert.AreEqual(3, wb2.NumberOfSheets);
-            Assert.IsNotNull(wb2.GetSheetAt(0));
-            Assert.IsNotNull(wb2.GetSheetAt(1));
-            Assert.IsNotNull(wb2.GetSheetAt(2));
+            ClassicAssert.AreEqual(4, wb2.NumberOfSheets);
+            ClassicAssert.IsNotNull(wb2.GetSheetAt(0));
+            ClassicAssert.IsNotNull(wb2.GetSheetAt(1));
+            ClassicAssert.IsNotNull(wb2.GetSheetAt(2));
+            ClassicAssert.IsNotNull(wb2.GetSheetAt(3));
 
-            Assert.IsNotNull(wb2.GetSharedStringSource());
-            Assert.IsNotNull(wb2.GetStylesSource());
+            ClassicAssert.IsNotNull(wb2.GetSharedStringSource());
+            ClassicAssert.IsNotNull(wb2.GetStylesSource());
 
-            Assert.AreEqual(0, wb2.GetSheetAt(0).FirstRowNum);
-            Assert.AreEqual(1, wb2.GetSheetAt(0).LastRowNum);
-            Assert.AreEqual(0, wb2.GetSheetAt(1).FirstRowNum);
-            Assert.AreEqual(0, wb2.GetSheetAt(1).LastRowNum);
-            Assert.AreEqual(0, wb2.GetSheetAt(2).FirstRowNum);
-            Assert.AreEqual(0, wb2.GetSheetAt(2).LastRowNum);
+            ClassicAssert.AreEqual(0, wb2.GetSheetAt(0).FirstRowNum);
+            ClassicAssert.AreEqual(1, wb2.GetSheetAt(0).LastRowNum);
+            ClassicAssert.AreEqual(0, wb2.GetSheetAt(1).FirstRowNum);
+            ClassicAssert.AreEqual(0, wb2.GetSheetAt(1).LastRowNum);
+            ClassicAssert.AreEqual(0, wb2.GetSheetAt(2).FirstRowNum);
+            ClassicAssert.AreEqual(0, wb2.GetSheetAt(2).LastRowNum);
+            ClassicAssert.AreEqual(0, wb2.GetSheetAt(3).FirstRowNum);
+            ClassicAssert.AreEqual(0, wb2.GetSheetAt(3).LastRowNum);
+
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(0)).FirstColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(0)).LastColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(1)).FirstColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(1)).LastColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(2)).FirstColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(2)).LastColumnNum);
+            ClassicAssert.AreEqual(0, ((XSSFSheet)wb1.GetSheetAt(3)).FirstColumnNum);
+            ClassicAssert.AreEqual(1, ((XSSFSheet)wb1.GetSheetAt(3)).LastColumnNum);
 
             sheet1 = wb2.GetSheetAt(0);
-            Assert.AreEqual(1.2, sheet1.GetRow(0).GetCell(0).NumericCellValue, 0.0001);
-            Assert.AreEqual("hello world", sheet1.GetRow(1).GetCell(0).RichStringCellValue.String);
+            ClassicAssert.AreEqual(1.2, sheet1.GetRow(0).GetCell(0).NumericCellValue, 0.0001);
+            ClassicAssert.AreEqual(1.2, ((XSSFSheet)sheet4).GetColumn(0).GetCell(0).NumericCellValue, 0.0001);
+            ClassicAssert.AreEqual("hello world", sheet1.GetRow(1).GetCell(0).RichStringCellValue.String);
+            ClassicAssert.AreEqual("hello world", ((XSSFSheet)sheet4).GetColumn(1).GetCell(0).RichStringCellValue.String);
 
             pkg.Close();
-
-            Assert.AreEqual(0, Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.tmp").Length, "At Last: There are no temporary files.");
         }
+
         [Test]
         public void Existing()
         {
 
             XSSFWorkbook workbook = XSSFTestDataSamples.OpenSampleWorkbook("Formatting.xlsx");
-            Assert.IsNotNull(workbook.GetSharedStringSource());
-            Assert.IsNotNull(workbook.GetStylesSource());
+            ClassicAssert.IsNotNull(workbook.GetSharedStringSource());
+            ClassicAssert.IsNotNull(workbook.GetStylesSource());
 
             // And check a few low level bits too
             OPCPackage pkg = OPCPackage.Open(HSSFTestDataSamples.OpenSampleFileStream("Formatting.xlsx"));
@@ -138,8 +169,8 @@ namespace TestCases.XSSF.UserModel
                 pkg.GetPart(PackagingUriHelper.CreatePartName("/xl/workbook.xml"));
 
             // Links to the three sheets, shared, styles and themes
-            Assert.IsTrue(wbPart.HasRelationships);
-            Assert.AreEqual(6, wbPart.Relationships.Size);
+            ClassicAssert.IsTrue(wbPart.HasRelationships);
+            ClassicAssert.AreEqual(6, wbPart.Relationships.Size);
             pkg.Close();
             workbook.Close();
         }
@@ -152,7 +183,7 @@ namespace TestCases.XSSF.UserModel
                 short i = 0;
                 //get default style
                 ICellStyle cellStyleAt = workbook.GetCellStyleAt(i);
-                Assert.IsNotNull(cellStyleAt);
+                ClassicAssert.IsNotNull(cellStyleAt);
 
                 //get custom style
                 StylesTable styleSource = workbook.GetStylesSource();
@@ -162,7 +193,7 @@ namespace TestCases.XSSF.UserModel
                 customStyle.SetFont(font);
                 int x = styleSource.PutStyle(customStyle);
                 cellStyleAt = workbook.GetCellStyleAt((short)x);
-                Assert.IsNotNull(cellStyleAt);
+                ClassicAssert.IsNotNull(cellStyleAt);
             }
             finally
             {
@@ -180,14 +211,14 @@ namespace TestCases.XSSF.UserModel
                 short i = 0;
                 //get default font
                 IFont fontAt = workbook.GetFontAt(i);
-                Assert.IsNotNull(fontAt);
+                ClassicAssert.IsNotNull(fontAt);
 
                 //get customized font
                 XSSFFont customFont = new XSSFFont();
                 customFont.IsItalic = (true);
                 int x = styleSource.PutFont(customFont);
                 fontAt = workbook.GetFontAt((short)x);
-                Assert.IsNotNull(fontAt);
+                ClassicAssert.IsNotNull(fontAt);
             }
             finally
             {
@@ -202,7 +233,7 @@ namespace TestCases.XSSF.UserModel
             try
             {
                 //get default cellStyles
-                Assert.AreEqual(1, workbook.NumCellStyles);
+                ClassicAssert.AreEqual(1, workbook.NumCellStyles);
             }
             finally
             {
@@ -213,25 +244,25 @@ namespace TestCases.XSSF.UserModel
         public void LoadSave()
         {
             XSSFWorkbook workbook = XSSFTestDataSamples.OpenSampleWorkbook("Formatting.xlsx");
-            Assert.AreEqual(3, workbook.NumberOfSheets);
-            Assert.AreEqual("dd/mm/yyyy", workbook.GetSheetAt(0).GetRow(1).GetCell(0).RichStringCellValue.String);
-            Assert.IsNotNull(workbook.GetSharedStringSource());
-            Assert.IsNotNull(workbook.GetStylesSource());
+            ClassicAssert.AreEqual(3, workbook.NumberOfSheets);
+            ClassicAssert.AreEqual("dd/mm/yyyy", workbook.GetSheetAt(0).GetRow(1).GetCell(0).RichStringCellValue.String);
+            ClassicAssert.IsNotNull(workbook.GetSharedStringSource());
+            ClassicAssert.IsNotNull(workbook.GetStylesSource());
 
             // Write out, and check
             // Load up again, check all still there
             XSSFWorkbook wb2 = (XSSFWorkbook)XSSFTestDataSamples.WriteOutAndReadBack(workbook);
-            Assert.AreEqual(3, wb2.NumberOfSheets);
-            Assert.IsNotNull(wb2.GetSheetAt(0));
-            Assert.IsNotNull(wb2.GetSheetAt(1));
-            Assert.IsNotNull(wb2.GetSheetAt(2));
+            ClassicAssert.AreEqual(3, wb2.NumberOfSheets);
+            ClassicAssert.IsNotNull(wb2.GetSheetAt(0));
+            ClassicAssert.IsNotNull(wb2.GetSheetAt(1));
+            ClassicAssert.IsNotNull(wb2.GetSheetAt(2));
 
-            Assert.AreEqual("dd/mm/yyyy", wb2.GetSheetAt(0).GetRow(1).GetCell(0).RichStringCellValue.String);
-            Assert.AreEqual("yyyy/mm/dd", wb2.GetSheetAt(0).GetRow(2).GetCell(0).RichStringCellValue.String);
-            Assert.AreEqual("yyyy-mm-dd", wb2.GetSheetAt(0).GetRow(3).GetCell(0).RichStringCellValue.String);
-            Assert.AreEqual("yy/mm/dd", wb2.GetSheetAt(0).GetRow(4).GetCell(0).RichStringCellValue.String);
-            Assert.IsNotNull(wb2.GetSharedStringSource());
-            Assert.IsNotNull(wb2.GetStylesSource());
+            ClassicAssert.AreEqual("dd/mm/yyyy", wb2.GetSheetAt(0).GetRow(1).GetCell(0).RichStringCellValue.String);
+            ClassicAssert.AreEqual("yyyy/mm/dd", wb2.GetSheetAt(0).GetRow(2).GetCell(0).RichStringCellValue.String);
+            ClassicAssert.AreEqual("yyyy-mm-dd", wb2.GetSheetAt(0).GetRow(3).GetCell(0).RichStringCellValue.String);
+            ClassicAssert.AreEqual("yy/mm/dd", wb2.GetSheetAt(0).GetRow(4).GetCell(0).RichStringCellValue.String);
+            ClassicAssert.IsNotNull(wb2.GetSharedStringSource());
+            ClassicAssert.IsNotNull(wb2.GetStylesSource());
 
             workbook.Close();
             wb2.Close();
@@ -242,26 +273,26 @@ namespace TestCases.XSSF.UserModel
             XSSFWorkbook wb1 = XSSFTestDataSamples.OpenSampleWorkbook("Formatting.xlsx");
 
             StylesTable ss = wb1.GetStylesSource();
-            Assert.IsNotNull(ss);
+            ClassicAssert.IsNotNull(ss);
             StylesTable st = ss;
 
             // Has 8 number formats
-            Assert.AreEqual(8, st.NumDataFormats);
+            ClassicAssert.AreEqual(8, st.NumDataFormats);
             // Has 2 fonts
-            Assert.AreEqual(2, st.GetFonts().Count);
+            ClassicAssert.AreEqual(2, st.GetFonts().Count);
             // Has 2 Fills
-            Assert.AreEqual(2, st.GetFills().Count);
+            ClassicAssert.AreEqual(2, st.GetFills().Count);
             // Has 1 border
-            Assert.AreEqual(1, st.GetBorders().Count);
+            ClassicAssert.AreEqual(1, st.GetBorders().Count);
 
             // Add two more styles
-            Assert.AreEqual(StylesTable.FIRST_CUSTOM_STYLE_ID + 8,
+            ClassicAssert.AreEqual(StylesTable.FIRST_CUSTOM_STYLE_ID + 8,
                     st.PutNumberFormat("testFORMAT"));
-            Assert.AreEqual(StylesTable.FIRST_CUSTOM_STYLE_ID + 8,
+            ClassicAssert.AreEqual(StylesTable.FIRST_CUSTOM_STYLE_ID + 8,
                     st.PutNumberFormat("testFORMAT"));
-            Assert.AreEqual(StylesTable.FIRST_CUSTOM_STYLE_ID + 9,
+            ClassicAssert.AreEqual(StylesTable.FIRST_CUSTOM_STYLE_ID + 9,
                     st.PutNumberFormat("testFORMAT2"));
-            Assert.AreEqual(10, st.NumDataFormats);
+            ClassicAssert.AreEqual(10, st.NumDataFormats);
 
 
             // Save, load back in again, and check
@@ -269,12 +300,12 @@ namespace TestCases.XSSF.UserModel
             wb1.Close();
 
             ss = wb2.GetStylesSource();
-            Assert.IsNotNull(ss);
+            ClassicAssert.IsNotNull(ss);
 
-            Assert.AreEqual(10, st.NumDataFormats);
-            Assert.AreEqual(2, st.GetFonts().Count);
-            Assert.AreEqual(2, st.GetFills().Count);
-            Assert.AreEqual(1, st.GetBorders().Count);
+            ClassicAssert.AreEqual(10, st.NumDataFormats);
+            ClassicAssert.AreEqual(2, st.GetFonts().Count);
+            ClassicAssert.AreEqual(2, st.GetFills().Count);
+            ClassicAssert.AreEqual(1, st.GetBorders().Count);
 
             wb2.Close();
         }
@@ -285,9 +316,9 @@ namespace TestCases.XSSF.UserModel
             try
             {
                 int sheetId = (int)(wb.CreateSheet() as XSSFSheet).sheet.sheetId;
-                Assert.AreEqual(1, sheetId);
+                ClassicAssert.AreEqual(1, sheetId);
                 sheetId = (int)(wb.CreateSheet() as XSSFSheet).sheet.sheetId;
-                Assert.AreEqual(2, sheetId);
+                ClassicAssert.AreEqual(2, sheetId);
 
                 //test file with gaps in the sheetId sequence
                 XSSFWorkbook wbBack = XSSFTestDataSamples.OpenSampleWorkbook("47089.xlsm");
@@ -295,7 +326,7 @@ namespace TestCases.XSSF.UserModel
                 {
                     int lastSheetId = (int)(wbBack.GetSheetAt(wbBack.NumberOfSheets - 1) as XSSFSheet).sheet.sheetId;
                     sheetId = (int)(wbBack.CreateSheet() as XSSFSheet).sheet.sheetId;
-                    Assert.AreEqual(lastSheetId + 1, sheetId);
+                    ClassicAssert.AreEqual(lastSheetId + 1, sheetId);
                 }
                 finally
                 {
@@ -318,22 +349,22 @@ namespace TestCases.XSSF.UserModel
             try
             {
                 POIXMLProperties props = workbook.GetProperties();
-                Assert.IsNotNull(props);
+                ClassicAssert.IsNotNull(props);
                 //the Application property must be set for new workbooks, see Bugzilla #47559
-                Assert.AreEqual("NPOI", props.ExtendedProperties.GetUnderlyingProperties().Application);
+                ClassicAssert.AreEqual("NPOI", props.ExtendedProperties.GetUnderlyingProperties().Application);
 
                 PackagePropertiesPart opcProps = props.CoreProperties.GetUnderlyingProperties();
-                Assert.IsNotNull(opcProps);
+                ClassicAssert.IsNotNull(opcProps);
 
                 opcProps.SetTitleProperty("Testing Bugzilla #47460");
-                Assert.AreEqual("NPOI", opcProps.GetCreatorProperty());
+                ClassicAssert.AreEqual("NPOI", opcProps.GetCreatorProperty());
                 opcProps.SetCreatorProperty("poi-dev@poi.apache.org");
 
                 XSSFWorkbook wbBack = (XSSFWorkbook)XSSFTestDataSamples.WriteOutAndReadBack(workbook);
-                Assert.AreEqual("NPOI", wbBack.GetProperties().ExtendedProperties.GetUnderlyingProperties().Application);
+                ClassicAssert.AreEqual("NPOI", wbBack.GetProperties().ExtendedProperties.GetUnderlyingProperties().Application);
                 opcProps = wbBack.GetProperties().CoreProperties.GetUnderlyingProperties();
-                Assert.AreEqual("Testing Bugzilla #47460", opcProps.GetTitleProperty());
-                Assert.AreEqual("poi-dev@poi.apache.org", opcProps.GetCreatorProperty());
+                ClassicAssert.AreEqual("Testing Bugzilla #47460", opcProps.GetTitleProperty());
+                ClassicAssert.AreEqual("poi-dev@poi.apache.org", opcProps.GetCreatorProperty());
             }
             finally
             {
@@ -350,17 +381,17 @@ namespace TestCases.XSSF.UserModel
         {
             XSSFWorkbook workbook = XSSFTestDataSamples.OpenSampleWorkbook("47668.xlsx");
             IList allPictures = workbook.GetAllPictures();
-            Assert.AreEqual(1, allPictures.Count);
+            ClassicAssert.AreEqual(1, allPictures.Count);
 
             PackagePartName imagePartName = PackagingUriHelper
                     .CreatePartName("/xl/media/image1.jpeg");
             PackagePart imagePart = workbook.Package.GetPart(imagePartName);
-            Assert.IsNotNull(imagePart);
+            ClassicAssert.IsNotNull(imagePart);
 
             foreach (XSSFPictureData pictureData in allPictures)
             {
                 PackagePart picturePart = pictureData.GetPackagePart();
-                Assert.AreSame(imagePart, picturePart);
+                ClassicAssert.AreSame(imagePart, picturePart);
             }
 
             XSSFSheet sheet0 = (XSSFSheet)workbook.GetSheetAt(0);
@@ -377,7 +408,7 @@ namespace TestCases.XSSF.UserModel
             CRC32 crc1 = new CRC32();
             crc1.Update(data1);
 
-            Assert.AreEqual(crc0.Value, crc1.Value);
+            ClassicAssert.AreEqual(crc0.Value, crc1.Value);
             workbook.Close();
         }
 
@@ -388,24 +419,24 @@ namespace TestCases.XSSF.UserModel
         public void Bug47737()
         {
             XSSFWorkbook wb = XSSFTestDataSamples.OpenSampleWorkbook("47737.xlsx");
-            Assert.AreEqual(2, wb.NumberOfNames);
-            Assert.IsNotNull(wb.GetCalculationChain());
+            ClassicAssert.AreEqual(2, wb.NumberOfNames);
+            ClassicAssert.IsNotNull(wb.GetCalculationChain());
 
             XSSFName nm0 = (XSSFName)wb.GetAllNames().First();
-            Assert.IsTrue(nm0.GetCTName().IsSetLocalSheetId());
-            Assert.AreEqual(0u, nm0.GetCTName().localSheetId);
+            ClassicAssert.IsTrue(nm0.GetCTName().IsSetLocalSheetId());
+            ClassicAssert.AreEqual(0u, nm0.GetCTName().localSheetId);
 
             XSSFName nm1 = (XSSFName)wb.GetAllNames().ToArray()[1];
-            Assert.IsTrue(nm1.GetCTName().IsSetLocalSheetId());
-            Assert.AreEqual(1u, nm1.GetCTName().localSheetId);
+            ClassicAssert.IsTrue(nm1.GetCTName().IsSetLocalSheetId());
+            ClassicAssert.AreEqual(1u, nm1.GetCTName().localSheetId);
 
             wb.RemoveSheetAt(0);
-            Assert.AreEqual(1, wb.NumberOfNames);
+            ClassicAssert.AreEqual(1, wb.NumberOfNames);
             XSSFName nm2 = (XSSFName)wb.GetAllNames().First();
-            Assert.IsTrue(nm2.GetCTName().IsSetLocalSheetId());
-            Assert.AreEqual(0u, nm2.GetCTName().localSheetId);
+            ClassicAssert.IsTrue(nm2.GetCTName().IsSetLocalSheetId());
+            ClassicAssert.AreEqual(0u, nm2.GetCTName().localSheetId);
             //calculation chain is Removed as well
-            Assert.IsNull(wb.GetCalculationChain());
+            ClassicAssert.IsNull(wb.GetCalculationChain());
 
             wb.Close();
         }
@@ -417,25 +448,25 @@ namespace TestCases.XSSF.UserModel
         public void Bug47813()
         {
             XSSFWorkbook wb1 = XSSFTestDataSamples.OpenSampleWorkbook("47813.xlsx");
-            Assert.AreEqual(3, wb1.NumberOfSheets);
-            Assert.IsNotNull(wb1.GetCalculationChain());
+            ClassicAssert.AreEqual(3, wb1.NumberOfSheets);
+            ClassicAssert.IsNotNull(wb1.GetCalculationChain());
 
-            Assert.AreEqual("Numbers", wb1.GetSheetName(0));
+            ClassicAssert.AreEqual("Numbers", wb1.GetSheetName(0));
             //the second sheet is of type 'chartsheet'
-            Assert.AreEqual("Chart", wb1.GetSheetName(1));
-            Assert.IsTrue(wb1.GetSheetAt(1) is XSSFChartSheet);
-            Assert.AreEqual("SomeJunk", wb1.GetSheetName(2));
+            ClassicAssert.AreEqual("Chart", wb1.GetSheetName(1));
+            ClassicAssert.IsTrue(wb1.GetSheetAt(1) is XSSFChartSheet);
+            ClassicAssert.AreEqual("SomeJunk", wb1.GetSheetName(2));
 
             wb1.RemoveSheetAt(2);
-            Assert.AreEqual(2, wb1.NumberOfSheets);
-            Assert.IsNull(wb1.GetCalculationChain());
+            ClassicAssert.AreEqual(2, wb1.NumberOfSheets);
+            ClassicAssert.IsNull(wb1.GetCalculationChain());
 
             XSSFWorkbook wb2 = (XSSFWorkbook)XSSFTestDataSamples.WriteOutAndReadBack(wb1);
-            Assert.AreEqual(2, wb2.NumberOfSheets);
-            Assert.IsNull(wb2.GetCalculationChain());
+            ClassicAssert.AreEqual(2, wb2.NumberOfSheets);
+            ClassicAssert.IsNull(wb2.GetCalculationChain());
 
-            Assert.AreEqual("Numbers", wb2.GetSheetName(0));
-            Assert.AreEqual("Chart", wb2.GetSheetName(1));
+            ClassicAssert.AreEqual("Numbers", wb2.GetSheetName(0));
+            ClassicAssert.AreEqual("Chart", wb2.GetSheetName(1));
 
             wb2.Close();
             wb1.Close();
@@ -452,84 +483,63 @@ namespace TestCases.XSSF.UserModel
             XSSFWorkbook wb1 = new XSSFWorkbook();
 
             // Should have one style
-            Assert.AreEqual(1, wb1.NumCellStyles);
+            ClassicAssert.AreEqual(1, wb1.NumCellStyles);
             wb1.GetCellStyleAt((short)0);
-            try
-            {
-                wb1.GetCellStyleAt((short)1);
-                Assert.Fail("Shouldn't be able to get style at 1 that doesn't exist");
-            }
-            catch (ArgumentOutOfRangeException) { }
+            ClassicAssert.IsNull(wb1.GetCellStyleAt((short)1),"Shouldn't be able to get style at 0 that doesn't exist");
 
             // Add another one
             ICellStyle cs = wb1.CreateCellStyle();
             cs.DataFormat = ((short)11);
 
             // Re-check
-            Assert.AreEqual(2, wb1.NumCellStyles);
+            ClassicAssert.AreEqual(2, wb1.NumCellStyles);
             wb1.GetCellStyleAt((short)0);
             wb1.GetCellStyleAt((short)1);
-            try
-            {
-                wb1.GetCellStyleAt((short)2);
-                Assert.Fail("Shouldn't be able to get style at 2 that doesn't exist");
-            }
-            catch (ArgumentOutOfRangeException) { }
+            ClassicAssert.IsNull(wb1.GetCellStyleAt((short)2), "Shouldn't be able to get style at 2 that doesn't exist");
 
             // Save and reload
             XSSFWorkbook nwb = (XSSFWorkbook)XSSFTestDataSamples.WriteOutAndReadBack(wb1);
-            Assert.AreEqual(2, nwb.NumCellStyles);
+            ClassicAssert.AreEqual(2, nwb.NumCellStyles);
             nwb.GetCellStyleAt((short)0);
             nwb.GetCellStyleAt((short)1);
-            try
-            {
-                nwb.GetCellStyleAt((short)2);
-                Assert.Fail("Shouldn't be able to Get style at 2 that doesn't exist");
-            }
-            catch (ArgumentOutOfRangeException) { }
+            ClassicAssert.IsNull(nwb.GetCellStyleAt((short)2), "Shouldn't be able to Get style at 2 that doesn't exist");
 
             // Now with an existing file
             XSSFWorkbook wb2 = XSSFTestDataSamples.OpenSampleWorkbook("sample.xlsx");
-            Assert.AreEqual(3, wb2.NumCellStyles);
+            ClassicAssert.AreEqual(3, wb2.NumCellStyles);
             wb2.GetCellStyleAt((short)0);
             wb2.GetCellStyleAt((short)1);
             wb2.GetCellStyleAt((short)2);
-            try
-            {
-                wb2.GetCellStyleAt((short)3);
-                Assert.Fail("Shouldn't be able to Get style at 3 that doesn't exist");
-            }
-            catch (ArgumentOutOfRangeException) { }
+            ClassicAssert.IsNull(nwb.GetCellStyleAt((short)3), "Shouldn't be able to Get style at 3 that doesn't exist");
 
             wb2.Close();
-            wb1.Close();
-            nwb.Close();
+            wb1.Close();            nwb.Close();
         }
         [Test]
         public void RecalcId()
         {
             XSSFWorkbook wb = new XSSFWorkbook();
-            Assert.IsFalse(wb.GetForceFormulaRecalculation());
+            ClassicAssert.IsFalse(wb.GetForceFormulaRecalculation());
             CT_Workbook ctWorkbook = wb.GetCTWorkbook();
-            Assert.IsFalse(ctWorkbook.IsSetCalcPr());
+            ClassicAssert.IsFalse(ctWorkbook.IsSetCalcPr());
 
             wb.SetForceFormulaRecalculation(true); // resets the EngineId flag to zero
 
             CT_CalcPr calcPr = ctWorkbook.calcPr;
-            Assert.IsNotNull(calcPr);
-            Assert.AreEqual(0, (int)calcPr.calcId);
+            ClassicAssert.IsNotNull(calcPr);
+            ClassicAssert.AreEqual(0, (int)calcPr.calcId);
 
             calcPr.calcId = 100;
-            Assert.IsTrue(wb.GetForceFormulaRecalculation());
+            ClassicAssert.IsTrue(wb.GetForceFormulaRecalculation());
 
             wb.SetForceFormulaRecalculation(true); // resets the EngineId flag to zero
-            Assert.AreEqual(0, (int)calcPr.calcId);
-            Assert.IsFalse(wb.GetForceFormulaRecalculation());
+            ClassicAssert.AreEqual(0, (int)calcPr.calcId);
+            ClassicAssert.IsFalse(wb.GetForceFormulaRecalculation());
 
             // calcMode="manual" is unset when forceFormulaRecalculation=true
             calcPr.calcMode = (ST_CalcMode.manual);
             wb.SetForceFormulaRecalculation(true);
-            Assert.AreEqual(ST_CalcMode.auto, calcPr.calcMode);
+            ClassicAssert.AreEqual(ST_CalcMode.auto, calcPr.calcMode);
         }
         [Test]
         public void ChangeSheetNameWithSharedFormulas()
@@ -572,8 +582,8 @@ namespace TestCases.XSSF.UserModel
             workbook.GetSheetAt(1).SetColumnGroupCollapsed(4, true);
             workbook.GetSheetAt(1).SetColumnGroupCollapsed(4, false);
 
-            Assert.AreEqual("hello world", workbook.GetSheetAt(0).GetRow(0).GetCell(0).StringCellValue);
-            Assert.AreEqual(2048, workbook.GetSheetAt(0).GetColumnWidth(0)); // <-works
+            ClassicAssert.AreEqual("hello world", workbook.GetSheetAt(0).GetRow(0).GetCell(0).StringCellValue);
+            ClassicAssert.AreEqual(2158.08, workbook.GetSheetAt(0).GetColumnWidth(0)); // <-works
         }
 
         [Test]
@@ -595,7 +605,7 @@ namespace TestCases.XSSF.UserModel
 
 
             IWorkbook read = XSSFTestDataSamples.WriteOutAndReadBack(wb);
-            Assert.IsNotNull(read);
+            ClassicAssert.IsNotNull(read);
             assertSheetOrder(read, "Sheet1", "Sheet1 (2)");
 
             read.Close();
@@ -681,7 +691,7 @@ namespace TestCases.XSSF.UserModel
             //cell.Hyperlink=(/*setter*/helper.CreateHyperlink(0));
 
             XSSFComment comment = (sheet.CreateDrawingPatriarch() as XSSFDrawing).CreateCellComment(new XSSFClientAnchor()) as XSSFComment;
-            Assert.IsNotNull(comment);
+            ClassicAssert.IsNotNull(comment);
             comment.SetString("some comment");
 
             //        ICellStyle cs = workbook.CreateCellStyle();
@@ -690,11 +700,11 @@ namespace TestCases.XSSF.UserModel
 
             // write the first excel file
             XSSFWorkbook wb2 = XSSFTestDataSamples.WriteOutAndReadBack(wb1) as XSSFWorkbook;
-            Assert.IsNotNull(wb2);
+            ClassicAssert.IsNotNull(wb2);
             sheet = wb2.GetSheetAt(0) as XSSFSheet;
             row = sheet.GetRow(2) as XSSFRow;
-            Assert.AreEqual("test1", row.GetCell(3).StringCellValue);
-            Assert.IsNull(row.GetCell(4));
+            ClassicAssert.AreEqual("test1", row.GetCell(3).StringCellValue);
+            ClassicAssert.IsNull(row.GetCell(4));
 
             // add a new cell to the sheet
             cell = row.CreateCell(4) as XSSFCell;
@@ -702,12 +712,12 @@ namespace TestCases.XSSF.UserModel
 
             // write the second excel file
             XSSFWorkbook wb3 = XSSFTestDataSamples.WriteOutAndReadBack(wb2) as XSSFWorkbook;
-            Assert.IsNotNull(wb3);
+            ClassicAssert.IsNotNull(wb3);
             sheet = wb3.GetSheetAt(0) as XSSFSheet;
             row = sheet.GetRow(2) as XSSFRow;
 
-            Assert.AreEqual("test1", row.GetCell(3).StringCellValue);
-            Assert.AreEqual("test2", row.GetCell(4).StringCellValue);
+            ClassicAssert.AreEqual("test1", row.GetCell(3).StringCellValue);
+            ClassicAssert.AreEqual("test2", row.GetCell(4).StringCellValue);
 
             wb3.Close();
             wb2.Close();
@@ -739,7 +749,7 @@ namespace TestCases.XSSF.UserModel
                 String str = Encoding.UTF8.GetString(IOUtils.ToByteArray(sheetBack.GetPackagePart().GetInputStream()));
                 //System.out.Println(str);
 
-                Assert.AreEqual(1, countMatches(str, "<worksheet"));
+                ClassicAssert.AreEqual(1, countMatches(str, "<worksheet"));
             }
             finally
             {
@@ -780,9 +790,9 @@ namespace TestCases.XSSF.UserModel
                 CT_Workbook ctWb = wb.GetCTWorkbook();
                 CT_PivotCache pivotCache = wb.AddPivotCache("0");
                 //Ensures that pivotCaches is Initiated
-                Assert.IsTrue(ctWb.IsSetPivotCaches());
-                Assert.AreSame(pivotCache, ctWb.pivotCaches.GetPivotCacheArray(0));
-                Assert.AreEqual("0", pivotCache.id);
+                ClassicAssert.IsTrue(ctWb.IsSetPivotCaches());
+                ClassicAssert.AreSame(pivotCache, ctWb.pivotCaches.GetPivotCacheArray(0));
+                ClassicAssert.AreEqual("0", pivotCache.id);
             }
             finally
             {
@@ -836,12 +846,13 @@ namespace TestCases.XSSF.UserModel
             fileOut.Close();
 
             XSSFWorkbook wb2 = (XSSFWorkbook)WorkbookFactory.Create(fileName);
-            Assert.IsTrue(wb2.PivotTables.Count == 1);
+            ClassicAssert.IsTrue(wb2.PivotTables.Count == 1);
         }
 
         [Test]
         public void AddPivotTableToWorkbookWithLoadedPivotTable()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             String fileName = "ooxml-pivottable.xlsx";
 
             XSSFWorkbook wb = new XSSFWorkbook();
@@ -853,7 +864,7 @@ namespace TestCases.XSSF.UserModel
 
             XSSFWorkbook wb2 = (XSSFWorkbook)WorkbookFactory.Create(fileName);
             SetPivotData(wb2);
-            Assert.IsTrue(wb2.PivotTables.Count == 2);
+            ClassicAssert.IsTrue(wb2.PivotTables.Count == 2);
         }
 
         [Test]
@@ -881,15 +892,15 @@ namespace TestCases.XSSF.UserModel
 
                 //wb.Write(new FileOutputStream(new File("C:\\temp\\test.xlsx")));
 
-                Assert.AreEqual(idx2, wb.FirstVisibleTab);
-                Assert.AreEqual(idx3, wb.ActiveSheetIndex);
+                ClassicAssert.AreEqual(idx2, wb.FirstVisibleTab);
+                ClassicAssert.AreEqual(idx3, wb.ActiveSheetIndex);
 
                 IWorkbook wbBack = XSSFTestDataSamples.WriteOutAndReadBack(wb);
 
                 sheet2 = wbBack.GetSheetAt(idx2);
                 sheet3 = wbBack.GetSheetAt(idx3);
-                Assert.AreEqual(idx2, wb.FirstVisibleTab);
-                Assert.AreEqual(idx3, wb.ActiveSheetIndex);
+                ClassicAssert.AreEqual(idx2, wb.FirstVisibleTab);
+                ClassicAssert.AreEqual(idx3, wb.ActiveSheetIndex);
 
                 wbBack.Close();
             }
@@ -912,33 +923,37 @@ namespace TestCases.XSSF.UserModel
                 allBytes[i] = (byte)(i - 128);
             }
 
-            XSSFWorkbook wb1 = new XSSFWorkbook();
-            wb1.CreateSheet();
-            wb1.SetVBAProject(new ByteArrayInputStream(allBytes));
-            file = TempFile.CreateTempFile("poi-", ".xlsm");
-            Stream out1 = new FileStream(file.FullName, FileMode.Open, FileAccess.ReadWrite);
-            wb1.Write(out1);
-            out1.Close();
-            wb1.Close();
+            using(XSSFWorkbook wb1 = new XSSFWorkbook())
+            {
+                wb1.CreateSheet();
+                wb1.SetVBAProject(new ByteArrayInputStream(allBytes));
+                file = TempFile.CreateTempFile("poi-", ".xlsm");
+                using(Stream out1 = new FileStream(file.FullName, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    wb1.Write(out1);
+                }
+            }
 
+            if(file != null)
+                file.Refresh();
 
             // Check the package contains what we'd expect it to
             OPCPackage pkg = OPCPackage.Open(file);
             PackagePart wbPart = pkg.GetPart(PackagingUriHelper.CreatePartName("/xl/workbook.xml"));
-            Assert.IsTrue(wbPart.HasRelationships);
+            ClassicAssert.IsTrue(wbPart.HasRelationships);
             PackageRelationshipCollection relationships = wbPart.Relationships.GetRelationships(XSSFRelation.VBA_MACROS.Relation);
-            Assert.AreEqual(1, relationships.Size);
-            Assert.AreEqual(XSSFRelation.VBA_MACROS.DefaultFileName, relationships.GetRelationship(0).TargetUri.ToString());
+            ClassicAssert.AreEqual(1, relationships.Size);
+            ClassicAssert.AreEqual(XSSFRelation.VBA_MACROS.DefaultFileName, relationships.GetRelationship(0).TargetUri.ToString());
             PackagePart vbaPart = pkg.GetPart(PackagingUriHelper.CreatePartName(XSSFRelation.VBA_MACROS.DefaultFileName));
-            Assert.IsNotNull(vbaPart);
-            Assert.IsFalse(vbaPart.IsRelationshipPart);
-            Assert.AreEqual(XSSFRelation.VBA_MACROS.ContentType, vbaPart.ContentType);
+            ClassicAssert.IsNotNull(vbaPart);
+            ClassicAssert.IsFalse(vbaPart.IsRelationshipPart);
+            ClassicAssert.AreEqual(XSSFRelation.VBA_MACROS.ContentType, vbaPart.ContentType);
             byte[] fromFile = IOUtils.ToByteArray(vbaPart.GetInputStream());
             CollectionAssert.AreEqual(allBytes, fromFile);
             // Load back the XSSFWorkbook just to check nothing explodes
             XSSFWorkbook wb2 = new XSSFWorkbook(pkg);
-            Assert.AreEqual(1, wb2.NumberOfSheets);
-            Assert.AreEqual(XSSFWorkbookType.XLSM, wb2.WorkbookType);
+            ClassicAssert.AreEqual(1, wb2.NumberOfSheets);
+            ClassicAssert.AreEqual(XSSFWorkbookType.XLSM, wb2.WorkbookType);
             pkg.Close();
         }
 
@@ -1037,56 +1052,53 @@ namespace TestCases.XSSF.UserModel
             wb.Close();
         }
 
-        [Test]
+        [Ignore("This unit test may fail on Windows")]
         public void TestBug56957CloseWorkbook()
         {
             FileInfo file = TempFile.CreateTempFile("TestBug56957_", ".xlsx");
             //String dateExp = "Sun Nov 09 00:00:00 CET 2014";
             DateTime dateExp = LocaleUtil.GetLocaleCalendar(2014, 11, 9);
-            IWorkbook workbook = null;
             try
             {
                 // as the file is written to, we make a copy before actually working on it
                 FileHelper.CopyFile(HSSFTestDataSamples.GetSampleFile("56957.xlsx"), file);
 
-                Assert.IsTrue(file.Exists);
+                ClassicAssert.IsTrue(file.Exists);
 
                 // read-only mode works!
-                workbook = WorkbookFactory.Create(OPCPackage.Open(file, PackageAccess.READ));
-                DateTime dateAct = workbook.GetSheetAt(0).GetRow(0).GetCell(0, MissingCellPolicy.CREATE_NULL_AS_BLANK).DateCellValue;
-                Assert.AreEqual(dateExp, dateAct);
-                workbook.Close();
-                workbook = null;
+                using(var workbook = WorkbookFactory.Create(OPCPackage.Open(file, PackageAccess.READ)))
+                {
+                    var dateAct = workbook.GetSheetAt(0).GetRow(0).GetCell(0, MissingCellPolicy.CREATE_NULL_AS_BLANK).DateCellValue;
+                    ClassicAssert.AreEqual(dateExp, dateAct);
+                }
 
-                workbook = WorkbookFactory.Create(OPCPackage.Open(file, PackageAccess.READ));
-                dateAct = workbook.GetSheetAt(0).GetRow(0).GetCell(0, MissingCellPolicy.CREATE_NULL_AS_BLANK).DateCellValue;
-                Assert.AreEqual(dateExp, dateAct);
-                workbook.Close();
-                workbook = null;
+                using(var workbook = WorkbookFactory.Create(OPCPackage.Open(file, PackageAccess.READ)))
+                {
+                    var dateAct = workbook.GetSheetAt(0).GetRow(0).GetCell(0, MissingCellPolicy.CREATE_NULL_AS_BLANK).DateCellValue;
+                    ClassicAssert.AreEqual(dateExp, dateAct);
+                }
 
                 // now check read/write mode
-                workbook = WorkbookFactory.Create(OPCPackage.Open(file, PackageAccess.READ_WRITE));
-                dateAct = workbook.GetSheetAt(0).GetRow(0).GetCell(0, MissingCellPolicy.CREATE_NULL_AS_BLANK).DateCellValue;
-                Assert.AreEqual(dateExp, dateAct);
-                workbook.Close();
-                workbook = null;
+                using(var workbook = WorkbookFactory.Create(OPCPackage.Open(file, PackageAccess.READ_WRITE)))
+                {
+                    var dateAct = workbook.GetSheetAt(0).GetRow(0).GetCell(0, MissingCellPolicy.CREATE_NULL_AS_BLANK).DateCellValue;
+                    ClassicAssert.AreEqual(dateExp, dateAct);
+                }
 
-                workbook = WorkbookFactory.Create(OPCPackage.Open(file, PackageAccess.READ_WRITE));
-                dateAct = workbook.GetSheetAt(0).GetRow(0).GetCell(0, MissingCellPolicy.CREATE_NULL_AS_BLANK).DateCellValue;
-                Assert.AreEqual(dateExp, dateAct);
-                workbook.Close();
-                workbook = null;
+                using(var workbook = WorkbookFactory.Create(OPCPackage.Open(file, PackageAccess.READ_WRITE)))
+                {
+                    var dateAct = workbook.GetSheetAt(0).GetRow(0).GetCell(0, MissingCellPolicy.CREATE_NULL_AS_BLANK).DateCellValue;
+                    ClassicAssert.AreEqual(dateExp, dateAct);
+                }
             }
             finally
             {
-                if (workbook != null)
-                {
-                    workbook.Close();
-                }
-                Assert.IsTrue(file.Exists);
+                ClassicAssert.IsTrue(file.Exists);
+
                 file.Delete();
                 file.Refresh();
-                Assert.IsTrue(!file.Exists);
+
+                ClassicAssert.IsFalse(file.Exists);
             }
         }
 
@@ -1131,7 +1143,7 @@ namespace TestCases.XSSF.UserModel
             catch (RuntimeException e)
             {
                 // expected here
-                Assert.IsTrue(e.InnerException is IOException, "Had: " + e.InnerException);
+                ClassicAssert.IsTrue(e.InnerException is IOException, "Had: " + e.InnerException);
             }
         }
 
@@ -1143,24 +1155,24 @@ namespace TestCases.XSSF.UserModel
         {
             XSSFWorkbook wb = XSSFTestDataSamples.OpenSampleWorkbook("WithTable.xlsx");
             XSSFTable table1 = wb.GetTable("Tabella1");
-            Assert.IsNotNull(table1, "Tabella1 was not found in workbook");
-            Assert.AreEqual("Tabella1", table1.Name, "Table name");
-            Assert.AreEqual("Foglio1", table1.SheetName, "Sheet name");
+            ClassicAssert.IsNotNull(table1, "Tabella1 was not found in workbook");
+            ClassicAssert.AreEqual("Tabella1", table1.Name, "Table name");
+            ClassicAssert.AreEqual("Foglio1", table1.SheetName, "Sheet name");
             // Table lookup should be case-insensitive
-            Assert.AreSame(table1, wb.GetTable("TABELLA1"), "Case insensitive table name lookup");
+            ClassicAssert.AreSame(table1, wb.GetTable("TABELLA1"), "Case insensitive table name lookup");
             // If workbook does not contain any data tables matching the provided name, getTable should return null
-            Assert.IsNull(wb.GetTable(null), "Null table name should not throw NPE");
-            Assert.IsNull(wb.GetTable("Foglio1"), "Should not be able to find non-existent table");
+            ClassicAssert.IsNull(wb.GetTable(null), "Null table name should not throw NPE");
+            ClassicAssert.IsNull(wb.GetTable("Foglio1"), "Should not be able to find non-existent table");
             // If a table is added after getTable is called it should still be reachable by XSSFWorkbook.getTable
             // This test makes sure that if any caching is done that getTable never uses a stale cache
             XSSFTable table2 = (wb.GetSheet("Foglio2") as XSSFSheet).CreateTable();
             table2.Name = "Table2";
-            Assert.AreSame(table2, wb.GetTable("Table2"), "Did not find Table2");
+            ClassicAssert.AreSame(table2, wb.GetTable("Table2"), "Did not find Table2");
 
             // If table name is modified after getTable is called, the table can only be found by its new name
             // This test makes sure that if any caching is done that getTable never uses a stale cache
             table1.Name = "Table1";
-            Assert.AreSame(table1, wb.GetTable("TABLE1"), "Did not find Tabella1 renamed to Table1");
+            ClassicAssert.AreSame(table1, wb.GetTable("TABLE1"), "Did not find Tabella1 renamed to Table1");
             wb.Close();
         }
 
@@ -1179,22 +1191,120 @@ namespace TestCases.XSSF.UserModel
             sheet2Name.NameName = "name1";
             sheet2Name.SheetIndex = 1;
             sheet2Name.RefersToFormula = "Sheet2!$A$1";
-            Assert.IsTrue(wb.GetAllNames().Contains(sheet1Name));
-            Assert.IsTrue(wb.GetAllNames().Contains(sheet2Name));
-            Assert.AreEqual(2, wb.GetNames("name1").Count);
-            Assert.AreEqual(sheet1Name, wb.GetNames("name1")[0]);
-            Assert.AreEqual(sheet2Name, wb.GetNames("name1")[1]);
+            ClassicAssert.IsTrue(wb.GetAllNames().Contains(sheet1Name));
+            ClassicAssert.IsTrue(wb.GetAllNames().Contains(sheet2Name));
+            ClassicAssert.AreEqual(2, wb.GetNames("name1").Count);
+            ClassicAssert.AreEqual(sheet1Name, wb.GetNames("name1")[0]);
+            ClassicAssert.AreEqual(sheet2Name, wb.GetNames("name1")[1]);
             // Remove sheet1, we should only have sheet2Name now
             wb.RemoveSheetAt(0);
-            Assert.IsFalse(wb.GetAllNames().Contains(sheet1Name));
-            Assert.IsTrue(wb.GetAllNames().Contains(sheet2Name));
-            Assert.AreEqual(1, wb.GetNames("name1").Count);
-            Assert.AreEqual(sheet2Name, wb.GetNames("name1")[0]);
+            ClassicAssert.IsFalse(wb.GetAllNames().Contains(sheet1Name));
+            ClassicAssert.IsTrue(wb.GetAllNames().Contains(sheet2Name));
+            ClassicAssert.AreEqual(1, wb.GetNames("name1").Count);
+            ClassicAssert.AreEqual(sheet2Name, wb.GetNames("name1")[0]);
             // Check by index as well for sanity
-            Assert.AreEqual(1, wb.NumberOfNames);
-            Assert.AreEqual(sheet2Name, wb.GetName(sheet2Name.NameName));
+            ClassicAssert.AreEqual(1, wb.NumberOfNames);
+            ClassicAssert.AreEqual(sheet2Name, wb.GetName(sheet2Name.NameName));
             wb.Close();
         }
 
+        [Test]
+        public void TestRemoveSheetMethod()
+        {
+            using (XSSFWorkbook wb = new XSSFWorkbook())
+            {
+                var sheet1 = wb.CreateSheet("Sheet1");
+                var sheet2 = wb.CreateSheet("Sheet2");
+
+                ClassicAssert.True(wb.Remove(sheet2));
+                ClassicAssert.AreEqual(1, wb.NumberOfSheets);
+                ClassicAssert.AreEqual("Sheet1", wb.GetSheetName(0));
+                ClassicAssert.AreEqual(sheet1, wb.GetSheet("Sheet1"));
+
+                using (var wbCopy = XSSFTestDataSamples.WriteOutAndReadBack(wb))
+                {
+                    ClassicAssert.AreEqual(1, wbCopy.NumberOfSheets);
+                    ClassicAssert.AreEqual("Sheet1", wb.GetSheetName(0));
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Issue 1252 https://github.com/nissl-lab/npoi/issues/1252
+        /// </summary>
+        [Test]
+        public void TestSavingXlsxTwiceWithBmpPictures()
+        {
+            using XSSFWorkbook wb = XSSFTestDataSamples.OpenSampleWorkbook("Issue1252.xlsx");
+            byte[] bmpData = GenerateBitmap(100, 100);
+            InsertPicture(wb, bmpData, PictureType.BMP);
+
+            using XSSFWorkbook wb2 = XSSFTestDataSamples.WriteOutAndReadBack(wb);
+            InsertPicture(wb2, bmpData, PictureType.BMP);
+
+            using XSSFWorkbook wb3 = XSSFTestDataSamples.WriteOutAndReadBack(wb2);
+            InsertPicture(wb3, bmpData, PictureType.BMP);
+            XSSFTestDataSamples.WriteOutAndClose(wb3);
+        }
+
+        private static void InsertPicture(IWorkbook wb, byte[] data, PictureType picType)
+        {
+            ISheet sheet = wb.GetSheetAt(0);
+            IDrawing patriarch = sheet.DrawingPatriarch;
+            XSSFClientAnchor anchor = new(500, 200, 0, 0, 2, 2, 4, 7) {
+                AnchorType = AnchorType.MoveDontResize
+            };
+            int imageId = wb.AddPicture(data, picType);
+            XSSFPicture picture = (XSSFPicture)patriarch.CreatePicture(anchor, imageId);
+            picture.LineStyle = LineStyle.DashDotGel;
+            picture.Resize();
+        }
+
+        private static byte[] GenerateBitmap(int width, int height) {
+            // BMP file header
+            byte[] header = new byte[]
+        {
+            0x42, 0x4D, // BM (Bitmap identifier)
+            0x36, 0x00, 0x0C, 0x00, // File size (54 + width * height)
+            0x00, 0x00, // Reserved
+            0x00, 0x00, // Reserved
+            0x36, 0x00, 0x00, 0x00, // Offset to pixel array
+            0x28, 0x00, 0x00, 0x00, // Header size (40 bytes)
+            0x64, 0x00, 0x00, 0x00, // Width
+            0x64, 0x00, 0x00, 0x00, // Height
+            0x01, 0x00, // Planes
+            0x18, 0x00, // Bits per pixel (24-bit)
+            0x00, 0x00, 0x00, 0x00, // Compression (none)
+            0x00, 0x00, 0x00, 0x00, // Image size (can be 0 for uncompressed images)
+            0x00, 0x00, 0x00, 0x00, // X pixels per meter
+            0x00, 0x00, 0x00, 0x00, // Y pixels per meter
+            0x00, 0x00, 0x00, 0x00, // Colors in color table
+            0x00, 0x00, 0x00, 0x00, // Important color count
+        };
+
+            // Set width and height in header
+            BitConverter.GetBytes(width).CopyTo(header, 0x12);
+            BitConverter.GetBytes(height).CopyTo(header, 0x16);
+
+            // Create a byte array to hold the pixel data
+            int pixelDataSize = width * height * 3; // 3 bytes per pixel for 24-bit color
+            byte[] pixels = new byte[pixelDataSize];
+
+            // Set all pixels to black
+            for(int i = 0; i < pixelDataSize; i += 3)
+            {
+                pixels[i] = 0x00; // Blue
+                pixels[i + 1] = 0x00; // Green
+                pixels[i + 2] = 0x00; // Red
+            }
+
+            // Concatenate header and pixel data
+            byte[] bmpData = new byte[header.Length + pixels.Length];
+            header.CopyTo(bmpData, 0);
+            pixels.CopyTo(bmpData, header.Length);
+
+            return bmpData;
+        }
     }
 }

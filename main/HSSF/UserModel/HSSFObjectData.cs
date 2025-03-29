@@ -38,7 +38,7 @@ namespace NPOI.HSSF.UserModel
         /**
          * Reference to the filesystem root, required for retrieving the object data.
          */
-        private DirectoryEntry _root;
+        private readonly DirectoryEntry _root;
 
 
         public HSSFObjectData(EscherContainerRecord spContainer, ObjRecord objRecord, DirectoryEntry _root)
@@ -72,9 +72,9 @@ namespace NPOI.HSSF.UserModel
             String streamName = "MBD" + HexDump.ToHex((int)streamId);
 
             Entry entry = _root.GetEntry(streamName);
-            if (entry is DirectoryEntry)
+            if (entry is DirectoryEntry directoryEntry)
             {
-                return (DirectoryEntry)entry;
+                return directoryEntry;
             }
             else
             {
@@ -117,9 +117,9 @@ namespace NPOI.HSSF.UserModel
             while (subRecordIter.MoveNext())
             {
                 Object subRecord = subRecordIter.Current;
-                if (subRecord is EmbeddedObjectRefSubRecord)
+                if (subRecord is EmbeddedObjectRefSubRecord record)
                 {
-                    return (EmbeddedObjectRefSubRecord)subRecord;
+                    return record;
                 }
             }
 

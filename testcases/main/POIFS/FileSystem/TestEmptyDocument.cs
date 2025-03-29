@@ -29,7 +29,7 @@ using System;
 using System.Collections;
 using System.IO;
 
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 
 using NPOI.POIFS.FileSystem;
 using NPOI.Util;
@@ -96,8 +96,9 @@ namespace TestCases.POIFS.FileSystem
 
             MemoryStream output = new MemoryStream();
             fs.WriteFileSystem(output);
-            byte[] temp = output.ToArray();
-            Assert.IsNotNull(new POIFSFileSystem(new MemoryStream(temp)));
+            
+            new POIFSFileSystem(new ByteArrayInputStream(output.ToArray())).Close();
+            fs.Close();
         }
 
         [Test]
@@ -109,7 +110,8 @@ namespace TestCases.POIFS.FileSystem
 
             MemoryStream output = new MemoryStream();
             fs.WriteFileSystem(output);
-            Assert.IsNotNull(new POIFSFileSystem(new MemoryStream(output.ToArray())));
+            new POIFSFileSystem(new ByteArrayInputStream(output.ToArray())).Close();
+            fs.Close();
         }
         [Test]
         public void TestEmptyDocumentWithFriend()
@@ -121,7 +123,8 @@ namespace TestCases.POIFS.FileSystem
 
             MemoryStream output = new MemoryStream();
             fs.WriteFileSystem(output);
-            Assert.IsNotNull(new POIFSFileSystem(new MemoryStream(output.ToArray())));
+            new POIFSFileSystem(new ByteArrayInputStream(output.ToArray())).Close();
+            fs.Close();
         }
 
         [Test]
@@ -134,7 +137,8 @@ namespace TestCases.POIFS.FileSystem
 
             MemoryStream output = new MemoryStream();
             fs.WriteFileSystem(output);
-            Assert.IsNotNull(new POIFSFileSystem(new MemoryStream(output.ToArray())));
+            new POIFSFileSystem(new ByteArrayInputStream(output.ToArray())).Close();
+            fs.Close();
 
         }
         [Test]
@@ -147,21 +151,24 @@ namespace TestCases.POIFS.FileSystem
             fs.CreateDocument(new MemoryStream(TestData), "NotEmpty");
             MemoryStream output = new MemoryStream();
             fs.WriteFileSystem(output);
+            fs.Close();
 
             // This line caused the error.
             fs = new POIFSFileSystem(new MemoryStream(output.ToArray()));
 
             DocumentEntry entry = (DocumentEntry)fs.Root.GetEntry("Empty");
-            Assert.AreEqual(0, entry.Size, "Expected zero size");
+            ClassicAssert.AreEqual(0, entry.Size, "Expected zero size");
             byte[] actualReadbackData;
             actualReadbackData = NPOI.Util.IOUtils.ToByteArray(new DocumentInputStream(entry));
-            Assert.AreEqual(0, actualReadbackData.Length, "Expected zero read from stream");
+            ClassicAssert.AreEqual(0, actualReadbackData.Length, "Expected zero read from stream");
 
             entry = (DocumentEntry)fs.Root.GetEntry("NotEmpty");
             actualReadbackData = NPOI.Util.IOUtils.ToByteArray(new DocumentInputStream(entry));
-            Assert.AreEqual(TestData.Length, entry.Size, "Expected size was wrong");
-            Assert.IsTrue(
+            ClassicAssert.AreEqual(TestData.Length, entry.Size, "Expected size was wrong");
+            ClassicAssert.IsTrue(
                     Arrays.Equals(TestData,actualReadbackData), "Expected different data Read from stream");
+
+            fs.Close();
         }
     }
 }

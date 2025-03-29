@@ -45,7 +45,7 @@ namespace NPOI.XSSF.UserModel.Charts
         /**
          * Package private ScatterChartSerie implementation.
          */
-        internal class Series : AbstractXSSFChartSeries, IScatterChartSeries<Tx, Ty>
+        internal sealed class Series : AbstractXSSFChartSeries, IScatterChartSeries<Tx, Ty>
         {
             private int id;
             private int order;
@@ -147,12 +147,11 @@ namespace NPOI.XSSF.UserModel.Charts
 
         public void FillChart(IChart chart, IChartAxis[] axis)
         {
-            if (!(chart is XSSFChart))
+            if (chart is not XSSFChart xssfChart)
             {
                 throw new ArgumentException("Chart must be instance of XSSFChart");
             }
 
-            XSSFChart xssfChart = (XSSFChart)chart;
             CT_PlotArea plotArea = xssfChart.GetCTChart().plotArea;
             int allSeriesCount = plotArea.GetAllSeriesCount();
             CT_ScatterChart scatterChart = plotArea.AddNewScatterChart();

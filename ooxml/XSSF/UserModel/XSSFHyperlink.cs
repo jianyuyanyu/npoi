@@ -30,9 +30,9 @@ namespace NPOI.XSSF.UserModel
      */
     public class XSSFHyperlink : IHyperlink
     {
-        private HyperlinkType _type;
-        private PackageRelationship _externalRel;
-        private CT_Hyperlink _ctHyperlink; //contains a reference to the cell where the hyperlink is anchored, getRef()
+        private readonly HyperlinkType _type;
+        private readonly PackageRelationship _externalRel;
+        private readonly CT_Hyperlink _ctHyperlink; //contains a reference to the cell where the hyperlink is anchored, getRef()
         private String _location; //what the hyperlink refers to
 
         /**
@@ -116,9 +116,8 @@ namespace NPOI.XSSF.UserModel
         //FIXME: change to protected if/when SXSSFHyperlink class is created
         public XSSFHyperlink(IHyperlink other)
         {
-            if (other is XSSFHyperlink)
+            if (other is XSSFHyperlink xlink)
             {
-                XSSFHyperlink xlink = (XSSFHyperlink)other;
                 _type = xlink.Type;
                 _location = xlink._location;
                 _externalRel = xlink._externalRel;
@@ -285,7 +284,7 @@ namespace NPOI.XSSF.UserModel
             _ctHyperlink.@ref = ref1;
         }
 
-        protected void SetCellReference(CellReference ref1)
+        public void SetCellReference(CellReference ref1)
         {
             SetCellReference(ref1.FormatAsString());
         }

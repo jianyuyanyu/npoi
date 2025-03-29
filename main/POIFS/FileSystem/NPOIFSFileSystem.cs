@@ -54,9 +54,9 @@ namespace NPOI.POIFS.FileSystem
 
         private NPOIFSMiniStore _mini_store;
         private NPropertyTable _property_table;
-        private List<BATBlock> _xbat_blocks;
-        private List<BATBlock> _bat_blocks;
-        private HeaderBlock _header;
+        private readonly List<BATBlock> _xbat_blocks;
+        private readonly List<BATBlock> _bat_blocks;
+        private readonly HeaderBlock _header;
         private DirectoryNode _root;
 
         private DataSource _data;
@@ -310,8 +310,8 @@ namespace NPOI.POIFS.FileSystem
                 data.Write(headerBuffer.Buffer);
                 data.Position = headerBuffer.Length;
 
-                //IOUtils.ReadFully(channel, data);
-                data.Position += IOUtils.ReadFully(channel, data.Buffer, data.Position, (int)channel.Length);
+                //IOUtils.ReadFully(channel, data.Buffer);
+                data.Position += IOUtils.ReadFully(channel, data.Buffer, data.Position, (int)maxSize);
                 success = true;
 
                 // Turn it into a DataSource
@@ -367,8 +367,7 @@ namespace NPOI.POIFS.FileSystem
             LongField signature = new LongField(HeaderBlockConstants._signature_offset, header);
 
             // Wind back those 8 bytes
-            if (inp is PushbackInputStream) {
-                PushbackInputStream pin = (PushbackInputStream)inp;
+            if (inp is PushbackInputStream pin) {
                 pin.Unread(header, 0, bytesRead);
             } else {
                 inp.Position = 0;
@@ -790,8 +789,8 @@ namespace NPOI.POIFS.FileSystem
          */
         public bool IsInPlaceWriteable()
         {
-            if (_data is FileBackedDataSource) {
-                if (((FileBackedDataSource)_data).IsWriteable)
+            if (_data is FileBackedDataSource source) {
+                if (source.IsWriteable)
                 {
                     return true;
                 }
@@ -954,7 +953,7 @@ namespace NPOI.POIFS.FileSystem
                 return rval;
 
             }
-            return new Object[0];
+            return Array.Empty<Object>();
         }
 
         /**
@@ -965,11 +964,11 @@ namespace NPOI.POIFS.FileSystem
          * back end store
          */
 
-        protected IEnumerator GetViewableIterator()
+        protected IEnumerator<Object> GetViewableIterator()
         {
             if (!PreferArray)
             {
-                return ((POIFSViewable)Root).ViewableIterator;
+                return Root.ViewableIterator;
             }
             return null;
         }
@@ -1019,12 +1018,12 @@ namespace NPOI.POIFS.FileSystem
             get { return GetShortDescription(); }
         }
 
-        public Array ViewableArray
+        public Object[] ViewableArray
         {
             get { return GetViewableArray(); }
         }
 
-        public IEnumerator ViewableIterator
+        public IEnumerator<Object> ViewableIterator
         {
             get { return GetViewableIterator(); }
         }

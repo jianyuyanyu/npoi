@@ -67,7 +67,7 @@ namespace NPOI.XSSF.UserModel
         public string GetSchema()
         {
             CT_Schema ctSchema = GetCTSchema();
-            return ctSchema.InnerXml;
+            return ctSchema.Any.OuterXml;
         }
 
         /**
@@ -83,10 +83,9 @@ namespace NPOI.XSSF.UserModel
                 XSSFSheet sheet = (XSSFSheet)mapInfo.Workbook.GetSheetAt(i);
                 foreach (POIXMLDocumentPart p in sheet.GetRelations())
                 {
-                    if (p is SingleXmlCells)
+                    if (p is SingleXmlCells singleXmlCells)
                     {
-                        SingleXmlCells SingleXMLCells = (SingleXmlCells)p;
-                        foreach (XSSFSingleXmlCell cell in SingleXMLCells.GetAllSimpleXmlCell())
+                        foreach (XSSFSingleXmlCell cell in singleXmlCells.GetAllSimpleXmlCell())
                         {
                             if (cell.GetMapId() == ctMap.ID)
                             {
@@ -104,9 +103,7 @@ namespace NPOI.XSSF.UserModel
          */
         public List<XSSFTable> GetRelatedTables()
         {
-
             List<XSSFTable> tables = new List<XSSFTable>();
-            int sheetNumber = mapInfo.Workbook.NumberOfSheets;
 
             foreach (ISheet sheet in mapInfo.Workbook)
             {

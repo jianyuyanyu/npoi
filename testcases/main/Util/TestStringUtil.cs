@@ -20,9 +20,9 @@ namespace TestCases.Util
 {
     using System;
     using System.Text;
-
+    using System.Threading;
     using NPOI.Util;
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     /**
      * Unit Test for StringUtil
      *
@@ -58,7 +58,7 @@ namespace TestCases.Util
                 Test_data[index++] = (byte)('a' + k);
             }
 
-            Assert.AreEqual("abcdefghijklmnop",
+            ClassicAssert.AreEqual("abcdefghijklmnop",
                     StringUtil.GetFromUnicodeBE(Test_data));
         }
 
@@ -79,7 +79,7 @@ namespace TestCases.Util
                                       0x00, 0x74,
         };
 
-            Assert.AreEqual("\u0422\u0435\u0441\u0442 test",
+            ClassicAssert.AreEqual("\u0422\u0435\u0441\u0442 test",
                     StringUtil.GetFromUnicodeBE(Test_data));
         }
 
@@ -101,7 +101,7 @@ namespace TestCases.Util
         };
 
 
-            Assert.AreEqual("\u0422\u0435\u0441\u0442 test",
+            ClassicAssert.AreEqual("\u0422\u0435\u0441\u0442 test",
                     StringUtil.GetFromUnicodeLE(Test_data));
         }
 
@@ -118,9 +118,9 @@ namespace TestCases.Util
                 Test_data[index++] = (byte)0;
                 Test_data[index++] = (byte)('a' + k);
             }
-            Assert.AreEqual("abcdefghijklmno",
+            ClassicAssert.AreEqual("abcdefghijklmno",
                     StringUtil.GetFromUnicodeBE(Test_data, 0, 15));
-            Assert.AreEqual("bcdefghijklmnop",
+            ClassicAssert.AreEqual("bcdefghijklmnop",
                     StringUtil.GetFromUnicodeBE(Test_data, 2, 15));
             try
             {
@@ -181,14 +181,14 @@ namespace TestCases.Util
             StringUtil.PutCompressedUnicode(inPut, outPut, 0);
             for (int j = 0; j < expected_outPut.Length; j++)
             {
-                Assert.AreEqual(expected_outPut[j],
+                ClassicAssert.AreEqual(expected_outPut[j],
                         outPut[j], "Testing offset " + j);
             }
             StringUtil.PutCompressedUnicode(inPut, outPut,
                     100 - expected_outPut.Length);
             for (int j = 0; j < expected_outPut.Length; j++)
             {
-                Assert.AreEqual(expected_outPut[j],
+                ClassicAssert.AreEqual(expected_outPut[j],
                         outPut[100 + j - expected_outPut.Length], "Testing offset " + j);
             }
             try
@@ -223,14 +223,14 @@ namespace TestCases.Util
             StringUtil.PutUnicodeLE(inPut, outPut, 0);
             for (int j = 0; j < expected_outPut.Length; j++)
             {
-                Assert.AreEqual(expected_outPut[j],
+                ClassicAssert.AreEqual(expected_outPut[j],
                         outPut[j], "Testing offset " + j);
             }
             StringUtil.PutUnicodeLE(inPut, outPut,
                     100 - expected_outPut.Length);
             for (int j = 0; j < expected_outPut.Length; j++)
             {
-                Assert.AreEqual(expected_outPut[j],
+                ClassicAssert.AreEqual(expected_outPut[j],
                         outPut[100 + j - expected_outPut.Length], "Testing offset " + j);
             }
             try
@@ -248,10 +248,31 @@ namespace TestCases.Util
         [Test]
         public void Join()
         {
-            Assert.AreEqual("", StringUtil.Join(",")); // degenerate case: nothing to join
-            Assert.AreEqual("abc", StringUtil.Join(",", "abc")); // degenerate case: one thing to join, no trailing comma
-            Assert.AreEqual("abc|def|ghi", StringUtil.Join("|", "abc", "def", "ghi"));
-            Assert.AreEqual("5|8.5|True|string", StringUtil.Join("|", 5, 8.5, true, "string")); //assumes Locale prints number decimal point as a period rather than a comma
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
+            ClassicAssert.AreEqual("", StringUtil.Join(",")); // degenerate case: nothing to join
+            ClassicAssert.AreEqual("abc", StringUtil.Join(",", "abc")); // degenerate case: one thing to join, no trailing comma
+            ClassicAssert.AreEqual("abc|def|ghi", StringUtil.Join("|", "abc", "def", "ghi"));
+            ClassicAssert.AreEqual("5|8.5|True|string", StringUtil.Join("|", 5, 8.5, true, "string")); //assumes Locale prints number decimal point as a period rather than a comma
+        }
+
+        [Test]
+        public void Count()
+        {
+            String test = "Apache POI project\n\u00a9 Copyright 2016";
+            // supports search in null or empty string
+            ClassicAssert.AreEqual(0, StringUtil.CountMatches(null, 'A'), "null");
+            ClassicAssert.AreEqual(0, StringUtil.CountMatches("", 'A'), "empty string");
+
+            ClassicAssert.AreEqual(2, StringUtil.CountMatches(test, 'e'), "normal");
+            ClassicAssert.AreEqual(1, StringUtil.CountMatches(test, 'a'), "normal, should not find a in escaped copyright");
+
+            // search for non-printable characters
+            ClassicAssert.AreEqual(0, StringUtil.CountMatches(test, '\0'), "null character");
+            ClassicAssert.AreEqual(0, StringUtil.CountMatches(test, '\r'), "CR");
+            ClassicAssert.AreEqual(1, StringUtil.CountMatches(test, '\n'), "LF");
+
+            // search for unicode characters
+            ClassicAssert.AreEqual(1, StringUtil.CountMatches(test, '\u00a9'), "Unicode");
         }
     }
 }

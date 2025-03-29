@@ -6,7 +6,7 @@ namespace NPOI.SS.Formula.Functions
     public class SearchFind : Var2or3ArgFunction
     {
 
-        private bool _isCaseSensitive;
+        private readonly bool _isCaseSensitive;
 
         public SearchFind(bool isCaseSensitive)
         {
@@ -47,6 +47,11 @@ namespace NPOI.SS.Formula.Functions
         }
         private ValueEval Eval(String haystack, String needle, int startIndex)
         {
+            if (startIndex >= haystack.Length)
+            {
+                return ErrorEval.VALUE_INVALID;
+            }
+            
             int result;
             if (_isCaseSensitive)
             {

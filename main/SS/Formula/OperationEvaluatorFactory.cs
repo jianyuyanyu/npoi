@@ -36,7 +36,7 @@ namespace NPOI.SS.Formula
     {
         private static Type[] OPERATION_CONSTRUCTOR_CLASS_ARRAY = new Type[] { typeof(Ptg) };
 
-        private static Hashtable _instancesByPtgClass = InitialiseInstancesMap();
+        private static readonly Hashtable _instancesByPtgClass = InitialiseInstancesMap();
 
         private OperationEvaluatorFactory()
         {
@@ -96,9 +96,8 @@ namespace NPOI.SS.Formula
             FreeRefFunction udfFunc = null;
             if (result == null)
             {
-                if (ptg is AbstractFunctionPtg)
+                if (ptg is AbstractFunctionPtg fptg)
                 {
-                    AbstractFunctionPtg fptg = (AbstractFunctionPtg)ptg;
                     int functionIndex = fptg.FunctionIndex;
                     switch (functionIndex)
                     {
@@ -117,9 +116,8 @@ namespace NPOI.SS.Formula
 
             if (result != null)
             {
-                if (result is ArrayFunction)
+                if (result is ArrayFunction func)
                 {
-                    ArrayFunction func = (ArrayFunction)result;
                     ValueEval eval = EvaluateArrayFunction(func, args, ec);
                     if (eval != null)
                     {
