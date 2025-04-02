@@ -98,10 +98,22 @@ namespace NPOI.XSSF.UserModel
         }
 
         /**
+         * Returns the frame id.
+         * @return id of the frame
+         */
+        public override uint ID
+        {
+            get
+            {
+                return GetNonVisualProperties().id;
+            }
+        }
+
+        /**
          * Returns the frame name.
          * @return name of the frame
          */
-        public String Name
+        public override String Name
         {
             get
             {
@@ -123,7 +135,7 @@ namespace NPOI.XSSF.UserModel
          * Returns the frame anchor.
          * @return the anchor this frame is attached to
          */
-        public XSSFClientAnchor Anchor
+        public new XSSFClientAnchor Anchor
         {
             get
             {
@@ -173,7 +185,7 @@ namespace NPOI.XSSF.UserModel
          ///   <attribute name="uri" type="xsd:token"/>
          /// </complexType>
         /// </example>
-        private void AppendChartElement(CT_GraphicalObjectData data, String id)
+        private static void AppendChartElement(CT_GraphicalObjectData data, String id)
         {
             String r_namespaceUri = ST_RelationshipId.NamespaceURI;
             String c_namespaceUri = XSSFDrawing.NAMESPACE_C;
@@ -196,6 +208,8 @@ namespace NPOI.XSSF.UserModel
         {
             return null;
         }
+
+        public override string ShapeName => graphicFrame.nvGraphicFramePr.cNvPr.name;
     }
 }
 

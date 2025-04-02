@@ -56,8 +56,8 @@ namespace NPOI.SS.Formula.Functions
             public static readonly CmpOp OP_LT = op("<", LT);
             public static readonly CmpOp OP_GT = op(">", GT);
             public static readonly CmpOp OP_GE = op(">=", GE);
-            private String _representation;
-            private int _code;
+            private readonly String _representation;
+            private readonly int _code;
 
             private static CmpOp op(String rep, int code)
             {
@@ -88,21 +88,21 @@ namespace NPOI.SS.Formula.Functions
             public static CmpOp GetOperator(String value)
             {
                 int len = value.Length;
-                if (len < 1)
+                if(len < 1)
                 {
                     return OP_NONE;
                 }
 
                 char firstChar = value[0];
 
-                switch (firstChar)
+                switch(firstChar)
                 {
                     case '=':
                         return OP_EQ;
                     case '>':
-                        if (len > 1)
+                        if(len > 1)
                         {
-                            switch (value[1])
+                            switch(value[1])
                             {
                                 case '=':
                                     return OP_GE;
@@ -110,9 +110,9 @@ namespace NPOI.SS.Formula.Functions
                         }
                         return OP_GT;
                     case '<':
-                        if (len > 1)
+                        if(len > 1)
                         {
-                            switch (value[1])
+                            switch(value[1])
                             {
                                 case '=':
                                     return OP_LE;
@@ -126,7 +126,7 @@ namespace NPOI.SS.Formula.Functions
             }
             public bool Evaluate(bool cmpResult)
             {
-                switch (_code)
+                switch(_code)
                 {
                     case NONE:
                     case EQ:
@@ -139,16 +139,21 @@ namespace NPOI.SS.Formula.Functions
             }
             public bool Evaluate(int cmpResult)
             {
-                switch (_code)
+                switch(_code)
                 {
                     case NONE:
                     case EQ:
                         return cmpResult == 0;
-                    case NE: return cmpResult != 0;
-                    case LT: return cmpResult < 0;
-                    case LE: return cmpResult <= 0;
-                    case GT: return cmpResult > 0;
-                    case GE: return cmpResult >= 0;
+                    case NE:
+                        return cmpResult != 0;
+                    case LT:
+                        return cmpResult < 0;
+                    case LE:
+                        return cmpResult <= 0;
+                    case GT:
+                        return cmpResult > 0;
+                    case GE:
+                        return cmpResult >= 0;
                 }
                 throw new Exception("Cannot call bool Evaluate on non-equality operator '"
                         + _representation + "'");
@@ -170,7 +175,7 @@ namespace NPOI.SS.Formula.Functions
         }
         public abstract class MatcherBase : IMatchPredicate
         {
-            private CmpOp _operator;
+            private readonly CmpOp _operator;
 
             public MatcherBase(CmpOp operator1)
             {
@@ -208,7 +213,7 @@ namespace NPOI.SS.Formula.Functions
         public class ErrorMatcher : MatcherBase
         {
 
-            private int _value;
+            private readonly int _value;
 
             public ErrorMatcher(int errorCode, CmpOp operator1)
                 : base(operator1)
@@ -226,9 +231,9 @@ namespace NPOI.SS.Formula.Functions
 
             public override bool Matches(ValueEval x)
             {
-                if (x is ErrorEval)
+                if(x is ErrorEval eval)
                 {
-                    int testValue = ((ErrorEval)x).ErrorCode;
+                    int testValue = eval.ErrorCode;
                     return Evaluate(testValue - _value);
                 }
                 return false;
@@ -241,10 +246,11 @@ namespace NPOI.SS.Formula.Functions
                 }
             }
         }
-        private class NumberMatcher : MatcherBase
+
+        private sealed class NumberMatcher : MatcherBase
         {
 
-            private double _value;
+            private readonly double _value;
 
             public NumberMatcher(double value, CmpOp optr)
                 : base(optr)
@@ -255,11 +261,11 @@ namespace NPOI.SS.Formula.Functions
             public override bool Matches(ValueEval x)
             {
                 double testValue;
-                if (x is StringEval)
+                if(x is StringEval se)
                 {
                     // if the target(x) is a string, but parses as a number
                     // it may still count as a match, only for the equality operator
-                    switch (Code)
+                    switch(Code)
                     {
                         case CmpOp.EQ:
                         case CmpOp.NONE:
@@ -273,23 +279,22 @@ namespace NPOI.SS.Formula.Functions
                             // for example '>5' does not match '6',
                             return false;
                     }
-                    StringEval se = (StringEval)x;
+
                     Double val = OperandResolver.ParseDouble(se.StringValue);
-                    if (double.IsNaN(val))
+                    if(double.IsNaN(val))
                     {
                         // x is text that is not a number
                         return false;
                     }
                     return _value == val;
                 }
-                else if ((x is NumberEval))
+                else if((x is NumberEval ne))
                 {
-                    NumberEval ne = (NumberEval)x;
                     testValue = ne.NumberValue;
                 }
-                else if ((x is BlankEval))
+                else if((x is BlankEval))
                 {
-                    switch (Code)
+                    switch(Code)
                     {
                         case CmpOp.NE:
                             // Excel counts blank values in range as not equal to any value. See Bugzilla 51498
@@ -310,10 +315,11 @@ namespace NPOI.SS.Formula.Functions
                 get { return _value.ToString(CultureInfo.InvariantCulture); }
             }
         }
-        private class BooleanMatcher : MatcherBase
+
+        private sealed class BooleanMatcher : MatcherBase
         {
 
-            private int _value;
+            private readonly int _value;
 
             public BooleanMatcher(bool value, CmpOp optr)
                 : base(optr)
@@ -329,35 +335,27 @@ namespace NPOI.SS.Formula.Functions
             public override bool Matches(ValueEval x)
             {
                 int testValue;
-                if (x is StringEval)
+                if(x is StringEval)
                 {
-#if !HIDE_UNREACHABLE_CODE
-                    if (true)
-                    { // change to false to observe more intuitive behaviour
-                        // Note - Unlike with numbers, it seems that COUNTIF never matches
-                        // boolean values when the target(x) is a string
-                        return false;
-                    }
-                    StringEval se = (StringEval)x;
-                    Boolean? val = ParseBoolean(se.StringValue);
-                    if (val == null)
-                    {
-                        // x is text that is not a boolean
-                        return false;
-                    }
-                    testValue = BoolToInt(val.Value);
-#else
+                    // Note - Unlike with numbers, it seems that COUNTIF never matches
+                    // boolean values when the target(x) is a string
                     return false;
-#endif
+                    // uncomment to observe more intuitive behaviour
+                    // StringEval se = (StringEval)x;
+                    // Boolean val = parseBoolean(se.getStringValue());
+                    // if(val == null) {
+                    //     // x is text that is not a boolean
+                    //     return false;
+                    // }
+                    // testValue = boolToInt(val.booleanValue());
                 }
-                else if ((x is BoolEval))
+                else if(x is BoolEval be)
                 {
-                    BoolEval be = (BoolEval)x;
                     testValue = BoolToInt(be.BooleanValue);
                 }
-                else if ((x is BlankEval))
+                else if((x is BlankEval))
                 {
-                    switch (Code)
+                    switch(Code)
                     {
                         case CmpOp.NE:
                             // Excel counts blank values in range as not equal to any value. See Bugzilla 51498
@@ -366,17 +364,17 @@ namespace NPOI.SS.Formula.Functions
                             return false;
                     }
                 }
-                else if ((x is NumberEval))
+                else if((x is NumberEval))
                 {
-                    switch (Code)
-                {
-                    case CmpOp.NE:
-                        // not-equals comparison of a number to boolean always returnes false
-                        return true;
-                    default:
-                        return false;
+                    switch(Code)
+                    {
+                        case CmpOp.NE:
+                            // not-equals comparison of a number to boolean always returnes false
+                            return true;
+                        default:
+                            return false;
+                    }
                 }
-            }
                 else
                 {
                     return false;
@@ -389,18 +387,19 @@ namespace NPOI.SS.Formula.Functions
                 get { return _value == 1 ? "TRUE" : "FALSE"; }
             }
         }
-        internal class StringMatcher : MatcherBase
+
+        internal sealed class StringMatcher : MatcherBase
         {
 
-            private String _value;
-            private CmpOp _operator;
-            private Regex _pattern;
+            private readonly String _value;
+            private readonly CmpOp _operator;
+            private readonly Regex _pattern;
 
-            public StringMatcher(String value, CmpOp optr):base(optr)
+            public StringMatcher(String value, CmpOp optr) : base(optr)
             {
                 _value = value;
                 _operator = optr;
-                switch (optr.Code)
+                switch(optr.Code)
                 {
                     case CmpOp.NONE:
                     case CmpOp.EQ:
@@ -414,9 +413,9 @@ namespace NPOI.SS.Formula.Functions
             }
             public override bool Matches(ValueEval x)
             {
-                if (x is BlankEval)
+                if(x is BlankEval)
                 {
-                    switch (_operator.Code)
+                    switch(_operator.Code)
                     {
                         case CmpOp.NONE:
                         case CmpOp.EQ:
@@ -429,28 +428,32 @@ namespace NPOI.SS.Formula.Functions
                     // no other criteria matches a blank cell
                     return false;
                 }
-                if (!(x is StringEval))
+                if(x is not StringEval eval)
                 {
-                    if (_operator.Code==CmpOp.NE) return true;
+                    if(_operator.Code==CmpOp.NE)
+                        return true;
                     // must almost always be string
                     // even if match str is wild, but contains only digits
                     // e.g. '4*7', NumberEval(4567) does not match
                     return false;
                 }
-                String testedValue = ((StringEval)x).StringValue;
-                if ((testedValue.Length < 1 && _value.Length < 1))
+                String testedValue = eval.StringValue;
+                if((testedValue.Length < 1 && _value.Length < 1))
                 {
                     // odd case: criteria '=' behaves differently to criteria ''
 
-                    switch (_operator.Code)
+                    switch(_operator.Code)
                     {
-                        case CmpOp.NONE: return true;
-                        case CmpOp.EQ: return false;
-                        case CmpOp.NE: return true;
+                        case CmpOp.NONE:
+                            return true;
+                        case CmpOp.EQ:
+                            return false;
+                        case CmpOp.NE:
+                            return true;
                     }
                     return false;
                 }
-                if (_pattern != null)
+                if(_pattern != null)
                 {
                     return Evaluate(_pattern.IsMatch(testedValue));
                 }
@@ -469,10 +472,10 @@ namespace NPOI.SS.Formula.Functions
                 StringBuilder sb = new StringBuilder(len);
                 sb.Append("^");
                 bool hasWildCard = false;
-                for (int i = 0; i < len; i++)
+                for(int i = 0; i < len; i++)
                 {
                     char ch = value[i];
-                    switch (ch)
+                    switch(ch)
                     {
                         case '?':
                             hasWildCard = true;
@@ -485,10 +488,10 @@ namespace NPOI.SS.Formula.Functions
                             sb.Append(".*");
                             continue;
                         case '~':
-                            if (i + 1 < len)
+                            if(i + 1 < len)
                             {
                                 ch = value[i + 1];
-                                switch (ch)
+                                switch(ch)
                                 {
                                     case '?':
                                     case '*':
@@ -516,7 +519,7 @@ namespace NPOI.SS.Formula.Functions
                     sb.Append(ch);
                 }
                 sb.Append("$");
-                if (hasWildCard)
+                if(hasWildCard)
                 {
                     return new Regex(sb.ToString(), RegexOptions.IgnoreCase);
                 }
@@ -527,7 +530,7 @@ namespace NPOI.SS.Formula.Functions
             {
                 get
                 {
-                    if (_pattern == null)
+                    if(_pattern == null)
                     {
                         return _value;
                     }
@@ -540,15 +543,15 @@ namespace NPOI.SS.Formula.Functions
         /**
      * @return the number of evaluated cells in the range that match the specified criteria
      */
-        private double CountMatchingCellsInArea(ValueEval rangeArg, IMatchPredicate criteriaPredicate)
+        private static double CountMatchingCellsInArea(ValueEval rangeArg, IMatchPredicate criteriaPredicate)
         {
-            if (rangeArg is RefEval)
+            if(rangeArg is RefEval arg)
             {
-                return CountUtils.CountMatchingCellsInRef((RefEval)rangeArg, criteriaPredicate);
+                return CountUtils.CountMatchingCellsInRef(arg, criteriaPredicate);
             }
-            else if (rangeArg is ThreeDEval)
+            else if(rangeArg is ThreeDEval eval)
             {
-                return CountUtils.CountMatchingCellsInArea((ThreeDEval)rangeArg, criteriaPredicate);
+                return CountUtils.CountMatchingCellsInArea(eval, criteriaPredicate);
             }
             else
             {
@@ -565,9 +568,9 @@ namespace NPOI.SS.Formula.Functions
         {
             try
             {
-                return OperandResolver.GetSingleValue(arg, srcRowIndex, (short)srcColumnIndex);
+                return OperandResolver.GetSingleValue(arg, srcRowIndex, (short) srcColumnIndex);
             }
-            catch (EvaluationException e)
+            catch(EvaluationException e)
             {
                 return e.GetErrorEval();
             }
@@ -582,18 +585,18 @@ namespace NPOI.SS.Formula.Functions
             value = value.Substring(operator1.Length);
 
             bool? booleanVal = ParseBoolean(value);
-            if (booleanVal != null)
+            if(booleanVal != null)
             {
                 return new BooleanMatcher(booleanVal.Value, operator1);
             }
 
             Double doubleVal = OperandResolver.ParseDouble(value);
-            if (!double.IsNaN(doubleVal))
+            if(!double.IsNaN(doubleVal))
             {
                 return new NumberMatcher(doubleVal, operator1);
             }
             ErrorEval ee = ParseError(value);
-            if (ee != null)
+            if(ee != null)
             {
                 return new ErrorMatcher(ee.ErrorCode, operator1);
             }
@@ -610,24 +613,24 @@ namespace NPOI.SS.Formula.Functions
 
             ValueEval evaluatedCriteriaArg = EvaluateCriteriaArg(arg, srcRowIndex, srcColumnIndex);
 
-            if (evaluatedCriteriaArg is NumberEval)
+            if(evaluatedCriteriaArg is NumberEval eval)
             {
-                return new NumberMatcher(((NumberEval)evaluatedCriteriaArg).NumberValue, CmpOp.OP_NONE);
+                return new NumberMatcher(eval.NumberValue, CmpOp.OP_NONE);
             }
-            if (evaluatedCriteriaArg is BoolEval)
+            if(evaluatedCriteriaArg is BoolEval boolEval)
             {
-                return new BooleanMatcher(((BoolEval)evaluatedCriteriaArg).BooleanValue, CmpOp.OP_NONE);
+                return new BooleanMatcher(boolEval.BooleanValue, CmpOp.OP_NONE);
             }
 
-            if (evaluatedCriteriaArg is StringEval)
+            if(evaluatedCriteriaArg is StringEval stringEval)
             {
-                return CreateGeneralMatchPredicate((StringEval)evaluatedCriteriaArg);
+                return CreateGeneralMatchPredicate(stringEval);
             }
-            if (evaluatedCriteriaArg is ErrorEval)
+            if(evaluatedCriteriaArg is ErrorEval errorEval)
             {
-                return new ErrorMatcher(((ErrorEval)evaluatedCriteriaArg).ErrorCode, CmpOp.OP_NONE);
+                return new ErrorMatcher(errorEval.ErrorCode, CmpOp.OP_NONE);
             }
-            if (evaluatedCriteriaArg == BlankEval.instance)
+            if(evaluatedCriteriaArg == BlankEval.instance)
             {
                 return null;
             }
@@ -636,17 +639,24 @@ namespace NPOI.SS.Formula.Functions
         }
         private static ErrorEval ParseError(String value)
         {
-            if (value.Length < 4 || value[0] != '#')
+            if(value.Length < 4 || value[0] != '#')
             {
                 return null;
             }
-            if (value.Equals("#NULL!")) return ErrorEval.NULL_INTERSECTION;
-            if (value.Equals("#DIV/0!")) return ErrorEval.DIV_ZERO;
-            if (value.Equals("#VALUE!")) return ErrorEval.VALUE_INVALID;
-            if (value.Equals("#REF!")) return ErrorEval.REF_INVALID;
-            if (value.Equals("#NAME?")) return ErrorEval.NAME_INVALID;
-            if (value.Equals("#NUM!")) return ErrorEval.NUM_ERROR;
-            if (value.Equals("#N/A")) return ErrorEval.NA;
+            if(value.Equals("#NULL!"))
+                return ErrorEval.NULL_INTERSECTION;
+            if(value.Equals("#DIV/0!"))
+                return ErrorEval.DIV_ZERO;
+            if(value.Equals("#VALUE!"))
+                return ErrorEval.VALUE_INVALID;
+            if(value.Equals("#REF!"))
+                return ErrorEval.REF_INVALID;
+            if(value.Equals("#NAME?"))
+                return ErrorEval.NAME_INVALID;
+            if(value.Equals("#NUM!"))
+                return ErrorEval.NUM_ERROR;
+            if(value.Equals("#N/A"))
+                return ErrorEval.NA;
 
             return null;
         }
@@ -656,22 +666,22 @@ namespace NPOI.SS.Formula.Functions
         /* package */
         public static bool? ParseBoolean(String strRep)
         {
-            if (strRep.Length < 1)
+            if(strRep.Length < 1)
             {
                 return null;
             }
-            switch (strRep[0])
+            switch(strRep[0])
             {
                 case 't':
                 case 'T':
-                    if ("TRUE".Equals(strRep, StringComparison.OrdinalIgnoreCase))
+                    if("TRUE".Equals(strRep, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
                     break;
                 case 'f':
                 case 'F':
-                    if ("FALSE".Equals(strRep, StringComparison.OrdinalIgnoreCase))
+                    if("FALSE".Equals(strRep, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -683,7 +693,7 @@ namespace NPOI.SS.Formula.Functions
         public override ValueEval Evaluate(int srcRowIndex, int srcColumnIndex, ValueEval arg0, ValueEval arg1)
         {
             IMatchPredicate mp = CreateCriteriaPredicate(arg1, srcRowIndex, srcColumnIndex);
-            if (mp == null)
+            if(mp == null)
             {
                 // If the criteria arg is a reference to a blank cell, countif always returns zero.
                 return NumberEval.ZERO;

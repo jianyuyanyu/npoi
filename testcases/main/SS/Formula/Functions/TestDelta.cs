@@ -18,7 +18,7 @@
 using NPOI.SS.Formula.Eval;
 using NPOI.SS.Formula.Functions;
 using System;
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 namespace TestCases.SS.Formula.Functions
 {
     /**
@@ -39,19 +39,20 @@ namespace TestCases.SS.Formula.Functions
         private static void ConfirmValue(String number1, String number2, double expected)
         {
             ValueEval result = invokeValue(number1, number2);
-            Assert.AreEqual(typeof(NumberEval), result.GetType());
-            Assert.AreEqual(expected, ((NumberEval)result).NumberValue, 0.0);
+            ClassicAssert.AreEqual(typeof(NumberEval), result.GetType());
+            ClassicAssert.AreEqual(expected, ((NumberEval)result).NumberValue, 0.0);
         }
 
         private static void ConfirmValueError(String number1, String number2)
         {
             ValueEval result = invokeValue(number1, number2);
-            Assert.AreEqual(typeof(ErrorEval), result.GetType());
-            Assert.AreEqual(ErrorEval.VALUE_INVALID, result);
+            ClassicAssert.AreEqual(typeof(ErrorEval), result.GetType());
+            ClassicAssert.AreEqual(ErrorEval.VALUE_INVALID, result);
         }
         [Test]
         public void TestBasic()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             ConfirmValue("5", "4", 0); // Checks whether 5 Equals 4 (0)
             ConfirmValue("5", "5", 1); // Checks whether 5 Equals 5 (1)
 

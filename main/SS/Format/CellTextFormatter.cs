@@ -32,7 +32,7 @@ namespace NPOI.SS.Format
         private String desc;
 
         internal static CellFormatter SIMPLE_TEXT = new CellTextFormatter("@");
-        private class PartHandler : CellFormatPart.IPartHandler
+        private sealed class PartHandler : CellFormatPart.IPartHandler
         {
             private int numplace;
             public int NumPlace
@@ -68,7 +68,7 @@ namespace NPOI.SS.Format
             int pos = desc.Length - 1;
             for (int i = 0; i < textPos.Length; i++)
             {
-                textPos[i] = desc.LastIndexOf("\u0000", pos);
+                textPos[i] = desc.LastIndexOf('\u0000', pos);
                 pos = textPos[i] - 1;
             }
         }

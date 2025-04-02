@@ -16,14 +16,16 @@
 ==================================================================== */
 
 using System.IO;
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 using System.Text;
 using NPOI.Util;
 using NPOI.XSSF.Util;
+using System;
 
 namespace TestCases.XSSF.Util
 {
     [TestFixture]
+    [Obsolete]
     public class TestEvilUnclosedBRFixingInputStream
     {
         [Test]
@@ -32,27 +34,11 @@ namespace TestCases.XSSF.Util
             byte[] ok = Encoding.UTF8.GetBytes("<p><div>Hello There!</div> <div>Tags!</div></p>");
 
             EvilUnclosedBRFixingInputStream inp = new EvilUnclosedBRFixingInputStream(
-                  new MemoryStream(ok)
+                  new ByteArrayInputStream(ok)
             );
 
-            MemoryStream bout = new MemoryStream();
-            bool going = true;
-            while (going)
-            {
-                byte[] b = new byte[1024];
-                int r = inp.Read(b);
-                if (r > 0)
-                {
-                    bout.Write(b, 0, r);
-                }
-                else
-                {
-                    going = false;
-                }
-            }
-
-            byte[] result = bout.ToArray();
-            Assert.IsTrue(Arrays.Equals(ok, result));
+            ClassicAssert.IsTrue(Arrays.Equals(ok, IOUtils.ToByteArray(inp)));
+            inp.Close();
         }
         [Test]
         public void TestProblem()
@@ -61,27 +47,11 @@ namespace TestCases.XSSF.Util
             byte[] fixed1 = Encoding.UTF8.GetBytes("<p><div>Hello<br/>There!</div> <div>Tags!</div></p>");
 
             EvilUnclosedBRFixingInputStream inp = new EvilUnclosedBRFixingInputStream(
-                  new MemoryStream(orig)
+                  new ByteArrayInputStream(orig)
             );
 
-            MemoryStream bout = new MemoryStream();
-            bool going = true;
-            while (going)
-            {
-                byte[] b = new byte[1024];
-                int r = inp.Read(b);
-                if (r > 0)
-                {
-                    bout.Write(b, 0, r);
-                }
-                else
-                {
-                    going = false;
-                }
-            }
-
-            byte[] result = bout.ToArray();
-            Assert.IsTrue(Arrays.Equals(fixed1, result));
+            ClassicAssert.IsTrue(Arrays.Equals(fixed1, IOUtils.ToByteArray(inp)));
+            inp.Close();
         }
 
         /**
@@ -98,7 +68,7 @@ namespace TestCases.XSSF.Util
             for (int i = 5; i < orig.Length; i++)
             {
                 EvilUnclosedBRFixingInputStream inp = new EvilUnclosedBRFixingInputStream(
-                      new MemoryStream(orig)
+                      new ByteArrayInputStream(orig)
                 );
 
                 MemoryStream bout = new MemoryStream();
@@ -118,7 +88,8 @@ namespace TestCases.XSSF.Util
                 }
 
                 byte[] result = bout.ToArray();
-                Assert.IsTrue(Arrays.Equals(fixed1, result));
+                ClassicAssert.IsTrue(Arrays.Equals(fixed1, result));
+                inp.Close();
             }
         }
     }

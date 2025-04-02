@@ -59,7 +59,7 @@ namespace NPOI.SS.UserModel
             //DataFormatter.SetExcelStyleRoundingMode(format4digits);
         }
 
-        private double dateToBeFormatted = 0.0;
+        private double dateToBeFormatted;
 
         public ExcelStyleDateFormatter()
             : base()
@@ -73,16 +73,18 @@ namespace NPOI.SS.UserModel
         }
 
 
-        //public ExcelStyleDateFormatter(String pattern,
-        //                           DateFormatSymbols formatSymbols)
-        //{
-        //    super(processFormatPattern(pattern), formatSymbols);
-        //}
+        public ExcelStyleDateFormatter(String pattern,
+                                   DateTimeFormatInfo formatSymbols)
+            : base(ProcessFormatPattern(pattern), formatSymbols)
+        {
+            
+        }
 
-        //public ExcelStyleDateFormatter(String pattern, Locale locale)
-        //{
-        //    super(processFormatPattern(pattern), locale);
-        //}
+        public ExcelStyleDateFormatter(String pattern, CultureInfo locale)
+            : base(ProcessFormatPattern(pattern), locale)
+        {
+
+        }
         private static string DateTimeMatchEvaluator(Match match)
         {
             return match.Groups[1].Value;
@@ -94,12 +96,12 @@ namespace NPOI.SS.UserModel
         private static String ProcessFormatPattern(String f)
         {
             String t = f.Replace("MMMMM", MMMMM_START_SYMBOL + "MMM" + MMMMM_TRUNCATE_SYMBOL);
-            t = Regex.Replace(t, "\\[H\\]", (H_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
-            t = Regex.Replace(t, "\\[HH\\]", (HH_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
-            t = Regex.Replace(t, "\\[m\\]", (M_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
-            t = Regex.Replace(t, "\\[mm\\]", (MM_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
-            t = Regex.Replace(t, "\\[s\\]", (S_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
-            t = Regex.Replace(t, "\\[ss\\]", (SS_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
+            t = Regex.Replace(t, "\\[H]", (H_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
+            t = Regex.Replace(t, "\\[HH]", (HH_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
+            t = Regex.Replace(t, "\\[m]", (M_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
+            t = Regex.Replace(t, "\\[mm]", (MM_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
+            t = Regex.Replace(t, "\\[s]", (S_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
+            t = Regex.Replace(t, "\\[ss]", (SS_BRACKET_SYMBOL).ToString(), RegexOptions.IgnoreCase);
             t = t.Replace("s.000", "s.fff");
             t = t.Replace("s.00", "s." + LL_BRACKET_SYMBOL);
             t = t.Replace("s.0", "s." + L_BRACKET_SYMBOL);
@@ -134,15 +136,17 @@ namespace NPOI.SS.UserModel
                 s = date.ToString(Pattern, culture);
             }
             else
+            {
                 s = Pattern;
-            if (s.IndexOf(QUOTE_SYMBOL) != -1)
+            }
+            if (s.Contains(QUOTE_SYMBOL))
             {
                 s = s.Replace(QUOTE_SYMBOL, '"');
             }
             // Now handle our special cases
-            if (s.IndexOf(MMMMM_START_SYMBOL) != -1)
+            if (s.Contains(MMMMM_START_SYMBOL))
             {
-                Regex reg = new Regex(MMMMM_START_SYMBOL + "(\\w)\\w+" + MMMMM_TRUNCATE_SYMBOL, RegexOptions.IgnoreCase);
+                Regex reg = new Regex(MMMMM_START_SYMBOL + "(\\p{L}|\\p{P}|\\p{N})[\\p{L}|\\p{P}|\\p{N}]+" + MMMMM_TRUNCATE_SYMBOL, RegexOptions.IgnoreCase);
                 Match m = reg.Match(s);
                 if (m.Success)
                 {
@@ -150,8 +154,7 @@ namespace NPOI.SS.UserModel
                 }
             }
 
-            if (s.IndexOf(H_BRACKET_SYMBOL) != -1 ||
-                    s.IndexOf(HH_BRACKET_SYMBOL) != -1)
+            if (s.Contains(H_BRACKET_SYMBOL) || s.Contains(HH_BRACKET_SYMBOL))
             {
                 double hours = dateToBeFormatted * 24 + 0.01;
                 //get the hour part of the time
@@ -166,8 +169,7 @@ namespace NPOI.SS.UserModel
                 );
             }
 
-            if (s.IndexOf(M_BRACKET_SYMBOL) != -1 ||
-                    s.IndexOf(MM_BRACKET_SYMBOL) != -1)
+            if (s.Contains(M_BRACKET_SYMBOL) || s.Contains(MM_BRACKET_SYMBOL))
             {
                 double minutes = dateToBeFormatted * 24 * 60 + 0.01;
                 minutes = Math.Floor(minutes);
@@ -180,8 +182,7 @@ namespace NPOI.SS.UserModel
                         format2digits.Format(minutes, culture)
                 );
             }
-            if (s.IndexOf(S_BRACKET_SYMBOL) != -1 ||
-                    s.IndexOf(SS_BRACKET_SYMBOL) != -1)
+            if (s.Contains(S_BRACKET_SYMBOL) || s.Contains(SS_BRACKET_SYMBOL))
             {
                 double seconds = (dateToBeFormatted * 24.0 * 60.0 * 60.0) + 0.01;
                 s = s.Replace(
@@ -194,8 +195,7 @@ namespace NPOI.SS.UserModel
                 );
             }
 
-            if (s.IndexOf(L_BRACKET_SYMBOL) != -1 ||
-                    s.IndexOf(LL_BRACKET_SYMBOL) != -1)
+            if (s.Contains(L_BRACKET_SYMBOL) || s.Contains(LL_BRACKET_SYMBOL))
             {
                 float millisTemp = (float)((dateToBeFormatted - Math.Floor(dateToBeFormatted)) * 24.0 * 60.0 * 60.0);
                 float millis = (millisTemp - (int)millisTemp);
@@ -214,11 +214,10 @@ namespace NPOI.SS.UserModel
 
         public override bool Equals(Object o)
         {
-            if (!(o is ExcelStyleDateFormatter)) {
+            if (o is not ExcelStyleDateFormatter other) {
                 return false;
             }
 
-            ExcelStyleDateFormatter other = (ExcelStyleDateFormatter)o;
             return dateToBeFormatted == other.dateToBeFormatted;
         }
 

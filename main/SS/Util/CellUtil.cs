@@ -87,7 +87,7 @@ namespace NPOI.SS.Util
 
         private static UnicodeMapping[] unicodeMappings;
 
-        private class UnicodeMapping
+        private sealed class UnicodeMapping
         {
 
             public String entityName;
@@ -120,6 +120,30 @@ namespace NPOI.SS.Util
             if (newCell == null) //not exist
             {
                 newCell = row.CreateCell(targetIndex);
+            }
+            else
+            {
+                //TODO:shift cells                
+            }
+
+            return CopyCell(oldCell, newCell, sourceIndex, targetIndex);
+        }
+
+        public static ICell CopyCell(IColumn column, int sourceIndex, int targetIndex)
+        {
+            // Grab a copy of the old/new cell
+            ICell oldCell = column.GetCell(sourceIndex);
+
+            // If the old cell is null jump to next cell
+            if (oldCell == null)
+            {
+                return null;
+            }
+
+            ICell newCell = column.GetCell(targetIndex);
+            if (newCell == null) //not exist
+            {
+                newCell = column.CreateCell(targetIndex);
             }
             else
             {
@@ -645,9 +669,9 @@ namespace NPOI.SS.Util
         {
             Object value = properties[name];
             BorderStyle border;
-            if (value is BorderStyle)
+            if (value is BorderStyle style)
             {
-                border = (BorderStyle)value;
+                border = style;
             }
             // @deprecated 3.15 beta 2. getBorderStyle will only work on BorderStyle enums instead of codes in the future.
             else if (value is short || value is int)
@@ -683,19 +707,18 @@ namespace NPOI.SS.Util
         {
             Object value = properties[name];
             FillPattern pattern;
-            if (value is FillPattern)
+            if (value is FillPattern fillPattern)
             {
-                pattern = (FillPattern)value;
+                pattern = fillPattern;
             }
             // @deprecated 3.15 beta 2. getFillPattern will only work on FillPattern enums instead of codes in the future.
-            else if (value is short)
+            else if (value is short code)
             {
                 //if (log.check(POILogger.WARN))
                 //{
                 //    log.log(POILogger.WARN, "Deprecation warning: CellUtil properties map uses Short values for "
                 //            + name + ". Should use FillPattern enums instead.");
                 //}
-                short code = (short)value;
                 pattern = (FillPattern)code;
             }
             else if (value == null)
@@ -721,19 +744,18 @@ namespace NPOI.SS.Util
         {
             Object value = properties[name];
             HorizontalAlignment align;
-            if (value is HorizontalAlignment)
+            if (value is HorizontalAlignment alignment)
             {
-                align = (HorizontalAlignment)value;
+                align = alignment;
             }
             // @deprecated 3.15 beta 2. getHorizontalAlignment will only work on HorizontalAlignment enums instead of codes in the future.
-            else if (value is short)
+            else if (value is short code)
             {
                 //if (log.check(POILogger.WARN))
                 //{
                 //    log.log(POILogger.WARN, "Deprecation warning: CellUtil properties map used a Short value for "
                 //            + name + ". Should use HorizontalAlignment enums instead.");
                 //}
-                short code = (short)value;
                 align = (HorizontalAlignment)code;
             }
             else if (value == null)
@@ -759,19 +781,18 @@ namespace NPOI.SS.Util
         {
             Object value = properties[name];
             VerticalAlignment align;
-            if (value is VerticalAlignment)
+            if (value is VerticalAlignment alignment)
             {
-                align = (VerticalAlignment)value;
+                align = alignment;
             }
             // @deprecated 3.15 beta 2. getVerticalAlignment will only work on VerticalAlignment enums instead of codes in the future.
-            else if (value is short)
+            else if (value is short code)
             {
                 //if (log.check(POILogger.WARN))
                 //{
                 //    log.log(POILogger.WARN, "Deprecation warning: CellUtil properties map used a Short value for "
                 //            + name + ". Should use VerticalAlignment enums instead.");
                 //}
-                short code = (short)value;
                 align = (VerticalAlignment)code;
             }
             else if (value == null)

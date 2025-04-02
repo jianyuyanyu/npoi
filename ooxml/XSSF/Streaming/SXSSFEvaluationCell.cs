@@ -24,8 +24,8 @@ namespace NPOI.XSSF.Streaming
 {
     public class SXSSFEvaluationCell : IEvaluationCell 
     {
-        private SXSSFEvaluationSheet _evalSheet;
-        private SXSSFCell _cell;
+        private readonly SXSSFEvaluationSheet _evalSheet;
+        private readonly SXSSFCell _cell;
 
         public SXSSFEvaluationCell(SXSSFCell cell, SXSSFEvaluationSheet evaluationSheet)
         {
@@ -163,13 +163,8 @@ namespace NPOI.XSSF.Streaming
                 return _cell.CachedFormulaResultType;
             }
         }
-        /**
-         * @since POI 3.15 beta 3
-         * @deprecated POI 3.15 beta 3.
-         * Will be deleted when we make the CellType enum transition. See bug 59791.
-         */
-        //@Internal(since= "POI 3.15 beta 3")
 
+        [Obsolete("Will be removed at NPOI 2.8, Use CachedFormulaResultType instead.")]
         public CellType GetCachedFormulaResultTypeEnum()
         {
             return _cell.GetCachedFormulaResultTypeEnum();

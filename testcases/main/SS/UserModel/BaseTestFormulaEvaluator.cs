@@ -18,8 +18,9 @@
 namespace TestCases.SS.UserModel
 {
     using NPOI.SS.UserModel;
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     using System;
+    using System.Collections.Generic;
 
     /**
      * Common superclass for Testing implementatiosn of{@link FormulaEvaluator}
@@ -49,19 +50,19 @@ namespace TestCases.SS.UserModel
 
             ICell c1 = r.CreateCell(0);
             c1.CellFormula = (/*setter*/"1+5");
-            Assert.AreEqual(0.0, c1.NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(0.0, c1.NumericCellValue, 0.0);
 
             ICell c2 = r.CreateCell(1);
             c2.CellFormula = (/*setter*/"10/2");
-            Assert.AreEqual(0.0, c2.NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(0.0, c2.NumericCellValue, 0.0);
 
             IFormulaEvaluator fe = wb.GetCreationHelper().CreateFormulaEvaluator();
 
             fe.EvaluateFormulaCell(c1);
             fe.EvaluateFormulaCell(c2);
 
-            Assert.AreEqual(6.0, c1.NumericCellValue, 0.0001);
-            Assert.AreEqual(5.0, c2.NumericCellValue, 0.0001);
+            ClassicAssert.AreEqual(6.0, c1.NumericCellValue, 0.0001);
+            ClassicAssert.AreEqual(5.0, c2.NumericCellValue, 0.0001);
 
             wb.Close();
         }
@@ -80,19 +81,19 @@ namespace TestCases.SS.UserModel
 
             ICell c1 = r.CreateCell(0);
             c1.CellFormula = (/*setter*/"SUM(A1:B1)");
-            Assert.AreEqual(0.0, c1.NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(0.0, c1.NumericCellValue, 0.0);
 
             ICell c2 = r.CreateCell(1);
             c2.CellFormula = (/*setter*/"SUM(A1:E1)");
-            Assert.AreEqual(0.0, c2.NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(0.0, c2.NumericCellValue, 0.0);
 
             ICell c3 = r.CreateCell(2);
             c3.CellFormula = (/*setter*/"COUNT(A1:A1)");
-            Assert.AreEqual(0.0, c3.NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(0.0, c3.NumericCellValue, 0.0);
 
             ICell c4 = r.CreateCell(3);
             c4.CellFormula = (/*setter*/"COUNTA(A1:E1)");
-            Assert.AreEqual(0.0, c4.NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(0.0, c4.NumericCellValue, 0.0);
 
 
             // Evaluate and Test
@@ -103,10 +104,10 @@ namespace TestCases.SS.UserModel
             fe.EvaluateFormulaCell(c3);
             fe.EvaluateFormulaCell(c4);
 
-            Assert.AreEqual(3.6, c1.NumericCellValue, 0.0001);
-            Assert.AreEqual(17.5, c2.NumericCellValue, 0.0001);
-            Assert.AreEqual(1, c3.NumericCellValue, 0.0001);
-            Assert.AreEqual(4, c4.NumericCellValue, 0.0001);
+            ClassicAssert.AreEqual(3.6, c1.NumericCellValue, 0.0001);
+            ClassicAssert.AreEqual(17.5, c2.NumericCellValue, 0.0001);
+            ClassicAssert.AreEqual(1, c3.NumericCellValue, 0.0001);
+            ClassicAssert.AreEqual(4, c4.NumericCellValue, 0.0001);
 
             wb.Close();
         }
@@ -121,20 +122,20 @@ namespace TestCases.SS.UserModel
             ICell cell;
 
             cell = sheet.GetRow(1).GetCell(0);
-            Assert.AreEqual("B2", cell.CellFormula);
-            Assert.AreEqual("ProductionOrderConfirmation", Evaluator.Evaluate(cell).StringValue);
+            ClassicAssert.AreEqual("B2", cell.CellFormula);
+            ClassicAssert.AreEqual("ProductionOrderConfirmation", Evaluator.Evaluate(cell).StringValue);
 
             cell = sheet.GetRow(2).GetCell(0);
-            Assert.AreEqual("B3", cell.CellFormula);
-            Assert.AreEqual("RequiredAcceptanceDate", Evaluator.Evaluate(cell).StringValue);
+            ClassicAssert.AreEqual("B3", cell.CellFormula);
+            ClassicAssert.AreEqual("RequiredAcceptanceDate", Evaluator.Evaluate(cell).StringValue);
 
             cell = sheet.GetRow(3).GetCell(0);
-            Assert.AreEqual("B4", cell.CellFormula);
-            Assert.AreEqual("Header", Evaluator.Evaluate(cell).StringValue);
+            ClassicAssert.AreEqual("B4", cell.CellFormula);
+            ClassicAssert.AreEqual("Header", Evaluator.Evaluate(cell).StringValue);
 
             cell = sheet.GetRow(4).GetCell(0);
-            Assert.AreEqual("B5", cell.CellFormula);
-            Assert.AreEqual("UniqueDocumentNumberID", Evaluator.Evaluate(cell).StringValue);
+            ClassicAssert.AreEqual("B5", cell.CellFormula);
+            ClassicAssert.AreEqual("UniqueDocumentNumberID", Evaluator.Evaluate(cell).StringValue);
 
             wb.Close();
         }
@@ -170,11 +171,11 @@ namespace TestCases.SS.UserModel
             row.CreateCell(2).CellFormula = (/*setter*/"sales_1*3");
 
             IFormulaEvaluator Evaluator = wb.GetCreationHelper().CreateFormulaEvaluator();
-            Assert.AreEqual(3.0, Evaluator.Evaluate(sh1.GetRow(0).GetCell(1)).NumberValue, 0.0);
-            Assert.AreEqual(6.0, Evaluator.Evaluate(sh1.GetRow(0).GetCell(2)).NumberValue, 0.0);
+            ClassicAssert.AreEqual(3.0, Evaluator.Evaluate(sh1.GetRow(0).GetCell(1)).NumberValue, 0.0);
+            ClassicAssert.AreEqual(6.0, Evaluator.Evaluate(sh1.GetRow(0).GetCell(2)).NumberValue, 0.0);
 
-            Assert.AreEqual(5.0, Evaluator.Evaluate(sh2.GetRow(0).GetCell(1)).NumberValue, 0.0);
-            Assert.AreEqual(15.0, Evaluator.Evaluate(sh2.GetRow(0).GetCell(2)).NumberValue, 0.0);
+            ClassicAssert.AreEqual(5.0, Evaluator.Evaluate(sh2.GetRow(0).GetCell(1)).NumberValue, 0.0);
+            ClassicAssert.AreEqual(15.0, Evaluator.Evaluate(sh2.GetRow(0).GetCell(2)).NumberValue, 0.0);
 
             wb.Close();
         }
@@ -207,8 +208,8 @@ namespace TestCases.SS.UserModel
 
 
             IFormulaEvaluator fe = wb.GetCreationHelper().CreateFormulaEvaluator();
-            Assert.AreEqual(26.0, fe.Evaluate(cell0).NumberValue, 0.0);
-            Assert.AreEqual(56.0, fe.Evaluate(cell1).NumberValue, 0.0);
+            ClassicAssert.AreEqual(26.0, fe.Evaluate(cell0).NumberValue, 0.0);
+            ClassicAssert.AreEqual(56.0, fe.Evaluate(cell1).NumberValue, 0.0);
 
             wb.Close();
         }
@@ -224,9 +225,9 @@ namespace TestCases.SS.UserModel
             // Create a value and check it
             c.CellFormula = (/*setter*/"Date(2011,10,6)");
             CellValue cellValue = fe.Evaluate(c);
-            Assert.AreEqual(40822.0, cellValue.NumberValue, 0.0);
+            ClassicAssert.AreEqual(40822.0, cellValue.NumberValue, 0.0);
             cellValue = fe.Evaluate(c);
-            Assert.AreEqual(40822.0, cellValue.NumberValue, 0.0);
+            ClassicAssert.AreEqual(40822.0, cellValue.NumberValue, 0.0);
 
             // Change it
             c.CellFormula = (/*setter*/"Date(2011,10,4)");
@@ -234,22 +235,22 @@ namespace TestCases.SS.UserModel
             // Evaluate it, no change as the formula Evaluator
             //  won't know to clear the cache
             cellValue = fe.Evaluate(c);
-            Assert.AreEqual(40822.0, cellValue.NumberValue, 0.0);
+            ClassicAssert.AreEqual(40822.0, cellValue.NumberValue, 0.0);
 
             // Manually flush for this cell, and check
             fe.NotifySetFormula(c);
             cellValue = fe.Evaluate(c);
-            Assert.AreEqual(40820.0, cellValue.NumberValue, 0.0);
+            ClassicAssert.AreEqual(40820.0, cellValue.NumberValue, 0.0);
 
             // Change again, without Notifying
             c.CellFormula = (/*setter*/"Date(2010,10,4)");
             cellValue = fe.Evaluate(c);
-            Assert.AreEqual(40820.0, cellValue.NumberValue, 0.0);
+            ClassicAssert.AreEqual(40820.0, cellValue.NumberValue, 0.0);
 
             // Now manually clear all, will see the new value
             fe.ClearAllCachedResultValues();
             cellValue = fe.Evaluate(c);
-            Assert.AreEqual(40455.0, cellValue.NumberValue, 0.0);
+            ClassicAssert.AreEqual(40455.0, cellValue.NumberValue, 0.0);
 
             wb.Close();
         }
@@ -273,10 +274,10 @@ namespace TestCases.SS.UserModel
         {
             IWorkbook wb = _testDataProvider.CreateWorkbook();
             IFormulaEvaluator fe = wb.GetCreationHelper().CreateFormulaEvaluator();
-            Assert.IsNull(fe.Evaluate(null));
+            ClassicAssert.IsNull(fe.Evaluate(null));
             ISheet sheet = wb.CreateSheet("Sheet1");
             ICell cell = sheet.CreateRow(0).CreateCell(0);
-            Assert.IsNull(fe.Evaluate(cell));
+            ClassicAssert.IsNull(fe.Evaluate(cell));
 
             wb.Close();
         }
@@ -312,7 +313,7 @@ namespace TestCases.SS.UserModel
                     Assert.Fail("Identified bug 46479a");
                 }
             }
-            Assert.AreEqual(3.5, cellB1.NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(3.5, cellB1.NumericCellValue, 0.0);
 
             wb.Close();
         }
@@ -333,9 +334,9 @@ namespace TestCases.SS.UserModel
             cellD1.CellFormula = (/*setter*/"rounddown(a1,2)");
             IFormulaEvaluator fe = wb.GetCreationHelper().CreateFormulaEvaluator();
 
-            Assert.AreEqual(2162.62, fe.EvaluateInCell(cellB1).NumericCellValue, 0.0);
-            Assert.AreEqual(2162.62, fe.EvaluateInCell(cellC1).NumericCellValue, 0.0);
-            Assert.AreEqual(2162.61, fe.EvaluateInCell(cellD1).NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(2162.62, fe.EvaluateInCell(cellB1).NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(2162.62, fe.EvaluateInCell(cellC1).NumericCellValue, 0.0);
+            ClassicAssert.AreEqual(2162.61, fe.EvaluateInCell(cellD1).NumericCellValue, 0.0);
 
             wb.Close();
         }
@@ -348,9 +349,38 @@ namespace TestCases.SS.UserModel
             IFormulaEvaluator evaluator = wb.GetCreationHelper().CreateFormulaEvaluator();
             ICell cell = wb.GetSheetAt(0).GetRow(0).GetCell(0);
             ICell same = evaluator.EvaluateInCell(cell);
-            //assertSame(cell, same);
-            Assert.AreSame(cell, same);
+            
+            ClassicAssert.AreSame(cell, same);
             wb.Close();
+        }
+
+        public void BaseTestNPOIIssue_1057(string paramsFile, string installFile)
+        {
+            DataFormatter formatter = new DataFormatter();
+            var paramswb = _testDataProvider.OpenSampleWorkbook(paramsFile);
+            var installwb = _testDataProvider.OpenSampleWorkbook(installFile);
+            
+            var paramsevaluator = paramswb.GetCreationHelper().CreateFormulaEvaluator();
+            var installevaluator = installwb.GetCreationHelper().CreateFormulaEvaluator();
+
+            var refs = new Dictionary<string, IFormulaEvaluator>();
+            refs.Add(paramsFile, paramsevaluator);
+            refs.Add(installFile, installevaluator);
+            installevaluator.SetupReferencedWorkbooks(refs);
+
+            var suffix = installFile[0].ToString().ToUpper();
+            var sheet = installwb.GetSheetAt(0);
+            var row = sheet.GetRow(0);
+            var cell = row.GetCell(1);
+
+            
+            String cellValue = formatter.FormatCellValue(cell, installevaluator);
+            ClassicAssert.AreEqual("Referenced value in sheet 1" + suffix, cellValue);
+
+            row = sheet.GetRow(1);
+            cell = row.GetCell(1);
+            cellValue = formatter.FormatCellValue(cell, installevaluator);
+            ClassicAssert.AreEqual("Referenced value in sheet 2" + suffix, cellValue);
         }
     }
 }

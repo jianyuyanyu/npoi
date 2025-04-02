@@ -28,9 +28,6 @@ namespace NPOI.XWPF.UserModel
      */
     public class XWPFFactory : POIXMLFactory
     {
-
-        private static POILogger logger = POILogFactory.GetLogger(typeof(XWPFFactory));
-
         private XWPFFactory()
         {
 
@@ -60,7 +57,7 @@ namespace NPOI.XWPF.UserModel
         {
             if (classes == null)
             {
-                classes = new Type[0];
+                classes = Array.Empty<Type>();
             }
             ConstructorInfo constructor = cls.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public,
                     null, classes, null);
@@ -68,7 +65,7 @@ namespace NPOI.XWPF.UserModel
                 throw new MissingMethodException();
             if (values == null)
             {
-                values = new object[0];
+                values = Array.Empty<object>();
             }
             return constructor.Invoke(values) as POIXMLDocumentPart;
         }

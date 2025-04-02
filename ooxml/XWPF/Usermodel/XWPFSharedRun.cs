@@ -40,7 +40,7 @@ namespace NPOI.XWPF.Usermodel
         /**
          * For isBold, isItalic etc
          */
-        private bool IsCTOnOff(W.CT_OnOff onoff)
+        private static bool IsCTOnOff(W.CT_OnOff onoff)
         {
             if (!onoff.IsSetVal())
                 return true;
@@ -152,7 +152,25 @@ namespace NPOI.XWPF.Usermodel
             }
         }
 
-        public double FontSize { get; set; }
+        public double FontSize 
+        {
+            get
+            {
+                OpenXmlFormats.Wordprocessing.CT_RPr pr = run.rPr1;
+                return (pr != null && pr.IsSetSz()) ? pr.sz.val / 2.0 : -1;
+            }
+            set
+            {
+                OpenXmlFormats.Wordprocessing.CT_RPr pr = run.IsSetRPr1() ? run.rPr1 : run.AddNewRPr1();
+                if(value < 1)
+                {
+                    pr.sz = null;
+                    return;
+                }
+                OpenXmlFormats.Wordprocessing.CT_HpsMeasure ctSize = pr.IsSetSz() ? pr.sz : pr.AddNewSz();
+                ctSize.val = (ulong) (value * 2);
+            }
+        }
 
         public string Text
         {
@@ -162,9 +180,9 @@ namespace NPOI.XWPF.Usermodel
                 for (int i = 0; i < run.Items.Count; i++)
                 {
                     object o = run.Items[i];
-                    if (o is CT_Text1)
+                    if (o is CT_Text1 text1)
                     {
-                        text.Append(((CT_Text1)o).Value);
+                        text.Append(text1.Value);
                     }
                 }
 
@@ -204,7 +222,7 @@ namespace NPOI.XWPF.Usermodel
         static void preserveSpaces(CT_Text1 xs)
         {
             String text = xs.Value;
-            if (text != null && (text.StartsWith(" ") || text.EndsWith(" ")))
+            if (text != null && (text.StartsWith(' ') || text.EndsWith(' ')))
             {
                 //    XmlCursor c = xs.NewCursor();
                 //    c.ToNextToken();

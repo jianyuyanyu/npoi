@@ -34,20 +34,20 @@ namespace NPOI.HSSF.UserModel
     /// little other than act as a container for other shapes and Groups.
     /// @author Glen Stampoultzis (glens at apache.org)
     /// </summary>
-    public class HSSFPatriarch : HSSFShapeContainer, IDrawing
+    public class HSSFPatriarch : HSSFShapeContainer, IDrawing, IDrawing<HSSFShape>
     {
         //private static POILogger log = POILogFactory.GetLogger(typeof(HSSFPatriarch));
-        List<HSSFShape> _shapes = new List<HSSFShape>();
-        private HSSFSheet _sheet;
-        private EscherSpgrRecord _spgrRecord;
-        private EscherContainerRecord _mainSpgrContainer;
+        readonly List<HSSFShape> _shapes = new List<HSSFShape>();
+        private readonly HSSFSheet _sheet;
+        private readonly EscherSpgrRecord _spgrRecord;
+        private readonly EscherContainerRecord _mainSpgrContainer;
 
         /**
          * The EscherAggregate we have been bound to.
          * (This will handle writing us out into records,
          *  and building up our shapes from the records)
          */
-        private EscherAggregate _boundAggregate;
+        private readonly EscherAggregate _boundAggregate;
 
         /// <summary>
         /// Creates the patriarch.
@@ -73,9 +73,9 @@ namespace NPOI.HSSF.UserModel
             foreach (HSSFShape shape in patriarch.Children)
             {
                 HSSFShape newShape;
-                if (shape is HSSFShapeGroup)
+                if (shape is HSSFShapeGroup group)
                 {
-                    newShape = ((HSSFShapeGroup)shape).CloneShape(newPatriarch);
+                    newShape = group.CloneShape(newPatriarch);
                 }
                 else
                 {
@@ -353,21 +353,19 @@ namespace NPOI.HSSF.UserModel
             return CreateComment((HSSFAnchor)anchor);
         }
 
-
-
-
-        private void SetFlipFlags(HSSFShape shape)
+        private static void SetFlipFlags(HSSFShape shape)
         {
             EscherSpRecord sp = (EscherSpRecord)shape.GetEscherContainer().GetChildById(EscherSpRecord.RECORD_ID);
-            if (shape.Anchor.IsHorizontallyFlipped)
+            if ((shape.Anchor as HSSFAnchor).IsHorizontallyFlipped)
             {
                 sp.Flags = (sp.Flags | EscherSpRecord.FLAG_FLIPHORIZ);
             }
-            if (shape.Anchor.IsVerticallyFlipped)
+            if ((shape.Anchor as HSSFAnchor).IsVerticallyFlipped)
             {
                 sp.Flags = (sp.Flags | EscherSpRecord.FLAG_FLIPVERT);
             }
         }
+
         /// <summary>
         /// Returns a list of all shapes contained by the patriarch.
         /// </summary>

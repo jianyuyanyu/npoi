@@ -31,11 +31,11 @@ namespace NPOI.SS.Util
     public class SSCellRange<K> : ICellRange<K> where K:ICell
     {
 
-        private int _height;
-        private int _width;
-        private K[] _flattenedArray;
-        private int _firstRow;
-        private int _firstColumn;
+        private readonly int _height;
+        private readonly int _width;
+        private readonly K[] _flattenedArray;
+        private readonly int _firstRow;
+        private readonly int _firstColumn;
 
         private SSCellRange(int firstRow, int firstColumn, int height, int width, K[] flattenedArray)
         {
@@ -76,10 +76,10 @@ namespace NPOI.SS.Util
             int flatIndex = _width * relativeRowIndex + relativeColumnIndex;
             return _flattenedArray[flatIndex];
         }
-        internal class ArrayIterator<D> :IEnumerator<D>
+        internal sealed class ArrayIterator<D> :IEnumerator<D>
         {
 
-            private D[] _array;
+            private readonly D[] _array;
             private int _index;
 
             public ArrayIterator(D[] array)
@@ -160,9 +160,9 @@ namespace NPOI.SS.Util
                 itemCls = itemCls.GetElementType();
                 for (int r = _height - 1; r >= 0; r--)
                 {
-                    K[] row = (K[])Array.CreateInstance(itemCls, _width);
+                    result[r] = (K[])Array.CreateInstance(itemCls, _width);
                     int flatIndex = _width * r;
-                    Array.Copy(_flattenedArray, flatIndex, row, 0, _width);
+                    Array.Copy(_flattenedArray, flatIndex, result[r], 0, _width);
                 }
                 return result;
             }

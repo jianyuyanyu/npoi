@@ -37,13 +37,13 @@ namespace NPOI.XSSF.UserModel
     public class XSSFCellStyle : ICellStyle
     {
 
-        private int _cellXfId;
-        private StylesTable _stylesSource;
+        private readonly int _cellXfId;
+        private readonly StylesTable _stylesSource;
         private CT_Xf _cellXf;
         private CT_Xf _cellStyleXf;
         private XSSFFont _font;
         private XSSFCellAlignment _cellAlignment;
-        private ThemesTable _theme;
+        private readonly ThemesTable _theme;
 
         /**
          * Creates a Cell Style from the supplied parts
@@ -122,16 +122,24 @@ namespace NPOI.XSSF.UserModel
          */
         public void CloneStyleFrom(ICellStyle source)
         {
-            if (source is XSSFCellStyle)
+            if (source is XSSFCellStyle src)
             {
-                XSSFCellStyle src = (XSSFCellStyle)source;
-
                 // Is it on our Workbook?
                 if (src._stylesSource == _stylesSource)
                 {
                     // Nice and easy
-                    _cellXf = src.GetCoreXf().Copy();
-                    _cellStyleXf = src.GetStyleXf() != null ? src.GetStyleXf().Copy() : null;
+                    src.GetCoreXf().CopyTo(_cellXf);
+
+                    // There is no need to copy _cellStyleXf couse XSSFCellStyle does not modify any _cellStyleXf properties.
+                    // Just update _cellStyleXf reference
+                    if (_cellXf.xfIdSpecified)
+                    {
+                        _cellStyleXf = _stylesSource.GetCellStyleXfAt((int)_cellXf.xfId);
+                    }
+                    else
+                    {
+                        _cellStyleXf = null;
+                    }
                 }
                 else
                 {
@@ -147,11 +155,6 @@ namespace NPOI.XSSF.UserModel
 
                         // Create a new Xf with the same contents
                         _cellXf = src.GetCoreXf().Copy();
-                        if (_cellXf.applyBorder)
-                        {
-                            //CellXF is copied with existing Ids, but those are different if you're copying between two documents
-                            _cellXf.borderId = FindAddBorder(src._stylesSource.GetBorderAt((int)_cellXf.borderId).GetCTBorder());
-                        }
 
                         // bug 56295: ensure that the fills is available and set correctly
                         CT_Fill fill = CT_Fill.Parse(src.GetCTFill().ToString());
@@ -160,12 +163,7 @@ namespace NPOI.XSSF.UserModel
                         // bug 58084: set borders correctly
                         CT_Border border = CT_Border.Parse(src.GetCTBorder().ToString());
                         AddBorder(border);
-
-                        if (src._cellStyleXf != null && src._cellStyleXf.applyBorder)
-                        {
-                            _cellStyleXf.borderId = FindAddBorder(src.GetCTBorder());
-                        }
-
+                        
                         // Swap it over
                         _stylesSource.ReplaceCellXfAt(_cellXfId, _cellXf);
                     }
@@ -659,7 +657,6 @@ namespace NPOI.XSSF.UserModel
             }
         }
 
-
         /**
         * Gets the font for this style
         * @return Font - font
@@ -807,7 +804,6 @@ namespace NPOI.XSSF.UserModel
         {
             get
             {
-
                 if (!_cellXf.IsSetProtection())
                 {
                     return true;
@@ -821,6 +817,24 @@ namespace NPOI.XSSF.UserModel
                     _cellXf.AddNewProtection();
                 }
                 _cellXf.protection.locked = value;
+            }
+        }
+
+        /// <summary>
+        /// Turn on or off "Quote Prefix" or "123 Prefix" for the style,
+        /// which is used to tell Excel that the thing which looks like
+        /// a number or a formula shouldn't be treated as on.
+        /// </summary>
+        /// <value>Is "Quote Prefix" or "123 Prefix" enabled for the cell?</value>
+        public bool IsQuotePrefixed
+        {
+            get
+            {
+                return _cellXf.quotePrefix;
+            }
+            set
+            {
+                _cellXf.quotePrefix = value;
             }
         }
 
@@ -1271,6 +1285,7 @@ namespace NPOI.XSSF.UserModel
                     break;
             }
         }
+
         private int FontId
         {
             get
@@ -1279,7 +1294,13 @@ namespace NPOI.XSSF.UserModel
                 {
                     return (int)_cellXf.fontId;
                 }
-                return _cellStyleXf != null ? (int)_cellStyleXf.fontId : -1;
+
+                if (_cellStyleXf != null && _cellStyleXf.IsSetFontId())
+                {
+                    return (int)_cellStyleXf.fontId;
+                }
+
+                return 0; //default font
             }
         }
 
@@ -1328,9 +1349,8 @@ namespace NPOI.XSSF.UserModel
          */
         public override bool Equals(Object o)
         {
-            if (o == null || !(o is XSSFCellStyle)) return false;
+            if (o == null || o is not XSSFCellStyle cf) return false;
 
-            XSSFCellStyle cf = (XSSFCellStyle)o;
             return _cellXf.ToString().Equals(cf.GetCoreXf().ToString());
         }
 

@@ -182,15 +182,49 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
 
         private List<CT_Comment> commentField;
 
+        private Dictionary<string, string> extraXmlNamespace = new Dictionary<string, string>();
+        private Dictionary<string, string> defaultXmlNamespace = new Dictionary<string, string>(){
+            { "o", "urn:schemas-microsoft-com:office:office" },
+            { "ve", "http://schemas.openxmlformats.org/markup-compatibility/2006" },
+            { "r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships" },
+            { "v", "urn:schemas-microsoft-com:vml" },
+            { "m", "http://schemas.openxmlformats.org/officeDocument/2006/math" },
+            { "w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main" },
+            { "wp", "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" },
+            { "w10", "urn:schemas-microsoft-com:office:word" },
+            { "w14", "http://schemas.microsoft.com/office/word/2010/wordml" },
+            { "wne", "http://schemas.microsoft.com/office/word/2006/wordml" },
+            
+        };
         public CT_Comments()
         {
             this.commentField = new List<CT_Comment>();
+        }
+        private void FindExtraNamespace(XmlNode node)
+        {
+            if (node.Attributes != null)
+            {
+                foreach (XmlAttribute attr in node.Attributes)
+                {
+                    if (attr.Name.StartsWith("xmlns:"))
+                    {
+                        string[] strs = attr.Name.Split(':');
+                        if (strs.Length == 2)
+                        {
+                            if (!extraXmlNamespace.ContainsKey(strs[1]) &&
+                                !defaultXmlNamespace.ContainsKey(strs[1]))
+                                extraXmlNamespace.Add(strs[1], attr.Value);
+                        }
+                    }
+                }
+            }
         }
         public static CT_Comments Parse(XmlNode node, XmlNamespaceManager namespaceManager)
         {
             if (node == null)
                 return null;
             CT_Comments ctObj = new CT_Comments();
+            ctObj.FindExtraNamespace(node);
             ctObj.comment = new List<CT_Comment>();
             foreach (XmlNode childNode in node.ChildNodes)
             {
@@ -201,16 +235,22 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
         }
 
 
+        private static void WriteXmlNamespace(StreamWriter sw, Dictionary<string, string> ns)
+        {
+            if(ns == null || ns.Count == 0)
+                return;
+            foreach (var kv in ns)
+            {
+                sw.Write(string.Format($"xmlns:{kv.Key}=\"{kv.Value}\" ", kv.Key, kv.Value));
+            }
+        }
 
         internal void Write(StreamWriter sw)
         {
             sw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
             sw.Write(string.Format("<w:comments "));
-            sw.Write("xmlns:ve=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" ");
-            sw.Write("xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\" ");
-            sw.Write("xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" ");
-            sw.Write("xmlns:w10=\"urn:schemas-microsoft-com:office:word\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" ");
-            sw.Write("xmlns:wne=\"http://schemas.microsoft.com/office/word/2006/wordml\">");
+            WriteXmlNamespace(sw, defaultXmlNamespace);
+            WriteXmlNamespace(sw, extraXmlNamespace);
             sw.Write(">");
             if (this.comment != null)
             {
@@ -442,68 +482,68 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             sw.Write(">");
             foreach (object o in this.Items)
             {
-                if (o is CT_PermStart)
-                    ((CT_PermStart)o).Write(sw, "permStart");
-                else if (o is CT_Markup)
-                    ((CT_Markup)o).Write(sw, "customXmlInsRangeEnd");
-                else if (o is CT_TrackChange)
-                    ((CT_TrackChange)o).Write(sw, "customXmlInsRangeStart");
-                else if (o is CT_Perm)
-                    ((CT_Perm)o).Write(sw, "permEnd");
-                else if (o is CT_Markup)
-                    ((CT_Markup)o).Write(sw, "customXmlMoveFromRangeEnd");
-                else if (o is CT_ProofErr)
-                    ((CT_ProofErr)o).Write(sw, "proofErr");
-                else if (o is CT_SdtBlock)
-                    ((CT_SdtBlock)o).Write(sw, "sdt");
-                else if (o is CT_Tbl)
-                    ((CT_Tbl)o).Write(sw, "tbl");
-                else if (o is CT_MoveBookmark)
-                    ((CT_MoveBookmark)o).Write(sw, "moveFromRangeStart");
-                else if (o is CT_Markup)
-                    ((CT_Markup)o).Write(sw, "customXmlMoveToRangeEnd");
-                else if (o is CT_OMath)
-                    ((CT_OMath)o).Write(sw, "oMath");
-                else if (o is CT_OMathPara)
-                    ((CT_OMathPara)o).Write(sw, "oMathPara");
-                else if (o is CT_AltChunk)
-                    ((CT_AltChunk)o).Write(sw, "altChunk");
-                else if (o is CT_MarkupRange)
-                    ((CT_MarkupRange)o).Write(sw, "bookmarkEnd");
-                else if (o is CT_Bookmark)
-                    ((CT_Bookmark)o).Write(sw, "bookmarkStart");
-                else if (o is CT_TrackChange)
-                    ((CT_TrackChange)o).Write(sw, "customXmlMoveToRangeStart");
-                else if (o is CT_MarkupRange)
-                    ((CT_MarkupRange)o).Write(sw, "commentRangeEnd");
-                else if (o is CT_MarkupRange)
-                    ((CT_MarkupRange)o).Write(sw, "commentRangeStart");
-                else if (o is CT_RunTrackChange)
-                    ((CT_RunTrackChange)o).Write(sw, "moveTo");
-                else if (o is CT_TrackChange)
-                    ((CT_TrackChange)o).Write(sw, "customXmlMoveFromRangeStart");
-                else if (o is CT_MarkupRange)
-                    ((CT_MarkupRange)o).Write(sw, "moveToRangeEnd");
-                else if (o is CT_CustomXmlBlock)
-                    ((CT_CustomXmlBlock)o).Write(sw, "customXml");
-                else if (o is CT_MoveBookmark)
-                    ((CT_MoveBookmark)o).Write(sw, "moveToRangeStart");
-                else if (o is CT_P)
-                    ((CT_P)o).Write(sw, "p");
-                else if (o is CT_Markup)
-                    ((CT_Markup)o).Write(sw, "customXmlDelRangeEnd");
-                else if (o is CT_RunTrackChange)
-                    ((CT_RunTrackChange)o).Write(sw, "del");
-                else if (o is CT_RunTrackChange)
-                    ((CT_RunTrackChange)o).Write(sw, "ins");
-                else if (o is CT_RunTrackChange)
-                    ((CT_RunTrackChange)o).Write(sw, "moveFrom");
-                else if (o is CT_TrackChange)
-                    ((CT_TrackChange)o).Write(sw, "customXmlDelRangeStart");
-                else if (o is CT_MarkupRange)
-                    ((CT_MarkupRange)o).Write(sw, "moveFromRangeEnd");
+                if (o is CT_PermStart start)
+                    start.Write(sw, "permStart");
+                else if (o is CT_Markup markup)
+                    markup.Write(sw, "customXmlInsRangeEnd");
+                else if (o is CT_TrackChange change)
+                    change.Write(sw, "customXmlInsRangeStart");
+                else if (o is CT_Perm perm)
+                    perm.Write(sw, "permEnd");
+                else if (o is CT_Markup ctMarkup)
+                    ctMarkup.Write(sw, "customXmlMoveFromRangeEnd");
+                else if (o is CT_ProofErr err)
+                    err.Write(sw, "proofErr");
+                else if (o is CT_SdtBlock block)
+                    block.Write(sw, "sdt");
+                else if (o is CT_Tbl tbl)
+                    tbl.Write(sw, "tbl");
+                else if (o is CT_MoveBookmark bookmark)
+                    bookmark.Write(sw, "moveFromRangeStart");
+                else if (o is CT_Markup markup1)
+                    markup1.Write(sw, "customXmlMoveToRangeEnd");
+                else if (o is CT_OMath math)
+                    math.Write(sw, "oMath");
+                else if (o is CT_OMathPara para)
+                    para.Write(sw, "oMathPara");
+                else if (o is CT_AltChunk chunk)
+                    chunk.Write(sw, "altChunk");
+                else if (o is CT_MarkupRange range)
+                    range.Write(sw, "bookmarkEnd");
+                else if (o is CT_Bookmark ctBookmark)
+                    ctBookmark.Write(sw, "bookmarkStart");
+                else if (o is CT_TrackChange trackChange)
+                    trackChange.Write(sw, "customXmlMoveToRangeStart");
+                else if (o is CT_MarkupRange markupRange)
+                    markupRange.Write(sw, "commentRangeEnd");
+                else if (o is CT_MarkupRange ctMarkupRange)
+                    ctMarkupRange.Write(sw, "commentRangeStart");
+                else if (o is CT_RunTrackChange runTrackChange)
+                    runTrackChange.Write(sw, "moveTo");
+                else if (o is CT_TrackChange ctTrackChange)
+                    ctTrackChange.Write(sw, "customXmlMoveFromRangeStart");
+                else if (o is CT_MarkupRange range1)
+                    range1.Write(sw, "moveToRangeEnd");
+                else if (o is CT_CustomXmlBlock xmlBlock)
+                    xmlBlock.Write(sw, "customXml");
+                else if (o is CT_MoveBookmark moveBookmark)
+                    moveBookmark.Write(sw, "moveToRangeStart");
+                else if (o is CT_P p)
+                    p.Write(sw, "p");
+                else if (o is CT_Markup ctMarkup1)
+                    ctMarkup1.Write(sw, "customXmlDelRangeEnd");
+                else if (o is CT_RunTrackChange ctRunTrackChange)
+                    ctRunTrackChange.Write(sw, "del");
+                else if (o is CT_RunTrackChange change1)
+                    change1.Write(sw, "ins");
+                else if (o is CT_RunTrackChange trackChange1)
+                    trackChange1.Write(sw, "moveFrom");
+                else if (o is CT_TrackChange ctTrackChange1)
+                    ctTrackChange1.Write(sw, "customXmlDelRangeStart");
+                else if (o is CT_MarkupRange markupRange1)
+                    markupRange1.Write(sw, "moveFromRangeEnd");
             }
-            sw.Write(string.Format("</w:{0}>", nodeName));
+            sw.WriteEndW(nodeName);
         }
 
         [System.Xml.Serialization.XmlElementAttribute("oMath", typeof(CT_OMath), Namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", Order = 0)]

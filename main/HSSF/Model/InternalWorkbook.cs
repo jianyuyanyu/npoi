@@ -327,8 +327,8 @@ namespace NPOI.HSSF.Model
      */
         public NameCommentRecord GetNameCommentRecord(NameRecord nameRecord)
         {
-            if (commentRecords.ContainsKey(nameRecord.NameText))
-                return commentRecords[nameRecord.NameText];
+            if (commentRecords.TryGetValue(nameRecord.NameText, out NameCommentRecord record))
+                return record;
             else
                 return null;
         }
@@ -553,17 +553,16 @@ namespace NPOI.HSSF.Model
                 for (IEnumerator it = escherContainer.ChildRecords.GetEnumerator(); it.MoveNext(); )
                 {
                     Object er = it.Current;
-                    if (er is EscherDgRecord)
+                    if (er is EscherDgRecord record)
                     {
-                        dg = (EscherDgRecord)er;
+                        dg = record;
                         //update id of the drawing in the cloned sheet
                         dg.Options = ((short)(dgId << 4));
                     }
-                    else if (er is EscherContainerRecord)
+                    else if (er is EscherContainerRecord cp)
                     {
                         //recursively find shape records and re-generate shapeId
                         ArrayList spRecords = new ArrayList();
-                        EscherContainerRecord cp = (EscherContainerRecord)er;
                         for (IEnumerator spIt = cp.ChildRecords.GetEnumerator(); spIt.MoveNext(); )
                         {
                             EscherContainerRecord shapeContainer = (EscherContainerRecord)spIt.Current;
@@ -775,6 +774,31 @@ namespace NPOI.HSSF.Model
         {
             return GetBoundSheetRec(sheetnum).IsVeryHidden;
         }
+
+        /**
+         * Gets the hidden flag for a given sheet.
+         * Note that a sheet could instead be
+         *  set to be very hidden, which is different
+         *  ({@link #isSheetVeryHidden(int)})
+         *
+         * @param sheetnum the sheet number (0 based)
+         * @return True if sheet is hidden
+         * @since 3.16 beta 2
+         */
+        public SheetVisibility GetSheetVisibility(int sheetnum)
+        {
+            BoundSheetRecord bsr = GetBoundSheetRec(sheetnum);
+            if(bsr.IsVeryHidden)
+            {
+                return SheetVisibility.VeryHidden;
+            }
+            if(bsr.IsHidden)
+            {
+                return SheetVisibility.Hidden;
+            }
+            return SheetVisibility.Visible;
+        }
+
         /**
          * Hide or Unhide a sheet
          * 
@@ -784,40 +808,19 @@ namespace NPOI.HSSF.Model
 
         public void SetSheetHidden(int sheetnum, bool hidden)
         {
-            BoundSheetRecord bsr = boundsheets[sheetnum];
-            bsr.IsHidden=hidden;
+            SetSheetHidden(sheetnum, hidden ? SheetVisibility.Hidden : SheetVisibility.Visible);
         }
         /**
- * Hide or unhide a sheet.
- *  0 = not hidden
- *  1 = hidden
- *  2 = very hidden.
- * 
- * @param sheetnum The sheet number
- * @param hidden 0 for not hidden, 1 for hidden, 2 for very hidden
- */
-        public void SetSheetHidden(int sheetnum, int hidden)
+         * Hide or unhide a sheet.
+         * 
+         * @param sheetnum The sheet number
+         * @param visibility the sheet visibility to set (visible, hidden, very hidden)
+         */
+        public void SetSheetHidden(int sheetnum, SheetVisibility visibility)
         {
             BoundSheetRecord bsr = GetBoundSheetRec(sheetnum);
-            bool h = false;
-            bool vh = false;
-            if (hidden == 0)
-            {
-            }
-            else if (hidden == 1)
-            {
-                h = true;
-            }
-            else if (hidden == 2)
-            {
-                vh = true;
-            }
-            else
-            {
-                throw new ArgumentException("Invalid hidden flag " + hidden + " given, must be 0, 1 or 2");
-            }
-            bsr.IsHidden = (h);
-            bsr.IsVeryHidden = (vh);
+            bsr.IsHidden = visibility == SheetVisibility.Hidden;
+            bsr.IsVeryHidden = visibility == SheetVisibility.VeryHidden;
         }
         /**
          * Get the sheet's index
@@ -1015,9 +1018,8 @@ namespace NPOI.HSSF.Model
                 if (r is ExtendedFormatRecord)
                 {
                 }
-                else if (r is StyleRecord)
+                else if (r is StyleRecord sr)
                 {
-                    StyleRecord sr = (StyleRecord)r;
                     if (sr.XFIndex == xfIndex)
                     {
                         return sr;
@@ -1173,9 +1175,9 @@ namespace NPOI.HSSF.Model
                 if (record.Sid != RecalcIdRecord.sid || ((RecalcIdRecord)record).IsNeeded)
                 {
                     int len = 0;
-                    if (record is SSTRecord)
+                    if (record is SSTRecord sstRecord)
                     {
-                        sst = (SSTRecord)record;
+                        sst = sstRecord;
                         sstPos = pos;
                     }
                     if (record.Sid == ExtSSTRecord.sid && sst != null)
@@ -1240,8 +1242,8 @@ namespace NPOI.HSSF.Model
                     // Let's skip RECALCID records, as they are only use for optimization
                     if (record.Sid != RecalcIdRecord.sid || ((RecalcIdRecord)record).IsNeeded)
                     {
-                        if (record is SSTRecord)
-                            sst = (SSTRecord)record;
+                        if (record is SSTRecord sstRecord)
+                            sst = sstRecord;
                         if (record.Sid == ExtSSTRecord.sid && sst != null)
                             retval += sst.CalcExtSSTRecordSize();
                         else
@@ -2649,9 +2651,9 @@ namespace NPOI.HSSF.Model
                 if (palettePos != -1)
                 {
                     Record rec = records[palettePos];
-                    if (rec is PaletteRecord)
+                    if (rec is PaletteRecord record)
                     {
-                        palette = (PaletteRecord)rec;
+                        palette = record;
                     }
                     else throw new Exception("InternalError: Expected PaletteRecord but got a '" + rec + "'");
                 }
@@ -2683,9 +2685,8 @@ namespace NPOI.HSSF.Model
             {
                 Record r = (Record)rit.Current;
 
-                if (r is DrawingGroupRecord)
+                if (r is DrawingGroupRecord dg)
                 {
-                    DrawingGroupRecord dg = (DrawingGroupRecord)r;
                     dg.ProcessChildRecords();
 
                     EscherContainerRecord cr =
@@ -2700,9 +2701,9 @@ namespace NPOI.HSSF.Model
                     for (IEnumerator it = cr.ChildRecords.GetEnumerator(); it.MoveNext(); )
                     {
                         EscherRecord er = (EscherRecord)it.Current;
-                        if (er is EscherDggRecord)
+                        if (er is EscherDggRecord record)
                         {
-                            dgg = (EscherDggRecord)er;
+                            dgg = record;
                         }
                         else if (er.RecordId == EscherContainerRecord.BSTORE_CONTAINER)
                         {
@@ -2717,8 +2718,8 @@ namespace NPOI.HSSF.Model
                         {
                             foreach (EscherRecord bs in bStore.ChildRecords)
                             {
-                                if (bs is EscherBSERecord)
-                                    escherBSERecords.Add((EscherBSERecord)bs);
+                                if (bs is EscherBSERecord record)
+                                    escherBSERecords.Add(record);
                             }
                         }
                         return drawingManager;
@@ -2740,9 +2741,9 @@ namespace NPOI.HSSF.Model
                 for (IEnumerator it = dg.EscherRecords.GetEnumerator(); it.MoveNext(); )
                 {
                     EscherRecord er = (EscherRecord)it.Current;
-                    if (er is EscherDggRecord)
+                    if (er is EscherDggRecord record)
                     {
-                        dgg = (EscherDggRecord)er;
+                        dgg = record;
                     }
                     else if (er.RecordId == EscherContainerRecord.BSTORE_CONTAINER)
                     {
@@ -2757,8 +2758,8 @@ namespace NPOI.HSSF.Model
                     {
                         foreach (EscherRecord bs in bStore.ChildRecords)
                         {
-                            if (bs is EscherBSERecord)
-                                escherBSERecords.Add((EscherBSERecord)bs);
+                            if (bs is EscherBSERecord record)
+                                escherBSERecords.Add(record);
                         }
                     }
                 }
@@ -2935,7 +2936,7 @@ namespace NPOI.HSSF.Model
                     this.writeProtect = new WriteProtectRecord();
                     int i = 0;
                     for (i = 0;
-                         i < records.Count && !(records[i] is BOFRecord);
+                         i < records.Count && records[i] is not BOFRecord;
                          i++)
                     {
                     }
@@ -2954,7 +2955,7 @@ namespace NPOI.HSSF.Model
                     this.writeAccess = (WriteAccessRecord)CreateWriteAccess();
                     int i = 0;
                     for (i = 0;
-                         i < records.Count && !(records[i] is InterfaceEndRecord);
+                         i < records.Count && records[i] is not InterfaceEndRecord;
                          i++)
                     {
                     }
@@ -2973,7 +2974,7 @@ namespace NPOI.HSSF.Model
                     this.fileShare = new FileSharingRecord();
                     int i = 0;
                     for (i = 0;
-                         i < records.Count && !(records[i] is WriteAccessRecord);
+                         i < records.Count && records[i] is not WriteAccessRecord;
                          i++)
                     {
                     }
@@ -3045,15 +3046,15 @@ namespace NPOI.HSSF.Model
             for (int i = 0; i < ptgs.Length; i++)
             {
                 Ptg ptg = ptgs[i];
-                if (ptg is Area3DPtg)
+                if (ptg is Area3DPtg area3DPtg)
                 {
-                    Area3DPtg a3p = (Area3DPtg)((OperandPtg)ptg).Copy();
+                    Area3DPtg a3p = (Area3DPtg)area3DPtg.Copy();
                     a3p.ExternSheetIndex = (newExtSheetIx);
                     ptgs[i] = a3p;
                 }
-                else if (ptg is Ref3DPtg)
+                else if (ptg is Ref3DPtg ref3DPtg)
                 {
-                    Ref3DPtg r3p = (Ref3DPtg)((OperandPtg)ptg).Copy();
+                    Ref3DPtg r3p = (Ref3DPtg)ref3DPtg.Copy();
                     r3p.ExternSheetIndex = (newExtSheetIx);
                     ptgs[i] = r3p;
                 }

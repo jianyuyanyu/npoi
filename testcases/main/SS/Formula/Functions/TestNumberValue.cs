@@ -1,5 +1,5 @@
 ﻿using NPOI.HSSF.UserModel;
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,6 +12,7 @@ namespace TestCases.SS.Formula.Functions
         [Test]
         public void TestMicrosoftExample1()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             HSSFWorkbook wb = new HSSFWorkbook();
             var sheet = wb.CreateSheet();
             var row = sheet.CreateRow(0);
@@ -23,6 +24,7 @@ namespace TestCases.SS.Formula.Functions
         [Test]
         public void TestMicrosoftExample2()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             HSSFWorkbook wb = new HSSFWorkbook();
             var sheet = wb.CreateSheet();
             var row = sheet.CreateRow(0);

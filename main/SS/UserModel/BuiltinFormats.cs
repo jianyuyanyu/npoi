@@ -82,7 +82,7 @@ namespace NPOI.SS.UserModel
          */
         public const int FIRST_USER_DEFINED_FORMAT_INDEX = 164;
 
-        private static String[] _formats = new string[]{
+        private static readonly String[] _formats = new string[]{
             "General",
             "0",
             "0.00",
@@ -128,8 +128,8 @@ namespace NPOI.SS.UserModel
             "#,##0_);[Red](#,##0)",
             "#,##0.00_);(#,##0.00)",
             "#,##0.00_);[Red](#,##0.00)",
-            "_(\"$\"* #,##0_);_(\"$\"* (#,##0);_(\"$\"* \"-\"_);_(@_)",
             "_(* #,##0_);_(* (#,##0);_(* \"-\"_);_(@_)",
+            "_(\"$\"* #,##0_);_(\"$\"* (#,##0);_(\"$\"* \"-\"_);_(@_)",
             "_(* #,##0.00_);_(* (#,##0.00);_(* \"-\"??_);_(@_)",
             "_(\"$\"* #,##0.00_);_(\"$\"* (#,##0.00);_(\"$\"* \"-\"??_);_(@_)",
             "mm:ss",

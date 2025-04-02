@@ -59,9 +59,8 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
 
         public void Set(object obj)
         {
-            if (obj is CT_Group)
+            if (obj is CT_Group group)
             {
-                var group = (CT_Group)obj;
                 foreach (var item in group.Items)
                 {
                     /*XmlSerializer xmlse = new XmlSerializer(item.GetType());
@@ -207,20 +206,20 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
                 this.control.Write(sw, "control");
             foreach (var childnode in Items)
             {
-                if (childnode is XmlNode)
+                if (childnode is XmlNode node)
                 {
-                    sw.Write(((XmlNode)childnode).OuterXml);
+                    sw.Write(node.OuterXml);
                 }
-                else if (childnode is CT_Shape)
+                else if (childnode is CT_Shape shape)
                 {
-                    ((CT_Shape)childnode).Write(sw, "shape");
+                    shape.Write(sw, "shape");
                 }
-                else if (childnode is CT_Shapetype)
+                else if (childnode is CT_Shapetype shapetype)
                 {
-                    ((CT_Shapetype)childnode).Write(sw, "shapetype");
+                    shapetype.Write(sw, "shapetype");
                 }
             }
-            sw.Write(string.Format("</w:{0}>", nodeName));
+            sw.WriteEndW(nodeName);
         }
     }
 
@@ -451,7 +450,7 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             sw.Write(">");
             if (this.control != null)
                 this.control.Write(sw, "control");
-            sw.Write(string.Format("</w:{0}>", nodeName));
+            sw.WriteEndW(nodeName);
         }
 
     }
@@ -482,7 +481,7 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             XmlHelper.WriteAttribute(sw, "w:shapeid", this.shapeid);
             XmlHelper.WriteAttribute(sw, "r:id", this.id);
             sw.Write(">");
-            sw.Write(string.Format("</w:{0}>", nodeName));
+            sw.WriteEndW(nodeName);
         }
 
 

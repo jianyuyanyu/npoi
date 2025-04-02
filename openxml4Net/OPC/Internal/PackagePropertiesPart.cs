@@ -33,6 +33,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
         private static String[] DATE_FORMATS = new String[]{
             DEFAULT_DATEFORMAT,
             "yyyy-MM-dd'T'HH:mm:ss.ff'Z'",
+            "yyyy-MM-dd",
         };
 
         //Had to add this and TIME_ZONE_PAT to handle tz with colons.
@@ -219,12 +220,12 @@ namespace NPOI.OpenXml4Net.OPC.Internal
          * @return A string representation of the created date.
          */
         public String GetCreatedPropertyString() {
-            return GetDateValue(created);
+            return PackagePropertiesPart.GetDateValue(created);
         }
 
         /**
          * Get creator.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getCreatorProperty()
          */
         public String GetCreatorProperty() {
@@ -233,7 +234,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get description.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getDescriptionProperty()
          */
         public String GetDescriptionProperty() {
@@ -242,7 +243,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get identifier.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getIdentifierProperty()
          */
         public String GetIdentifierProperty() {
@@ -251,7 +252,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get keywords.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getKeywordsProperty()
          */
         public String GetKeywordsProperty() {
@@ -260,7 +261,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get the language.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getLanguageProperty()
          */
         public String GetLanguageProperty() {
@@ -269,7 +270,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get the author of last modifications.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getLastModifiedByProperty()
          */
         public String GetLastModifiedByProperty() {
@@ -278,7 +279,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get last printed date.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getLastPrintedProperty()
          */
         public Nullable<DateTime> GetLastPrintedProperty() {
@@ -287,16 +288,16 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get last printed date formated into a String.
-         * 
+         *
          * @return A string representation of the last printed date.
          */
         public String GetLastPrintedPropertyString() {
-            return GetDateValue(lastPrinted);
+            return PackagePropertiesPart.GetDateValue(lastPrinted);
         }
 
         /**
          * Get modified date.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getModifiedProperty()
          */
         public Nullable<DateTime> GetModifiedProperty() {
@@ -305,19 +306,19 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get modified date formated into a String.
-         * 
+         *
          * @return A string representation of the modified date.
          */
         public String GetModifiedPropertyString() {
-            if (modified.Value == null)
-                return GetDateValue(new Nullable<DateTime>(new DateTime()));
+            if (modified == null)
+                return PackagePropertiesPart.GetDateValue(new Nullable<DateTime>(new DateTime()));
             else
-                return GetDateValue(modified);
+                return PackagePropertiesPart.GetDateValue(modified);
         }
 
         /**
          * Get revision.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getRevisionProperty()
          */
         public String GetRevisionProperty() {
@@ -326,7 +327,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get subject.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getSubjectProperty()
          */
         public String GetSubjectProperty() {
@@ -335,7 +336,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get title.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getTitleProperty()
          */
         public String GetTitleProperty() {
@@ -344,7 +345,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Get version.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#getVersionProperty()
          */
         public String GetVersionProperty() {
@@ -353,7 +354,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set the category.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setCategoryProperty(java.lang.String)
          */
         public void SetCategoryProperty(String category) {
@@ -362,7 +363,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set the content status.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setContentStatusProperty(java.lang.String)
          */
         public void SetContentStatusProperty(String contentStatus) {
@@ -371,7 +372,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set the content type.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setContentTypeProperty(java.lang.String)
          */
         public void SetContentTypeProperty(String contentType) {
@@ -380,7 +381,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set the created date.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setCreatedProperty(org.apache.poi.OpenXml4Net.util.Nullable)
          */
         public void SetCreatedProperty(String created) {
@@ -393,7 +394,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set the created date.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setCreatedProperty(org.apache.poi.OpenXml4Net.util.Nullable)
          */
         public void SetCreatedProperty(Nullable<DateTime> created) {
@@ -403,7 +404,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set the creator.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setCreatorProperty(java.lang.String)
          */
         public void SetCreatorProperty(String creator) {
@@ -412,7 +413,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set the description.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setDescriptionProperty(java.lang.String)
          */
         public void SetDescriptionProperty(String description) {
@@ -421,7 +422,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set identifier.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setIdentifierProperty(java.lang.String)
          */
         public void SetIdentifierProperty(String identifier) {
@@ -430,7 +431,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set keywords.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setKeywordsProperty(java.lang.String)
          */
         public void SetKeywordsProperty(String keywords) {
@@ -439,7 +440,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set language.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setLanguageProperty(java.lang.String)
          */
         public void SetLanguageProperty(String language) {
@@ -448,7 +449,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set last modifications author.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setLastModifiedByProperty(java.lang.String)
          */
         public void SetLastModifiedByProperty(String lastModifiedBy) {
@@ -457,7 +458,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set last printed date.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setLastPrintedProperty(org.apache.poi.OpenXml4Net.util.Nullable)
          */
         public void SetLastPrintedProperty(String lastPrinted) {
@@ -471,7 +472,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set last printed date.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setLastPrintedProperty(org.apache.poi.OpenXml4Net.util.Nullable)
          */
         public void SetLastPrintedProperty(Nullable<DateTime> lastPrinted) {
@@ -481,7 +482,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set last modification date.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setModifiedProperty(org.apache.poi.OpenXml4Net.util.Nullable)
          */
         public void SetModifiedProperty(String modified) {
@@ -495,7 +496,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set last modification date.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setModifiedProperty(org.apache.poi.OpenXml4Net.util.Nullable)
          */
         public void SetModifiedProperty(Nullable<DateTime> modified) {
@@ -505,7 +506,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set revision.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setRevisionProperty(java.lang.String)
          */
         public void SetRevisionProperty(String revision) {
@@ -514,7 +515,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set subject.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setSubjectProperty(java.lang.String)
          */
         public void SetSubjectProperty(String subject) {
@@ -523,7 +524,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set title.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setTitleProperty(java.lang.String)
          */
         public void SetTitleProperty(String title) {
@@ -532,7 +533,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Set version.
-         * 
+         *
          * @see org.apache.poi.OpenXml4Net.opc.PackageProperties#setVersionProperty(java.lang.String)
          */
         public void SetVersionProperty(String version) {
@@ -542,7 +543,8 @@ namespace NPOI.OpenXml4Net.OPC.Internal
         /**
          * Convert a strig value into a String
          */
-        private String SetStringValue(String s) {
+        private static String SetStringValue(String s)
+        {
             if (s == null || s.Equals(""))
                 return null;
             else
@@ -551,7 +553,7 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Convert a string value represented a date into a DateTime?.
-         * 
+         *
          * @throws InvalidFormatException
          *             Throws if the date format isnot valid.
          */
@@ -570,22 +572,26 @@ namespace NPOI.OpenXml4Net.OPC.Internal
                 {
                     SimpleDateFormat df = new SimpleDateFormat(fStr);
                     df.TimeZone = TimeZoneInfo.Utc;
-                    DateTime d = df.Parse(dateTzStr);
-                    if (d != null)
+                    try
                     {
-                        return new DateTime?(d);
+                        return df.Parse(dateTzStr);
+                    }
+                    catch (FormatException)
+                    {
                     }
                 }
             }
-            dateTzStr = dateStr.EndsWith("Z") ? dateStr : (dateStr + "Z");
+            dateTzStr = dateStr.EndsWith('Z') ? dateStr : (dateStr + "Z");
             foreach (String fStr in DATE_FORMATS)
             {
                 SimpleDateFormat df = new SimpleDateFormat(fStr);
                 df.TimeZone = TimeZoneInfo.Utc;
-                DateTime d = df.Parse(dateTzStr).ToUniversalTime();
-                if (d != null)
+                try
                 {
-                    return new DateTime?(d);
+                    return df.Parse(dateTzStr).ToUniversalTime();
+                }
+                catch (FormatException)
+                {
                 }
             }
             //if you're here, no pattern matched, throw exception
@@ -610,13 +616,14 @@ namespace NPOI.OpenXml4Net.OPC.Internal
 
         /**
          * Convert a DateTime? into a String.
-         * 
+         *
          * @param d
          *            The Date to convert.
          * @return The formated date or null.
          * @see java.util.SimpleDateFormat
          */
-        private String GetDateValue(DateTime? d) {
+        private static String GetDateValue(DateTime? d)
+        {
             if (!d.HasValue || d == null || d.Equals(""))
             {
                 return "";

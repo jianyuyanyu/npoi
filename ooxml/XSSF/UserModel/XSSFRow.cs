@@ -236,8 +236,8 @@ namespace NPOI.XSSF.UserModel
                     return _stylesSource.GetStyleAt((int)_row.s);
                 }
 
-                    return null;
-                }
+                return null;
+            }
 
             set
             {
@@ -331,7 +331,7 @@ namespace NPOI.XSSF.UserModel
         public ICell CreateCell(int columnIndex, CellType type)
         {
             CT_Cell ctCell;
-            XSSFCell prev = _cells.ContainsKey(columnIndex) ? (XSSFCell)_cells[columnIndex] : null;
+            XSSFCell prev = _cells.TryGetValue(columnIndex, out ICell cell) ? (XSSFCell)cell : null;
             if (prev != null)
             {
                 ctCell = prev.GetCTCell();
@@ -673,12 +673,10 @@ namespace NPOI.XSSF.UserModel
 
         public override bool Equals(object obj)
         {
-            if (!(obj is XSSFRow))
+            if (obj is not XSSFRow other)
             {
                 return false;
             }
-
-            XSSFRow other = (XSSFRow)obj;
 
             return (RowNum == other.RowNum) &&
                    (Sheet == other.Sheet);
@@ -790,12 +788,12 @@ namespace NPOI.XSSF.UserModel
         /// <returns>Cell representing that column or null if Undefined.</returns>
         private ICell RetrieveCell(int cellnum)
         {
-            if (!_cells.ContainsKey(cellnum))
+            if (!_cells.TryGetValue(cellnum, out ICell cell))
             {
                 return null;
             }
             //if (cellnum < 0 || cellnum >= cells.Count) return null;
-            return _cells[cellnum];
+            return cell;
         }
 
         private int GetFirstKey()

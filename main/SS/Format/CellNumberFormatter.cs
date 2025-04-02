@@ -59,6 +59,7 @@ namespace NPOI.SS.Format
         private static readonly CellFormatter SIMPLE_NUMBER = new SimpleNumberCellFormatter("General");
         private static readonly CellFormatter SIMPLE_INT = new CellNumberFormatter("#");
         private static readonly CellFormatter SIMPLE_FLOAT = new CellNumberFormatter("#.#");
+
         /// <summary>
         /// The CellNumberFormatter.simpleValue() method uses the SIMPLE_NUMBER
         /// CellFormatter defined here. The CellFormat.GENERAL_FORMAT CellFormat
@@ -68,7 +69,7 @@ namespace NPOI.SS.Format
         /// different from the 'General' format for numbers ("#" for integer
         /// values and "#.#########" for floating-point values).
         /// </summary>
-        private class GeneralNumberFormatter : CellFormatter
+        private sealed class GeneralNumberFormatter : CellFormatter
         {
             private GeneralNumberFormatter()
                     : base("General")
@@ -103,7 +104,8 @@ namespace NPOI.SS.Format
                 FormatValue(toAppendTo, value);
             }
         }
-        private class SimpleNumberCellFormatter : CellFormatter
+
+        private sealed class SimpleNumberCellFormatter : CellFormatter
         {
             public SimpleNumberCellFormatter(string format)
                 : base(format)
@@ -780,7 +782,7 @@ namespace NPOI.SS.Format
 
             // (2) Determine the result's sign.
             string tmp = result.ToString();
-            int ePos = tmp.IndexOf("E");// fractionPos.EndIndex;
+            int ePos = tmp.IndexOf('E');// fractionPos.EndIndex;
             int signPos = ePos + 1;
             char expSignRes = result[signPos];
 
@@ -939,11 +941,11 @@ namespace NPOI.SS.Format
                 bool ShowCommas)
         {
 
-            int pos = result.ToString().IndexOf(".") - 1;
+            int pos = result.ToString().IndexOf('.') - 1;
             if (pos < 0)
             {
                 if (exponent != null && numSpecials == integerSpecials)
-                    pos = result.ToString().IndexOf("E") - 1;
+                    pos = result.ToString().IndexOf('E') - 1;
                 else
                     pos = result.Length - 1;
             }
@@ -1015,9 +1017,10 @@ namespace NPOI.SS.Format
             int strip;
             if (fractionalSpecials.Count > 0)
             {
-                digit = result.ToString().IndexOf(".") + 1;
+                string resultString = result.ToString();
+                digit = resultString.IndexOf('.') + 1;
                 if (exponent != null)
-                    strip = result.ToString().IndexOf("E") - 1;
+                    strip = resultString.IndexOf('E') - 1;
                 else
                     strip = result.Length - 1;
                 while (strip > digit && result[strip] == '0')

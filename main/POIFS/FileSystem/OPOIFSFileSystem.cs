@@ -127,7 +127,7 @@ namespace NPOI.POIFS.FileSystem
             }
             finally
             {
-                CloseInputStream(stream, success);
+                OPOIFSFileSystem.CloseInputStream(stream, success);
             }
 
 
@@ -154,7 +154,8 @@ namespace NPOI.POIFS.FileSystem
          * @param stream the stream to be Closed
          * @param success <c>false</c> if an exception is currently being thrown in the calling method
          */
-        private void CloseInputStream(Stream stream, bool success) {
+        private static void CloseInputStream(Stream stream, bool success)
+        {
             
             if(stream is MemoryStream) {
                 String msg = "POIFS is closing the supplied input stream of type (" 
@@ -470,17 +471,18 @@ namespace NPOI.POIFS.FileSystem
         /// POIFSViewable        
         /// </summary>
         /// <value>an array of Object; may not be null, but may be empty</value>
-        public Array ViewableArray
+        public Object[] ViewableArray
         {
-            get{
-            if (PreferArray)
+            get
             {
+                if (PreferArray)
+                {
                     return ((POIFSViewable)this.Root).ViewableArray;
-            }
-            else
-            {
-                    return new Object[0];
-            }
+                }
+                else
+                {
+                    return Array.Empty<Object>();
+                }
             }
         }
 
@@ -490,16 +492,17 @@ namespace NPOI.POIFS.FileSystem
         /// </summary>
         /// <value>an Iterator; may not be null, but may have an empty
         /// back end store</value>
-        public IEnumerator ViewableIterator
+        public IEnumerator<Object> ViewableIterator
         {
-            get{
+            get
+            {
                 if (!this.PreferArray)
                 {
-                    return (( POIFSViewable ) this.Root).ViewableIterator;
+                    return this.Root.ViewableIterator;
                 }
                 else
                 {
-                    return ArrayList.ReadOnly(new ArrayList()).GetEnumerator();
+                    return new List<Object>().AsReadOnly().GetEnumerator();
                 }
             }
         }

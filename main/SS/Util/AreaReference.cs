@@ -31,12 +31,12 @@ namespace NPOI.SS.Util
         private const char CELL_DELIMITER = ':';
         /** The Char (') used to quote sheet names when they contain special Chars */
         private const char SPECIAL_NAME_DELIMITER = '\'';
-        private static SpreadsheetVersion DEFAULT_SPREADSHEET_VERSION = SpreadsheetVersion.EXCEL97;
+        private static readonly SpreadsheetVersion DEFAULT_SPREADSHEET_VERSION = SpreadsheetVersion.EXCEL97;
 
-        private CellReference _firstCell;
-        private CellReference _lastCell;
-        private bool _isSingleCell;
-        private SpreadsheetVersion _version; // never null
+        private readonly CellReference _firstCell;
+        private readonly CellReference _lastCell;
+        private readonly bool _isSingleCell;
+        private readonly SpreadsheetVersion _version; // never null
 
         [Obsolete("deprecated since NPOI 2.5.1 Prefer supplying a spreadsheet version.")]
         public AreaReference(String reference)
@@ -268,7 +268,7 @@ namespace NPOI.SS.Util
             }
 
             // Check for the , as a sign of non-coniguous
-            if (reference.IndexOf(',') == -1)
+            if (!reference.Contains(','))
             {
                 return true;
             }
@@ -494,7 +494,7 @@ namespace NPOI.SS.Util
 
             String partA = reference.Substring(0, delimiterPos);
             String partB = reference.Substring(delimiterPos + 1);
-            if (partB.IndexOf(SHEET_NAME_DELIMITER) >= 0)
+            if (partB.Contains(SHEET_NAME_DELIMITER))
             {
                 // TODO - are references like "Sheet1!A1:Sheet1:B2" ever valid?  
                 // FormulaParser has code to handle that.

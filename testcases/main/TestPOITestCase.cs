@@ -17,7 +17,7 @@
 
 namespace TestCases
 {
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
@@ -28,6 +28,22 @@ namespace TestCases
     [TestFixture]
     public class TestPOITestCase
     {
+        [Test]
+        public void AssertStartsWith()
+        {
+            POITestCase.AssertStartsWith("Apache POI", "");
+            POITestCase.AssertStartsWith("Apache POI", "Apache");
+            POITestCase.AssertStartsWith("Apache POI", "Apache POI");
+        }
+
+        [Test]
+        public void AssertEndsWith()
+        {
+            POITestCase.AssertEndsWith("Apache POI", "");
+            POITestCase.AssertEndsWith("Apache POI", "POI");
+            POITestCase.AssertEndsWith("Apache POI", "Apache POI");
+        }
+
         [Test]
         public void AssertContains()
         {
@@ -86,7 +102,7 @@ namespace TestCases
 
             R expected;
             R actual = POITestCase.GetFieldValue(clazz, instance, fieldType, fieldName);
-            Assert.AreEqual(expected, actual);
+            ClassicAssert.AreEqual(expected, actual);
             */
         }
 
@@ -108,7 +124,7 @@ namespace TestCases
 
             R expected;
             R actual = POITestCase.CallMethod(clazz, instance, returnType, methodName, parameterTypes, parameters);
-            Assert.AreEqual(expected, actual);
+            ClassicAssert.AreEqual(expected, actual);
             */
         }
 

@@ -148,7 +148,7 @@ namespace NPOI.HSSF.UserModel
         /// <summary>
         /// user custom color
         /// </summary>
-        private class CustomColor : HSSFColor
+        private sealed class CustomColor : HSSFColor
         {
             private short byteOffset;
             private byte red;
@@ -226,7 +226,7 @@ namespace NPOI.HSSF.UserModel
             /// </summary>
             /// <param name="color">The color.</param>
             /// <returns></returns>
-            private String GetGnumericPart(byte color)
+            private static String GetGnumericPart(byte color)
             {
                 String s;
                 if (color == 0)

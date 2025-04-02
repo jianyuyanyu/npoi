@@ -72,12 +72,12 @@ namespace NPOI.SS.Format
      */
     public class CellFormat
     {
-        private String format;
-        private CellFormatPart posNumFmt;
-        private CellFormatPart zeroNumFmt;
-        private CellFormatPart negNumFmt;
-        private CellFormatPart textFmt;
-        private int formatPartCount;
+        private readonly String format;
+        private readonly CellFormatPart posNumFmt;
+        private readonly CellFormatPart zeroNumFmt;
+        private readonly CellFormatPart negNumFmt;
+        private readonly CellFormatPart textFmt;
+        private readonly int formatPartCount;
 
         private static readonly Regex ONE_PART = new Regex(CellFormatPart.FORMAT_PAT.ToString() + "(;|$)", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
@@ -117,7 +117,7 @@ namespace NPOI.SS.Format
         }
 
         /** Maps a format string to its Parsed version for efficiencies sake. */
-        private static Dictionary<String, CellFormat> formatCache =
+        private static readonly Dictionary<String, CellFormat> formatCache =
                 new Dictionary<String, CellFormat>();
 
         /**
@@ -131,8 +131,8 @@ namespace NPOI.SS.Format
         public static CellFormat GetInstance(String format)
         {
             CellFormat fmt = null;
-            if (formatCache.ContainsKey(format))
-                fmt = formatCache[format];
+            if (formatCache.TryGetValue(format, out CellFormat value))
+                fmt = value;
             if (fmt == null)
             {
                 if (format.Equals("General") || format.Equals("@"))
@@ -163,7 +163,7 @@ namespace NPOI.SS.Format
                     String valueDesc = m.Groups[0].Value;
 
                     // Strip out the semicolon if it's there
-                    if (valueDesc.EndsWith(";"))
+                    if (valueDesc.EndsWith(';'))
                         valueDesc = valueDesc.Substring(0, valueDesc.Length - 1);
 
                     parts.Add(new CellFormatPart(valueDesc));
@@ -238,18 +238,18 @@ namespace NPOI.SS.Format
                     return GetApplicableFormatPart(val).Apply(val);
                 }
             }
-            else if (value is DateTime)
+            else if (value is DateTime time)
             {
                 // Don't know (and can't get) the workbook date windowing (1900 or 1904)
                 // so assume 1900 date windowing
-                Double numericValue = DateUtil.GetExcelDate((DateTime)value);
+                Double numericValue = DateUtil.GetExcelDate(time);
                 if (DateUtil.IsValidExcelDate(numericValue))
                 {
-                    return GetApplicableFormatPart(numericValue).Apply(value);
+                    return GetApplicableFormatPart(numericValue).Apply(time);
                 }
                 else
                 {
-                    throw new ArgumentException("value " + numericValue + " of date " + value + " is not a valid Excel date");
+                    throw new ArgumentException("value " + numericValue + " of date " + time + " is not a valid Excel date");
                 }
             }
             else
@@ -292,7 +292,7 @@ namespace NPOI.SS.Format
                     {
                         if (DateUtil.IsValidExcelDate(value))
                         {
-                            return Apply(c.DateCellValue, value);
+                            return Apply((DateTime)c.DateCellValue, value);
                         }
                         else
                         {
@@ -413,9 +413,8 @@ namespace NPOI.SS.Format
         {
             if (this == obj)
                 return true;
-            if (obj is CellFormat)
+            if (obj is CellFormat that)
             {
-                CellFormat that = (CellFormat)obj;
                 return format.Equals(that.format);
             }
             return false;

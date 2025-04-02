@@ -14,7 +14,7 @@ namespace NPOI.HSSF.Record.Crypto
         private const int KEY_DIGEST_LENGTH = 5;
         private const int PASSWORD_HASH_NUMBER_OF_BYTES_USED = 5;
 
-        private byte[] _keyDigest;
+        private readonly byte[] _keyDigest;
 
         /**
          * Create using the default password and a specified docId
@@ -138,10 +138,9 @@ namespace NPOI.HSSF.Record.Crypto
                 using (MemoryStream baos = RecyclableMemory.GetStream(4))
                 {
                     new LittleEndianOutputStream(baos).WriteInt(keyBlockNo);
-                    byte[] baosToArray = baos.ToArray();
-                    byte[] data = new byte[baosToArray.Length + _keyDigest.Length];
+                    byte[] data = new byte[(int)baos.Length + _keyDigest.Length];
                     Array.Copy(_keyDigest, 0, data, 0, _keyDigest.Length);
-                    Array.Copy(baosToArray, 0, data, _keyDigest.Length, baosToArray.Length);
+                    Array.Copy(baos.GetBuffer(), 0, data, _keyDigest.Length, (int)baos.Length);
 
                     byte[] digest = md5.ComputeHash(data);
                     return new RC4(digest);

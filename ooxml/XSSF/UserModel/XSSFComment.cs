@@ -30,9 +30,9 @@ namespace NPOI.XSSF.UserModel
     public class XSSFComment : IComment
     {
 
-        private CT_Comment _comment;
-        private CommentsTable _comments;
-        private CT_Shape _vmlShape;
+        private readonly CT_Comment _comment;
+        private readonly CommentsTable _comments;
+        private readonly CT_Shape _vmlShape;
 
         /**
          * cached reference to the string with the comment text
@@ -160,7 +160,7 @@ namespace NPOI.XSSF.UserModel
                 {
                     String style = _vmlShape.style;
                     if (style != null)
-                        visible = style.IndexOf("visibility:visible") != -1;
+                        visible = style.Contains("visibility:visible");
                     else
                     {
                         if (_vmlShape.GetClientDataArray(0) == null)
@@ -209,11 +209,11 @@ namespace NPOI.XSSF.UserModel
             }
             set 
             {
-                if (!(value is XSSFRichTextString))
+                if (value is not XSSFRichTextString textString)
                 {
                     throw new ArgumentException("Only XSSFRichTextString argument is supported");
                 }
-                _str = (XSSFRichTextString)value;
+                _str = textString;
                 _comment.text = (_str.GetCTRst());
             }
         }
@@ -260,10 +260,10 @@ namespace NPOI.XSSF.UserModel
 
         public override bool Equals(Object obj)
         {
-            if (!(obj is XSSFComment)) {
+            if (obj is not XSSFComment other) {
                 return false;
             }
-            XSSFComment other = (XSSFComment)obj;
+
             return ((GetCTComment() == other.GetCTComment()) &&
                     (GetCTShape() == other.GetCTShape()));
         }

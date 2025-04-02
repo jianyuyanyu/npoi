@@ -70,6 +70,9 @@ namespace NPOI.HSSF.UserModel
         private Font font;
         private static POILogger Logger = POILogFactory.GetLogger(typeof(EscherGraphics));
 
+        // Default dpi
+        private static int dpi = 96;
+
         /**
          * Construct an escher graphics object.
          *
@@ -253,7 +256,7 @@ namespace NPOI.HSSF.UserModel
             shape.IsNoFill = (true);
         }
 
-        private int[] AddToAll(int[] values, int amount)
+        private static int[] AddToAll(int[] values, int amount)
         {
             int[] result = new int[values.Length];
             for (int i = 0; i < values.Length; i++)
@@ -261,8 +264,7 @@ namespace NPOI.HSSF.UserModel
             return result;
         }
 
-        public void DrawPolyline(int[] xPoints, int[] yPoints,
-                          int nPoints)
+        public void DrawPolyline(int[] xPoints, int[] yPoints, int nPoints)
         {
             if (Logger.Check(POILogger.WARN))
                 Logger.Log(POILogger.WARN, "DrawPolyline not supported");
@@ -275,7 +277,7 @@ namespace NPOI.HSSF.UserModel
         }
 
         public void DrawRoundRect(int x, int y, int width, int height,
-                           int arcWidth, int arcHeight)
+            int arcWidth, int arcHeight)
         {
             if (Logger.Check(POILogger.WARN))
                 Logger.Log(POILogger.WARN, "DrawRoundRect not supported");
@@ -289,7 +291,8 @@ namespace NPOI.HSSF.UserModel
             Font excelFont = new Font(SystemFonts.Get(font.Name.Equals("SansSerif") ? "Arial" : font.Name),
                 (int)(font.Size / verticalPixelsPerPoint), font.FontMetrics.Description.Style);
             {
-                int width = (int)((TextMeasurer.Measure(str, new TextOptions(excelFont)).Width * 8) + 12);
+                var textOptions = new TextOptions(excelFont) { Dpi = dpi };
+                int width = (int)((TextMeasurer.MeasureSize(str, textOptions).Width * 8) + 12);
                 int height = (int)((font.Size / verticalPixelsPerPoint) + 6) * 2;
                 y -= Convert.ToInt32((font.Size / verticalPixelsPerPoint) + 2 * verticalPixelsPerPoint);    // we want to Draw the shape from the top-left
                 HSSFTextbox textbox = escherGroup.CreateTextbox(new HSSFChildAnchor(x, y, x + width, y + height));
@@ -393,7 +396,7 @@ namespace NPOI.HSSF.UserModel
             shape.SetFillColor(foreground.R, foreground.G, foreground.B);
         }
 
-        private int FindBiggest(int[] values)
+        private static int FindBiggest(int[] values)
         {
             int result = Int32.MinValue;
             for (int i = 0; i < values.Length; i++)
@@ -404,7 +407,7 @@ namespace NPOI.HSSF.UserModel
             return result;
         }
 
-        private int FindSmallest(int[] values)
+        private static int FindSmallest(int[] values)
         {
             int result = Int32.MaxValue;
             for (int i = 0; i < values.Length; i++)

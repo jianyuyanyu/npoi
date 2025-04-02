@@ -33,8 +33,8 @@ namespace NPOI.SS.Formula.Eval.Forked
     class ForkedEvaluationWorkbook : IEvaluationWorkbook
     {
 
-        private IEvaluationWorkbook _masterBook;
-        private Dictionary<String, ForkedEvaluationSheet> _sharedSheetsByName;
+        private readonly IEvaluationWorkbook _masterBook;
+        private readonly Dictionary<String, ForkedEvaluationSheet> _sharedSheetsByName;
 
         public ForkedEvaluationWorkbook(IEvaluationWorkbook master)
         {
@@ -58,8 +58,8 @@ namespace NPOI.SS.Formula.Eval.Forked
         private ForkedEvaluationSheet GetSharedSheet(String sheetName)
         {
             ForkedEvaluationSheet result = null;
-            if(_sharedSheetsByName.ContainsKey(sheetName))
-                result = _sharedSheetsByName[(sheetName)];
+            if(_sharedSheetsByName.TryGetValue(sheetName, out ForkedEvaluationSheet value))
+                result = value;
             if (result == null)
             {
                 result = new ForkedEvaluationSheet(_masterBook.GetSheet(_masterBook
@@ -135,9 +135,8 @@ namespace NPOI.SS.Formula.Eval.Forked
         }
         public int GetSheetIndex(IEvaluationSheet sheet)
         {
-            if (sheet is ForkedEvaluationSheet)
+            if (sheet is ForkedEvaluationSheet mes)
             {
-                ForkedEvaluationSheet mes = (ForkedEvaluationSheet)sheet;
                 return mes.GetSheetIndex(_masterBook);
             }
             return _masterBook.GetSheetIndex(sheet);

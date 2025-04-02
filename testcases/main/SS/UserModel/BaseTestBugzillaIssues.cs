@@ -22,7 +22,7 @@ namespace TestCases.SS.UserModel
     using NPOI.SS.UserModel;
     using NPOI.SS.Util;
     using NPOI.Util;
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     using SixLabors.Fonts;
     using System;
     using System.Collections.Generic;
@@ -38,6 +38,13 @@ namespace TestCases.SS.UserModel
     {
 
         private ITestDataProvider _testDataProvider;
+        private static int dpi = 96;
+        private static String TEST_32 = "Some text with 32 characters to ";
+        private static String TEST_255 = "Some very long text that is exactly 255 characters, which are allowed here, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla.....";
+        private static String TEST_256 = "Some very long text that is longer than the 255 characters allowed in HSSF here, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla bla, bla1";
+
+        private static String TEST_SPECIAL_TITLE = "special \n\t\r\u0002characters";
+        private static String TEST_SPECIAL = "Some text with special \n\t\r\u0002characters to s";
 
         protected BaseTestBugzillaIssues(ITestDataProvider TestDataProvider)
         {
@@ -49,7 +56,9 @@ namespace TestCases.SS.UserModel
             double diff = Math.Abs(expected - actual);
             double fuzz = expected * factor;
             if (diff > fuzz)
+            {
                 Assert.Fail(actual + " not within " + fuzz + " of " + expected);
+            }
         }
         /**
          * Test writing a hyperlink
@@ -70,9 +79,9 @@ namespace TestCases.SS.UserModel
             r = wb.GetSheetAt(0).GetRow(0);
 
             ICell cell_0 = r.GetCell(0);
-            Assert.AreEqual("HYPERLINK(\"http://jakarta.apache.org\",\"Jakarta\")", cell_0.CellFormula);
+            ClassicAssert.AreEqual("HYPERLINK(\"http://jakarta.apache.org\",\"Jakarta\")", cell_0.CellFormula);
             ICell cell_1 = r.GetCell(1);
-            Assert.AreEqual("HYPERLINK(\"http://google.com\",\"Google\")", cell_1.CellFormula);
+            ClassicAssert.AreEqual("HYPERLINK(\"http://google.com\",\"Google\")", cell_1.CellFormula);
         }
 
         /**
@@ -110,9 +119,9 @@ namespace TestCases.SS.UserModel
 
                 IRow row = sheet.GetRow(i);
 
-                Assert.AreEqual(tmp1, row.GetCell(0).StringCellValue);
-                Assert.AreEqual(tmp2, row.GetCell(1).StringCellValue);
-                Assert.AreEqual(tmp3, row.GetCell(2).StringCellValue);
+                ClassicAssert.AreEqual(tmp1, row.GetCell(0).StringCellValue);
+                ClassicAssert.AreEqual(tmp2, row.GetCell(1).StringCellValue);
+                ClassicAssert.AreEqual(tmp3, row.GetCell(2).StringCellValue);
             }
         }
 
@@ -131,7 +140,7 @@ namespace TestCases.SS.UserModel
 
             ISheet clone = workBook.CloneSheet(0);
             int originalMerged = template.NumMergedRegions;
-            Assert.AreEqual(2, originalMerged, "2 merged regions");
+            ClassicAssert.AreEqual(2, originalMerged, "2 merged regions");
 
             //remove merged regions from clone
             for (int i = template.NumMergedRegions - 1; i >= 0; i--)
@@ -139,7 +148,7 @@ namespace TestCases.SS.UserModel
                 clone.RemoveMergedRegion(i);
             }
 
-            Assert.AreEqual(originalMerged, template.NumMergedRegions, "Original Sheet's Merged Regions were Removed");
+            ClassicAssert.AreEqual(originalMerged, template.NumMergedRegions, "Original Sheet's Merged Regions were Removed");
             //check if template's merged regions are OK
             if (template.NumMergedRegions > 0)
             {
@@ -162,10 +171,10 @@ namespace TestCases.SS.UserModel
                 "IF(ROUND(A2*B2*C2,2)>ROUND(B2*D2,2),ROUND(A2*B2*C2,2),ROUND(B2*D2,2))";
             cell.CellFormula = (/*setter*/formulaText);
 
-            Assert.AreEqual(formulaText, cell.CellFormula);
+            ClassicAssert.AreEqual(formulaText, cell.CellFormula);
             wb = _testDataProvider.WriteOutAndReadBack(wb);
             cell = wb.GetSheetAt(0).GetRow(0).GetCell(0);
-            Assert.AreEqual("IF(ROUND(A2*B2*C2,2)>ROUND(B2*D2,2),ROUND(A2*B2*C2,2),ROUND(B2*D2,2))", cell.CellFormula);
+            ClassicAssert.AreEqual("IF(ROUND(A2*B2*C2,2)>ROUND(B2*D2,2),ROUND(A2*B2*C2,2),ROUND(B2*D2,2))", cell.CellFormula);
         }
 
         /**
@@ -184,7 +193,7 @@ namespace TestCases.SS.UserModel
 
             IWorkbook wb_sv = _testDataProvider.WriteOutAndReadBack(wb);
             ICell cell_sv = wb_sv.GetSheetAt(0).GetRow(0).GetCell(0);
-            Assert.AreEqual(formula, cell_sv.CellFormula);
+            ClassicAssert.AreEqual(formula, cell_sv.CellFormula);
         }
 
         /** another Test for the number of unique strings issue
@@ -226,7 +235,7 @@ namespace TestCases.SS.UserModel
             for (int j = 0; j < col_cnt; j++)
             {
                 ICell cell = rw.GetCell(j);
-                Assert.AreEqual("Col " + (j + 1), cell.StringCellValue);
+                ClassicAssert.AreEqual("Col " + (j + 1), cell.StringCellValue);
             }
             for (int i = 1; i < rw_cnt; i++)
             {
@@ -234,7 +243,7 @@ namespace TestCases.SS.UserModel
                 for (int j = 0; j < col_cnt; j++)
                 {
                     ICell cell = rw.GetCell(j);
-                    Assert.AreEqual("Row:" + (i + 1) + ",Column:" + (j + 1), cell.StringCellValue);
+                    ClassicAssert.AreEqual("Row:" + (i + 1) + ",Column:" + (j + 1), cell.StringCellValue);
                 }
             }
         }
@@ -248,7 +257,7 @@ namespace TestCases.SS.UserModel
             IWorkbook wb = _testDataProvider.CreateWorkbook();
             ICell cell = wb.CreateSheet().CreateRow(0).CreateCell(0);
             cell.CellFormula = (/*setter*/"SUMPRODUCT(A!C7:A!C67, B8:B68) / B69");
-            Assert.IsTrue(true, "no errors parsing formula");
+            ClassicAssert.IsTrue(true, "no errors parsing formula");
         }
         [Test]
         public virtual void Bug18800()
@@ -263,7 +272,7 @@ namespace TestCases.SS.UserModel
             sheet = book.GetSheet("CLONE");
             IRow row = sheet.GetRow(0);
             ICell cell = row.GetCell(0);
-            Assert.AreEqual("Test", cell.RichStringCellValue.String);
+            ClassicAssert.AreEqual("Test", cell.RichStringCellValue.String);
         }
 
         private static void AddNewSheetWithCellsA1toD4(IWorkbook book, int sheet)
@@ -300,7 +309,7 @@ namespace TestCases.SS.UserModel
             IFormulaEvaluator eva = xlw.GetCreationHelper().CreateFormulaEvaluator();
             double d = eva.Evaluate(s2E4).NumberValue;
 
-            Assert.AreEqual(d, (311 + 312 + 321 + 322), 0.0000001);
+            ClassicAssert.AreEqual(d, (311 + 312 + 321 + 322), 0.0000001);
         }
         [Test]
         public virtual void Bug46729_testMaxFunctionArguments()
@@ -329,7 +338,7 @@ namespace TestCases.SS.UserModel
                 }
                 catch (NPOI.SS.Formula.FormulaParseException e)
                 {
-                    Assert.IsTrue(e.Message.StartsWith("Too many arguments to function '" + name + "'"));
+                    ClassicAssert.IsTrue(e.Message.StartsWith("Too many arguments to function '" + name + "'"));
                 }
             }
         }
@@ -341,7 +350,10 @@ namespace TestCases.SS.UserModel
             fmla.Append("(");
             for (int i = 0; i < maxArgs; i++)
             {
-                if (i > 0) fmla.Append(',');
+                if (i > 0)
+                {
+                    fmla.Append(',');
+                }
                 fmla.Append("A1");
             }
             fmla.Append(")");
@@ -374,15 +386,15 @@ namespace TestCases.SS.UserModel
             Assume.That(SheetUtil.CanComputeColumnWidth(font),
                 "Cannot verify auoSizeColumn() because the necessary Fonts are not installed on this machine: " + font);
 
-            Assert.AreEqual(0, cell0.CellStyle.Indention, "Expecting no indentation in this test");
-            Assert.AreEqual(0, cell0.CellStyle.Rotation, "Expecting no rotation in this test");
+            ClassicAssert.AreEqual(0, cell0.CellStyle.Indention, "Expecting no indentation in this test");
+            ClassicAssert.AreEqual(0, cell0.CellStyle.Rotation, "Expecting no rotation in this test");
 
             // check computing size up to a large size
             StringBuilder b = new StringBuilder();
             for (int i = 0; i < longValue.Length * 5; i++)
             {
                 b.Append("w");
-                Assert.IsTrue(ComputeCellWidthFixed(font, b.ToString()) > 0, "Had zero length starting at length " + i);
+                ClassicAssert.IsTrue(ComputeCellWidthFixed(font, b.ToString()) > 0, "Had zero length starting at length " + i);
             }
 
             double widthManual = ComputeCellWidthManually(cell0, font);
@@ -392,19 +404,19 @@ namespace TestCases.SS.UserModel
                 SheetUtil.CanComputeColumnWidth(font) + "/" + ComputeCellWidthFixed(font, "1") + "/" + ComputeCellWidthFixed(font, "w") + "/" +
                 ComputeCellWidthFixed(font, "1w") + "/" + ComputeCellWidthFixed(font, "0000") + "/" + ComputeCellWidthFixed(font, longValue);
 
-            Assert.IsTrue(widthManual > 0, "Expected to have cell width > 0 when computing manually, but had " + info);
-            Assert.IsTrue(widthBeforeCell > 0, "Expected to have cell width > 0 BEFORE auto-size, but had " + info);
-            Assert.IsTrue(widthBeforeCol > 0, "Expected to have column width > 0 BEFORE auto-size, but had " + info);
+            ClassicAssert.IsTrue(widthManual > 0, "Expected to have cell width > 0 when computing manually, but had " + info);
+            ClassicAssert.IsTrue(widthBeforeCell > 0, "Expected to have cell width > 0 BEFORE auto-size, but had " + info);
+            ClassicAssert.IsTrue(widthBeforeCol > 0, "Expected to have column width > 0 BEFORE auto-size, but had " + info);
 
             sheet.AutoSizeColumn(0);
 
             double width = SheetUtil.GetColumnWidth(sheet, 0, false);
-            Assert.IsTrue(width > 0, "Expected to have column width > 0 AFTER auto-size, but had " + width);
+            ClassicAssert.IsTrue(width > 0, "Expected to have column width > 0 AFTER auto-size, but had " + width);
             width = SheetUtil.GetCellWidth(cell0, 8, null, false);
-            Assert.IsTrue(width > 0, "Expected to have cell width > 0 AFTER auto-size, but had " + width);
+            ClassicAssert.IsTrue(width > 0, "Expected to have cell width > 0 AFTER auto-size, but had " + width);
 
 
-            Assert.AreEqual(255 * 256, sheet.GetColumnWidth(0)); // maximum column width is 255 characters
+            ClassicAssert.AreEqual(255 * 256, sheet.GetColumnWidth(0)); // maximum column width is 255 characters
             sheet.SetColumnWidth(0, sheet.GetColumnWidth(0)); // Bug 50681 reports exception at this point
         }
 
@@ -428,9 +440,9 @@ namespace TestCases.SS.UserModel
             sheet.AutoSizeColumn(1);
             sheet.AutoSizeColumn(2);
 
-            int noWhitespaceColWidth = sheet.GetColumnWidth(0);
-            int leadingWhitespaceColWidth = sheet.GetColumnWidth(1);
-            int trailingWhitespaceColWidth = sheet.GetColumnWidth(2);
+            double noWhitespaceColWidth = sheet.GetColumnWidth(0);
+            double leadingWhitespaceColWidth = sheet.GetColumnWidth(1);
+            double trailingWhitespaceColWidth = sheet.GetColumnWidth(2);
 
             // Based on the amount of text and whitespace used, and the default font
             // assume that the cell with whitespace should be at least 20% wider than
@@ -440,12 +452,14 @@ namespace TestCases.SS.UserModel
             // if the default font or margins change.
             double expectedRatioThreshold = 1.2f;
             double leadingWhitespaceRatio = ((double)leadingWhitespaceColWidth) / noWhitespaceColWidth;
-            double trailingWhitespaceRatio = ((double)leadingWhitespaceColWidth) / noWhitespaceColWidth;
+            double trailingWhitespaceRatio = ((double)trailingWhitespaceColWidth) / noWhitespaceColWidth;
 
             assertGreaterThan("leading whitespace is longer than no whitespace", leadingWhitespaceRatio, expectedRatioThreshold);
             assertGreaterThan("trailing whitespace is longer than no whitespace", trailingWhitespaceRatio, expectedRatioThreshold);
-            Assert.AreEqual(leadingWhitespaceColWidth, trailingWhitespaceColWidth,
-                "cells with equal leading and trailing whitespace have equal width");
+
+            //This is not correct https://github.com/SixLabors/Fonts/discussions/349
+            //ClassicAssert.AreEqual(leadingWhitespaceColWidth, trailingWhitespaceColWidth,
+            //"cells with equal leading and trailing whitespace have equal width");
 
             wb.Close();
         }
@@ -468,11 +482,12 @@ namespace TestCases.SS.UserModel
             //FontRenderContext fontRenderContext = new FontRenderContext(null, true, true);
             IRichTextString rt = cell0.RichStringCellValue;
             String[] lines = rt.String.Split("\n".ToCharArray());
-            Assert.AreEqual(1, lines.Length);
+            ClassicAssert.AreEqual(1, lines.Length);
             String txt = lines[0] + "0";
 
             //AttributedString str = new AttributedString(txt);
             //copyAttributes(font, str, 0, txt.length());
+
             // TODO: support rich text fragments
             //if (rt.NumFormattingRuns > 0)
             //{
@@ -481,7 +496,8 @@ namespace TestCases.SS.UserModel
             //TextLayout layout = new TextLayout(str.getIterator(), fontRenderContext);
             //width = ((layout.getBounds().getWidth() / 1) / 8);
             Font wfont = SheetUtil.IFont2Font(font);
-            width = (double)TextMeasurer.Measure(txt, new TextOptions(wfont)).Width;
+            var textOptions = new TextOptions(wfont) { Dpi = dpi };
+            width = (double)TextMeasurer.MeasureSize(txt, textOptions).Width;
             return width;
         }
 
@@ -489,7 +505,8 @@ namespace TestCases.SS.UserModel
         {
             double width;
             Font wfont = SheetUtil.IFont2Font(font);
-            width = (double)TextMeasurer.Measure(txt, new TextOptions(wfont)).Width;
+            var textOptions = new TextOptions(wfont) { Dpi = dpi };
+            width = (double)TextMeasurer.MeasureSize(txt, textOptions).Width;
             return width;
         }
 
@@ -497,9 +514,18 @@ namespace TestCases.SS.UserModel
         //{
         //    str.addAttribute(TextAttribute.FAMILY, font.getFontName(), startIdx, endIdx);
         //    str.addAttribute(TextAttribute.SIZE, (float)font.getFontHeightInPoints());
-        //    if (font.getBoldweight() == Font.BOLDWEIGHT_BOLD) str.addAttribute(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD, startIdx, endIdx);
-        //    if (font.getItalic()) str.addAttribute(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE, startIdx, endIdx);
-        //    if (font.getUnderline() == Font.U_SINGLE) str.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, startIdx, endIdx);
+        //    if (font.getBoldweight() == Font.BOLDWEIGHT_BOLD)
+        //    {
+        //        str.addAttribute(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD, startIdx, endIdx);
+        //    }
+        //    if (font.getItalic())
+        //    {
+        //        str.addAttribute(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE, startIdx, endIdx);
+        //    }
+        //    if (font.getUnderline() == Font.U_SINGLE)
+        //    {
+        //        str.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, startIdx, endIdx);
+        //    }
         //}
 
         /**
@@ -532,29 +558,29 @@ namespace TestCases.SS.UserModel
             PaneInformation paneInfo = s.PaneInformation;
 
             // Check it
-            Assert.AreEqual(colSplit, paneInfo.VerticalSplitPosition);
-            Assert.AreEqual(rowSplit, paneInfo.HorizontalSplitPosition);
-            Assert.AreEqual(leftmostColumn, paneInfo.VerticalSplitLeftColumn);
-            Assert.AreEqual(topRow, paneInfo.HorizontalSplitTopRow);
+            ClassicAssert.AreEqual(colSplit, paneInfo.VerticalSplitPosition);
+            ClassicAssert.AreEqual(rowSplit, paneInfo.HorizontalSplitPosition);
+            ClassicAssert.AreEqual(leftmostColumn, paneInfo.VerticalSplitLeftColumn);
+            ClassicAssert.AreEqual(topRow, paneInfo.HorizontalSplitTopRow);
 
 
             // Now a row only freezepane
             s.CreateFreezePane(0, 3);
             paneInfo = s.PaneInformation;
 
-            Assert.AreEqual(0, paneInfo.VerticalSplitPosition);
-            Assert.AreEqual(3, paneInfo.HorizontalSplitPosition);
-            Assert.AreEqual(0, paneInfo.VerticalSplitLeftColumn);
-            Assert.AreEqual(3, paneInfo.HorizontalSplitTopRow);
+            ClassicAssert.AreEqual(0, paneInfo.VerticalSplitPosition);
+            ClassicAssert.AreEqual(3, paneInfo.HorizontalSplitPosition);
+            ClassicAssert.AreEqual(0, paneInfo.VerticalSplitLeftColumn);
+            ClassicAssert.AreEqual(3, paneInfo.HorizontalSplitTopRow);
 
             // Now a column only freezepane
             s.CreateFreezePane(4, 0);
             paneInfo = s.PaneInformation;
 
-            Assert.AreEqual(4, paneInfo.VerticalSplitPosition);
-            Assert.AreEqual(0, paneInfo.HorizontalSplitPosition);
-            Assert.AreEqual(4, paneInfo.VerticalSplitLeftColumn);
-            Assert.AreEqual(0, paneInfo.HorizontalSplitTopRow);
+            ClassicAssert.AreEqual(4, paneInfo.VerticalSplitPosition);
+            ClassicAssert.AreEqual(0, paneInfo.HorizontalSplitPosition);
+            ClassicAssert.AreEqual(4, paneInfo.VerticalSplitLeftColumn);
+            ClassicAssert.AreEqual(0, paneInfo.HorizontalSplitTopRow);
         }
 
         /** 
@@ -573,14 +599,14 @@ namespace TestCases.SS.UserModel
             ICell cell = row.CreateCell(0);
             cell.CellFormula = (/*setter*/hyperlinkF);
 
-            Assert.AreEqual(hyperlinkF, cell.CellFormula);
+            ClassicAssert.AreEqual(hyperlinkF, cell.CellFormula);
 
             wb = _testDataProvider.WriteOutAndReadBack(wb);
             sheet = wb.GetSheet("My Sheet");
             row = sheet.GetRow(0);
             cell = row.GetCell(0);
 
-            Assert.AreEqual(hyperlinkF, cell.CellFormula);
+            ClassicAssert.AreEqual(hyperlinkF, cell.CellFormula);
         }
 
         /**
@@ -603,23 +629,23 @@ namespace TestCases.SS.UserModel
             IFormulaEvaluator eval = wb.GetCreationHelper().CreateFormulaEvaluator();
 
             c.SetCellFormula("VLOOKUP(\"v A1\", A1:B2, 1)");
-            Assert.AreEqual("v A1", eval.Evaluate(c).StringValue);
+            ClassicAssert.AreEqual("v A1", eval.Evaluate(c).StringValue);
 
             c.SetCellFormula("VLOOKUP(\"v A1\", A1:B2, 1, 1)");
-            Assert.AreEqual("v A1", eval.Evaluate(c).StringValue);
+            ClassicAssert.AreEqual("v A1", eval.Evaluate(c).StringValue);
 
             c.SetCellFormula("VLOOKUP(\"v A1\", A1:B2, 1, )");
-            Assert.AreEqual("v A1", eval.Evaluate(c).StringValue);
+            ClassicAssert.AreEqual("v A1", eval.Evaluate(c).StringValue);
 
 
             c.SetCellFormula("HLOOKUP(\"v A1\", A1:B2, 1)");
-            Assert.AreEqual("v A1", eval.Evaluate(c).StringValue);
+            ClassicAssert.AreEqual("v A1", eval.Evaluate(c).StringValue);
 
             c.SetCellFormula("HLOOKUP(\"v A1\", A1:B2, 1, 1)");
-            Assert.AreEqual("v A1", eval.Evaluate(c).StringValue);
+            ClassicAssert.AreEqual("v A1", eval.Evaluate(c).StringValue);
 
             c.SetCellFormula("HLOOKUP(\"v A1\", A1:B2, 1, )");
-            Assert.AreEqual("v A1", eval.Evaluate(c).StringValue);
+            ClassicAssert.AreEqual("v A1", eval.Evaluate(c).StringValue);
         }
 
         [Test]
@@ -722,119 +748,119 @@ namespace TestCases.SS.UserModel
             // First up, check that TRUE and ISLOGICAL both behave
             cf.CellFormula = (/*setter*/"TRUE()");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(true, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(true, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISLOGICAL(TRUE())");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(true, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(true, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISLOGICAL(4)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
 
             // Now, check ISNUMBER / ISTEXT / ISNONTEXT
             cf.CellFormula = (/*setter*/"ISNUMBER(A1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(true, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(true, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISNUMBER(B1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISNUMBER(C1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISNUMBER(D1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISNUMBER(E1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
 
             cf.CellFormula = (/*setter*/"ISTEXT(A1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISTEXT(B1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(true, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(true, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISTEXT(C1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(true, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(true, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISTEXT(D1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISTEXT(E1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
 
             cf.CellFormula = (/*setter*/"ISNONTEXT(A1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(true, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(true, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISNONTEXT(B1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISNONTEXT(C1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISNONTEXT(D1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(true, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(true, cf.BooleanCellValue);
 
             cf.CellFormula = (/*setter*/"ISNONTEXT(E1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(true, cf.BooleanCellValue); // Blank and Null the same
+            ClassicAssert.AreEqual(true, cf.BooleanCellValue); // Blank and Null the same
 
 
             // Next up, SEARCH on its own
             cf.SetCellFormula("SEARCH(\"am\", A1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(FormulaError.VALUE.Code, cf.ErrorCellValue);
+            ClassicAssert.AreEqual(FormulaError.VALUE.Code, cf.ErrorCellValue);
 
             cf.SetCellFormula("SEARCH(\"am\", B1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(19, (int)cf.NumericCellValue);
+            ClassicAssert.AreEqual(19, (int)cf.NumericCellValue);
 
             cf.SetCellFormula("SEARCH(\"am\", C1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(FormulaError.VALUE.Code, cf.ErrorCellValue);
+            ClassicAssert.AreEqual(FormulaError.VALUE.Code, cf.ErrorCellValue);
 
             cf.SetCellFormula("SEARCH(\"am\", D1)");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(FormulaError.VALUE.Code, cf.ErrorCellValue);
+            ClassicAssert.AreEqual(FormulaError.VALUE.Code, cf.ErrorCellValue);
 
 
             // Finally, bring it all together
             cf.SetCellFormula("ISNUMBER(SEARCH(\"am\", A1))");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.SetCellFormula("ISNUMBER(SEARCH(\"am\", B1))");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(true, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(true, cf.BooleanCellValue);
 
             cf.SetCellFormula("ISNUMBER(SEARCH(\"am\", C1))");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.SetCellFormula("ISNUMBER(SEARCH(\"am\", D1))");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
 
             cf.SetCellFormula("ISNUMBER(SEARCH(\"am\", E1))");
             cf = EvaluateCell(wb, cf);
-            Assert.AreEqual(false, cf.BooleanCellValue);
+            ClassicAssert.AreEqual(false, cf.BooleanCellValue);
         }
         private ICell EvaluateCell(IWorkbook wb, ICell c)
         {
@@ -877,8 +903,8 @@ namespace TestCases.SS.UserModel
 
 
             // Check they were Set correctly
-            Assert.AreEqual(refLocal, c1.CellFormula);
-            Assert.AreEqual(refHttp, c2.CellFormula);
+            ClassicAssert.AreEqual(refLocal, c1.CellFormula);
+            ClassicAssert.AreEqual(refHttp, c2.CellFormula);
 
 
             // Reload, and ensure they were serialised and read correctly
@@ -888,8 +914,8 @@ namespace TestCases.SS.UserModel
 
             c1 = r1.GetCell(0);
             c2 = r1.GetCell(1);
-            Assert.AreEqual(refLocal, c1.CellFormula);
-            Assert.AreEqual(refHttp, c2.CellFormula);
+            ClassicAssert.AreEqual(refLocal, c1.CellFormula);
+            ClassicAssert.AreEqual(refHttp, c2.CellFormula);
 
 
             // Try to Evalutate, without giving a way to Get at the other file
@@ -923,8 +949,8 @@ namespace TestCases.SS.UserModel
             Evaluator.EvaluateFormulaCell(c1);
             Evaluator.EvaluateFormulaCell(c2);
 
-            Assert.AreEqual(otherCellText, c1.StringCellValue);
-            Assert.AreEqual(otherCellText, c2.StringCellValue);
+            ClassicAssert.AreEqual(otherCellText, c1.StringCellValue);
+            ClassicAssert.AreEqual(otherCellText, c2.StringCellValue);
         }
         [Test]
         public void Test56574OverwriteExistingRow()
@@ -945,12 +971,12 @@ namespace TestCases.SS.UserModel
                  assertEquals(1, cArray.length);*/
 
                 ICell cell = row.GetCell(0);
-                Assert.AreEqual(CellType.Formula, cell.CellType);
+                ClassicAssert.AreEqual(CellType.Formula, cell.CellType);
             }
 
             { // overwrite the row
                 IRow row = sheet.CreateRow(0);
-                Assert.IsNotNull(row);
+                ClassicAssert.IsNotNull(row);
             }
 
             { // creating a row in place of another should remove the existing data,
@@ -961,7 +987,7 @@ namespace TestCases.SS.UserModel
                 assertEquals(0, cArray.length);*/
 
                 ICell cell = row.GetCell(0);
-                Assert.IsNull(cell);
+                ClassicAssert.IsNull(cell);
             }
 
             // the calculation chain in XSSF is empty in a newly created workbook, so we cannot check if it is correctly updated
@@ -987,21 +1013,21 @@ namespace TestCases.SS.UserModel
             IWorkbook wb = _testDataProvider.CreateWorkbook();
             int startingFonts = wb is HSSFWorkbook ? 4 : 1;
 
-            Assert.AreEqual(startingFonts, wb.NumberOfFonts);
+            ClassicAssert.AreEqual(startingFonts, wb.NumberOfFonts);
 
             // Get a font, and slightly change it
             IFont a = wb.CreateFont();
-            Assert.AreEqual(startingFonts + 1, wb.NumberOfFonts);
+            ClassicAssert.AreEqual(startingFonts + 1, wb.NumberOfFonts);
             a.FontHeightInPoints = ((short)23);
-            Assert.AreEqual(startingFonts + 1, wb.NumberOfFonts);
+            ClassicAssert.AreEqual(startingFonts + 1, wb.NumberOfFonts);
 
             // Get two more, unchanged
             /*Font b =*/
             wb.CreateFont();
-            Assert.AreEqual(startingFonts + 2, wb.NumberOfFonts);
+            ClassicAssert.AreEqual(startingFonts + 2, wb.NumberOfFonts);
             /*Font c =*/
             wb.CreateFont();
-            Assert.AreEqual(startingFonts + 3, wb.NumberOfFonts);
+            ClassicAssert.AreEqual(startingFonts + 3, wb.NumberOfFonts);
 
             wb.Close();
         }
@@ -1135,21 +1161,21 @@ namespace TestCases.SS.UserModel
             cfs.SetCellFormula("B1");
 
             IFormulaEvaluator fe = wb.GetCreationHelper().CreateFormulaEvaluator();
-            Assert.AreEqual(CellType.Numeric, fe.Evaluate(cfn).CellType);
-            Assert.AreEqual(CellType.String, fe.Evaluate(cfs).CellType);
+            ClassicAssert.AreEqual(CellType.Numeric, fe.Evaluate(cfn).CellType);
+            ClassicAssert.AreEqual(CellType.String, fe.Evaluate(cfs).CellType);
             fe.EvaluateFormulaCell(cfn);
             fe.EvaluateFormulaCell(cfs);
 
             // Now test
-            Assert.AreEqual(CellType.Numeric, cn.CellType);
-            Assert.AreEqual(CellType.String, cs.CellType);
-            Assert.AreEqual(CellType.Formula, cfn.CellType);
-            Assert.AreEqual(CellType.Numeric, cfn.CachedFormulaResultType);
-            Assert.AreEqual(CellType.Formula, cfs.CellType);
-            Assert.AreEqual(CellType.String, cfs.CachedFormulaResultType);
+            ClassicAssert.AreEqual(CellType.Numeric, cn.CellType);
+            ClassicAssert.AreEqual(CellType.String, cs.CellType);
+            ClassicAssert.AreEqual(CellType.Formula, cfn.CellType);
+            ClassicAssert.AreEqual(CellType.Numeric, cfn.CachedFormulaResultType);
+            ClassicAssert.AreEqual(CellType.Formula, cfs.CellType);
+            ClassicAssert.AreEqual(CellType.String, cfs.CachedFormulaResultType);
 
             // Different ways of retrieving
-            Assert.AreEqual(1.2, cn.NumericCellValue, 0);
+            ClassicAssert.AreEqual(1.2, cn.NumericCellValue, 0);
             try
             {
                 var tmp = cn.RichStringCellValue;
@@ -1157,7 +1183,7 @@ namespace TestCases.SS.UserModel
             }
             catch (InvalidOperationException) { }
 
-            Assert.AreEqual("Testing", cs.StringCellValue);
+            ClassicAssert.AreEqual("Testing", cs.StringCellValue);
             try
             {
                 var tmp = cs.NumericCellValue;
@@ -1165,7 +1191,7 @@ namespace TestCases.SS.UserModel
             }
             catch (InvalidOperationException) { }
 
-            Assert.AreEqual(1.2, cfn.NumericCellValue, 0);
+            ClassicAssert.AreEqual(1.2, cfn.NumericCellValue, 0);
             try
             {
                 var tmp = cfn.RichStringCellValue;
@@ -1173,7 +1199,7 @@ namespace TestCases.SS.UserModel
             }
             catch (InvalidOperationException) { }
 
-            Assert.AreEqual("Testing", cfs.StringCellValue);
+            ClassicAssert.AreEqual("Testing", cfs.StringCellValue);
             try
             {
                 var tmp = cfs.NumericCellValue;
@@ -1193,7 +1219,7 @@ namespace TestCases.SS.UserModel
             // verify that null-values can be set, this was possible up to 3.11, but broken in 3.12 
             cell.SetCellValue((String)null);
             String value = cell.StringCellValue;
-            Assert.IsTrue(value == null || value.Length == 0, "HSSF will currently return empty string, XSSF/SXSSF will return null, but had: " + value);
+            ClassicAssert.IsTrue(value == null || value.Length == 0, "HSSF will currently return empty string, XSSF/SXSSF will return null, but had: " + value);
 
             cell = row.CreateCell(1);
             // also verify that setting formulas to null works  
@@ -1202,17 +1228,17 @@ namespace TestCases.SS.UserModel
 
             wb.GetCreationHelper().CreateFormulaEvaluator().EvaluateAll();
             value = cell.StringCellValue;
-            Assert.IsTrue(value == null || value.Length == 0, "HSSF will currently return empty string, XSSF/SXSSF will return null, but had: " + value);
+            ClassicAssert.IsTrue(value == null || value.Length == 0, "HSSF will currently return empty string, XSSF/SXSSF will return null, but had: " + value);
 
             // set some value
             cell.SetCellType(CellType.String);
             cell.SetCellValue("somevalue");
             value = cell.StringCellValue;
-            Assert.IsTrue(value.Equals("somevalue"), "can set value afterwards: " + value);
+            ClassicAssert.IsTrue(value.Equals("somevalue"), "can set value afterwards: " + value);
             // verify that the null-value is actually set even if there was some value in the cell before  
             cell.SetCellValue((String)null);
             value = cell.StringCellValue;
-            Assert.IsTrue(value == null || value.Length == 0, "HSSF will currently return empty string, XSSF/SXSSF will return null, but had: " + value);
+            ClassicAssert.IsTrue(value == null || value.Length == 0, "HSSF will currently return empty string, XSSF/SXSSF will return null, but had: " + value);
         }
 
         /**
@@ -1233,17 +1259,17 @@ namespace TestCases.SS.UserModel
             ICell cell = row.CreateCell(5);
             cell.SetCellFormula("IF(A1<>\"\",MID(A1,1,2),\" \")");
             ev.EvaluateAll();
-            Assert.AreEqual("ab", cell.StringCellValue);
+            ClassicAssert.AreEqual("ab", cell.StringCellValue);
 
             cell = row.CreateCell(6);
             cell.SetCellFormula("IF(B1<>\"\",MID(A1,1,2),\"empty\")");
             ev.EvaluateAll();
-            Assert.AreEqual("empty", cell.StringCellValue);
+            ClassicAssert.AreEqual("empty", cell.StringCellValue);
 
             cell = row.CreateCell(7);
             cell.SetCellFormula("IF(A1<>\"\",IF(C1<>\"\",MID(A1,1,2),\"c1\"),\"c2\")");
             ev.EvaluateAll();
-            Assert.AreEqual("ab", cell.StringCellValue);
+            ClassicAssert.AreEqual("ab", cell.StringCellValue);
 
 
             // Write it back out, and re-read
@@ -1254,19 +1280,19 @@ namespace TestCases.SS.UserModel
 
             // Check read ok, and re-evaluate fine
             cell = row.GetCell(5);
-            Assert.AreEqual("ab", cell.StringCellValue);
+            ClassicAssert.AreEqual("ab", cell.StringCellValue);
             ev.EvaluateFormulaCell(cell);
-            Assert.AreEqual("ab", cell.StringCellValue);
+            ClassicAssert.AreEqual("ab", cell.StringCellValue);
 
             cell = row.GetCell(6);
-            Assert.AreEqual("empty", cell.StringCellValue);
+            ClassicAssert.AreEqual("empty", cell.StringCellValue);
             ev.EvaluateFormulaCell(cell);
-            Assert.AreEqual("empty", cell.StringCellValue);
+            ClassicAssert.AreEqual("empty", cell.StringCellValue);
 
             cell = row.GetCell(7);
-            Assert.AreEqual("ab", cell.StringCellValue);
+            ClassicAssert.AreEqual("ab", cell.StringCellValue);
             ev.EvaluateFormulaCell(cell);
-            Assert.AreEqual("ab", cell.StringCellValue);
+            ClassicAssert.AreEqual("ab", cell.StringCellValue);
 
         }
 
@@ -1298,14 +1324,14 @@ namespace TestCases.SS.UserModel
                 if ((wb is HSSFWorkbook))
                 {
                     // there are some predefined styles
-                    Assert.AreEqual(i + 21, style.Index);
+                    ClassicAssert.AreEqual(i + 21, style.Index);
                 }
                 else
                 {
                     // getIndex() returns short, which is not sufficient for > 32767
                     // we should really change the API to be "int" for getIndex() but
                     // that needs API changes
-                    Assert.AreEqual(i + 1, style.Index & 0xffff);
+                    ClassicAssert.AreEqual(i + 1, style.Index & 0xffff);
                 }
                 //Create cell
                 //ICell cell = row.CreateCell(0);
@@ -1360,9 +1386,11 @@ namespace TestCases.SS.UserModel
             wb.Close();
         }
 
-        [Ignore("by poi")]
+        // Bug 58648: FormulaParser throws exception in parseSimpleFactor() when getCellFormula()
+        // is called on a cell and the formula contains spaces between closing parentheses ") )"
+        // https://bz.apache.org/bugzilla/show_bug.cgi?id=58648
         [Test]
-        public void test58648()
+        public void Test58648()
         {
             IWorkbook wb = _testDataProvider.CreateWorkbook();
             ICell cell = wb.CreateSheet().CreateRow(0).CreateCell(0);
@@ -1384,14 +1412,14 @@ namespace TestCases.SS.UserModel
             ISheet s = wb.CreateSheet();
             ICell cell = s.CreateRow(0).CreateCell(0);
             cell.SetCellValue((String)null);
-            Assert.AreEqual(CellType.Blank, cell.CellType);
+            ClassicAssert.AreEqual(CellType.Blank, cell.CellType);
 
             _testDataProvider.TrackAllColumnsForAutosizing(s);
 
             s.AutoSizeColumn(0);
-            Assert.AreEqual(2048, s.GetColumnWidth(0));
+            ClassicAssert.AreEqual(2158.08, s.GetColumnWidth(0));
             s.AutoSizeColumn(0, true);
-            Assert.AreEqual(2048, s.GetColumnWidth(0));
+            ClassicAssert.AreEqual(2158.08, s.GetColumnWidth(0));
             wb.Close();
         }
 
@@ -1407,11 +1435,11 @@ namespace TestCases.SS.UserModel
             ICellStyle style = wb.CreateCellStyle();
             style.DataFormat = (format.GetFormat("000-00000-000"));
             cell.CellStyle = (style);
-            Assert.AreEqual("000-00000-000",
+            ClassicAssert.AreEqual("000-00000-000",
                     cell.CellStyle.GetDataFormatString());
-            Assert.AreEqual(164, cell.CellStyle.DataFormat);
+            ClassicAssert.AreEqual(164, cell.CellStyle.DataFormat);
             DataFormatter formatter = new DataFormatter();
-            Assert.AreEqual("12-312-345-123", formatter.FormatCellValue(cell));
+            ClassicAssert.AreEqual("12-312-345-123", formatter.FormatCellValue(cell));
             wb.Close();
         }
 
@@ -1568,23 +1596,23 @@ namespace TestCases.SS.UserModel
             wb.SetPrintArea(1, "$B$1:$C$5");
 
             // Verify the print areas were set correctly
-            Assert.AreEqual("Sheet0!$A$1:$C$6", wb.GetPrintArea(0));
-            Assert.AreEqual("Sheet1!$B$1:$C$5", wb.GetPrintArea(1));
+            ClassicAssert.AreEqual("Sheet0!$A$1:$C$6", wb.GetPrintArea(0));
+            ClassicAssert.AreEqual("Sheet1!$B$1:$C$5", wb.GetPrintArea(1));
 
             // Remove the print area on Sheet0 and change the print area on Sheet1
             wb.RemovePrintArea(0);
             wb.SetPrintArea(1, "$A$1:$A$1");
 
             // Verify that the changes were made
-            Assert.IsNull(wb.GetPrintArea(0), "Sheet0 before write");
-            Assert.AreEqual("Sheet1!$A$1:$A$1", wb.GetPrintArea(1), "Sheet1 before write");
+            ClassicAssert.IsNull(wb.GetPrintArea(0), "Sheet0 before write");
+            ClassicAssert.AreEqual("Sheet1!$A$1:$A$1", wb.GetPrintArea(1), "Sheet1 before write");
 
             // Verify that the changes are non-volatile
             IWorkbook wb2 = _testDataProvider.WriteOutAndReadBack(wb);
             wb.Close();
 
-            Assert.IsNull(wb2.GetPrintArea(0), "Sheet0 after write"); // CURRENTLY FAILS with "Sheet0!$A$1:$C$6"
-            Assert.AreEqual("Sheet1!$A$1:$A$1", wb2.GetPrintArea(1), "Sheet1 after write");
+            ClassicAssert.IsNull(wb2.GetPrintArea(0), "Sheet0 after write"); // CURRENTLY FAILS with "Sheet0!$A$1:$C$6"
+            ClassicAssert.AreEqual("Sheet1!$A$1:$A$1", wb2.GetPrintArea(1), "Sheet1 after write");
         }
         [Test]
         public void test55384()
@@ -1614,12 +1642,12 @@ namespace TestCases.SS.UserModel
                 ICell cell3 = row.CreateCell(2);
                 cell3.SetCellFormula("SUM(C1:C10)");
                 cell3.SetCellValue(65);
-                Assert.AreEqual(CellType.Formula, cell1.CellType);
-                Assert.AreEqual(CellType.Formula, cell2.CellType);
-                Assert.AreEqual(CellType.Formula, cell3.CellType);
-                Assert.AreEqual("SUM(A1:A10)", cell1.CellFormula);
-                Assert.AreEqual("SUM(B1:B10)", cell2.CellFormula);
-                Assert.AreEqual("SUM(C1:C10)", cell3.CellFormula);
+                ClassicAssert.AreEqual(CellType.Formula, cell1.CellType);
+                ClassicAssert.AreEqual(CellType.Formula, cell2.CellType);
+                ClassicAssert.AreEqual(CellType.Formula, cell3.CellType);
+                ClassicAssert.AreEqual("SUM(A1:A10)", cell1.CellFormula);
+                ClassicAssert.AreEqual("SUM(B1:B10)", cell2.CellFormula);
+                ClassicAssert.AreEqual("SUM(C1:C10)", cell3.CellFormula);
                 /*String name = wb.GetClass().getCanonicalName();
                 String ext = (wb is HSSFWorkbook) ? ".xls" : ".xlsx";
                 OutputStream output = new FileOutputStream("/tmp" + name + ext);
@@ -1637,11 +1665,12 @@ namespace TestCases.SS.UserModel
                 wb.Close();
             }
         }
+
         private void checkFormulaPreevaluatedString(IWorkbook readFile)
         {
             ISheet sheet = readFile.GetSheetAt(0);
             IRow row = sheet.GetRow(sheet.LastRowNum);
-            Assert.AreEqual(10, row.RowNum);
+            ClassicAssert.AreEqual(10, row.RowNum);
             foreach (ICell cell in row)
             {
                 String cellValue = null;
@@ -1653,10 +1682,13 @@ namespace TestCases.SS.UserModel
                     case CellType.Formula:
                         cellValue = cell.CellFormula;
                         break;
+                    default:
+                        Assert.Fail("unexpected cell type");
+                        return;
                 }
-                Assert.IsNotNull(cellValue);
+                ClassicAssert.IsNotNull(cellValue);
                 cellValue = string.IsNullOrEmpty(cellValue) ? null : cellValue;
-                Assert.IsNotNull(cellValue);
+                ClassicAssert.IsNotNull(cellValue);
             }
         }
 
@@ -1690,11 +1722,11 @@ namespace TestCases.SS.UserModel
                 name.NameName = "WorkbookScopedName";
                 name.RefersToFormula = "Sheet2!A1";
 
-                Assert.AreEqual("Sheet1", nameOnSheet1.SheetName);
-                Assert.AreEqual("Sheet2", nameOnSheet2.SheetName);
-                Assert.AreEqual("Sheet3", nameOnSheet3.SheetName);
-                Assert.AreEqual(-1, name.SheetIndex);
-                Assert.AreEqual("Sheet2!A1", name.RefersToFormula);
+                ClassicAssert.AreEqual("Sheet1", nameOnSheet1.SheetName);
+                ClassicAssert.AreEqual("Sheet2", nameOnSheet2.SheetName);
+                ClassicAssert.AreEqual("Sheet3", nameOnSheet3.SheetName);
+                ClassicAssert.AreEqual(-1, name.SheetIndex);
+                ClassicAssert.AreEqual("Sheet2!A1", name.RefersToFormula);
 
                 // rearrange the sheets several times to make sure the names always refer to the right sheet
                 for (int i = 0; i <= 9; i++)
@@ -1716,12 +1748,12 @@ namespace TestCases.SS.UserModel
                     name = wb.GetName("WorkbookScopedName");
 
                     // The name should still refer to the same sheet after the sheets are re-ordered
-                    Assert.AreEqual(i % 3, wb.GetSheetIndex("Sheet3"));
-                    Assert.AreEqual("Sheet1", nameOnSheet1.SheetName);
-                    Assert.AreEqual("Sheet2", nameOnSheet2.SheetName);
-                    Assert.AreEqual("Sheet3", nameOnSheet3.SheetName);
-                    Assert.AreEqual(-1, name.SheetIndex);
-                    Assert.AreEqual("Sheet2!A1", name.RefersToFormula);
+                    ClassicAssert.AreEqual(i % 3, wb.GetSheetIndex("Sheet3"));
+                    ClassicAssert.AreEqual("Sheet1", nameOnSheet1.SheetName);
+                    ClassicAssert.AreEqual("Sheet2", nameOnSheet2.SheetName);
+                    ClassicAssert.AreEqual("Sheet3", nameOnSheet3.SheetName);
+                    ClassicAssert.AreEqual(-1, name.SheetIndex);
+                    ClassicAssert.AreEqual("Sheet2!A1", name.RefersToFormula);
 
                     // make sure the changes to the names stick after writing out the workbook
                     using (IWorkbook wb2 = _testDataProvider.WriteOutAndReadBack(wb))
@@ -1734,12 +1766,12 @@ namespace TestCases.SS.UserModel
                         name = wb2.GetName("WorkbookScopedName");
 
                         // Saving the workbook should not change the sheet names
-                        Assert.AreEqual(i % 3, wb2.GetSheetIndex("Sheet3"));
-                        Assert.AreEqual("Sheet1", nameOnSheet1.SheetName);
-                        Assert.AreEqual("Sheet2", nameOnSheet2.SheetName);
-                        Assert.AreEqual("Sheet3", nameOnSheet3.SheetName);
-                        Assert.AreEqual(-1, name.SheetIndex);
-                        Assert.AreEqual("Sheet2!A1", name.RefersToFormula);
+                        ClassicAssert.AreEqual(i % 3, wb2.GetSheetIndex("Sheet3"));
+                        ClassicAssert.AreEqual("Sheet1", nameOnSheet1.SheetName);
+                        ClassicAssert.AreEqual("Sheet2", nameOnSheet2.SheetName);
+                        ClassicAssert.AreEqual("Sheet3", nameOnSheet3.SheetName);
+                        ClassicAssert.AreEqual(-1, name.SheetIndex);
+                        ClassicAssert.AreEqual("Sheet2!A1", name.RefersToFormula);
 
                         // Verify names in wb2
                         nameOnSheet1 = wb2.GetName("NameOnSheet1");
@@ -1747,14 +1779,87 @@ namespace TestCases.SS.UserModel
                         nameOnSheet3 = wb2.GetName("NameOnSheet3");
                         name = wb2.GetName("WorkbookScopedName");
 
-                        Assert.AreEqual(i % 3, wb2.GetSheetIndex("Sheet3"));
-                        Assert.AreEqual("Sheet1", nameOnSheet1.SheetName);
-                        Assert.AreEqual("Sheet2", nameOnSheet2.SheetName);
-                        Assert.AreEqual("Sheet3", nameOnSheet3.SheetName);
-                        Assert.AreEqual(-1, name.SheetIndex);
-                        Assert.AreEqual("Sheet2!A1", name.RefersToFormula);
+                        ClassicAssert.AreEqual(i % 3, wb2.GetSheetIndex("Sheet3"));
+                        ClassicAssert.AreEqual("Sheet1", nameOnSheet1.SheetName);
+                        ClassicAssert.AreEqual("Sheet2", nameOnSheet2.SheetName);
+                        ClassicAssert.AreEqual("Sheet3", nameOnSheet3.SheetName);
+                        ClassicAssert.AreEqual(-1, name.SheetIndex);
+                        ClassicAssert.AreEqual("Sheet2!A1", name.RefersToFormula);
                     }
                 }
+            }
+        }
+
+        [Test]
+        public void test59200()
+        {
+            IWorkbook wb = _testDataProvider.CreateWorkbook();
+            ISheet sheet = wb.CreateSheet();
+
+            IDataValidation dataValidation;
+            CellRangeAddressList headerCell = new CellRangeAddressList(0, 1, 0, 1);
+            IDataValidationConstraint constraint = sheet.GetDataValidationHelper().CreateCustomConstraint("A1<>\"\"");
+
+            dataValidation = sheet.GetDataValidationHelper().CreateValidation(constraint, headerCell);
+
+            // HSSF has 32/255 limits as part of the Spec, XSSF has no limit in the spec, but Excel applies a 255 length limit!
+            // more than 255 fail for all
+            checkFailures(dataValidation, TEST_256, TEST_32, true);
+            checkFailures(dataValidation, TEST_32, TEST_256, true);
+
+            // null does work
+            checkFailures(dataValidation, null, null, false);
+
+            // more than 32 title fail for HSSFWorkbook
+            checkFailures(dataValidation, TEST_255, TEST_32, wb is HSSFWorkbook);
+
+            // special characters work
+            checkFailures(dataValidation, TEST_SPECIAL_TITLE, TEST_SPECIAL, false);
+
+            // 32 length title and 255 length text wrok for both
+            checkFailures(dataValidation, TEST_32, TEST_255, false);
+
+            dataValidation.ShowErrorBox = false;
+            sheet.AddValidationData(dataValidation);
+
+            // write out and read back in to trigger some more validation
+            IWorkbook wbBack = _testDataProvider.WriteOutAndReadBack(wb);
+
+            ISheet sheetBack = wbBack.GetSheetAt(0);
+            List<IDataValidation> dataValidations = sheetBack.GetDataValidations();
+            ClassicAssert.AreEqual(1, dataValidations.Count);
+
+            /*String ext = (wb instanceof HSSFWorkbook) ? ".xls" : ".xlsx";
+            OutputStream str = new FileOutputStream("C:\\temp\\59200" + ext);
+            try {
+                wb.write(str);
+            } finally {
+                str.close();
+            }*/
+
+            wb.Close();
+        }
+
+        private void checkFailures(IDataValidation dataValidation, String title, String text, bool shouldFail)
+        {
+            try
+            {
+                dataValidation.CreatePromptBox(title, text);
+                ClassicAssert.IsFalse(shouldFail, "Should fail in a length-check, had " + (title == null ? null : title.Length) + " and " + (text == null ? null : text.Length));
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                ClassicAssert.IsTrue(shouldFail, "Should not fail in a length-check, had " + (title == null ? null : title.Length) + " and " + (text == null ? null : text.Length));
+                // expected here
+            }
+            try
+            {
+                dataValidation.CreateErrorBox(title, text);
+                ClassicAssert.IsFalse(shouldFail, "Should fail in a length-check, had " + (title == null ? null : title.Length) + " and " + (text == null ? null : text.Length));
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                ClassicAssert.IsTrue(shouldFail, "Should not fail in a length-check, had " + (title == null ? null : title.Length) + " and " + (text == null ? null : text.Length));
             }
         }
     }

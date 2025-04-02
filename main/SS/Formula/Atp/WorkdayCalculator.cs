@@ -28,7 +28,7 @@ namespace NPOI.SS.Formula.Atp
     {
 
         public static WorkdayCalculator instance = new WorkdayCalculator();
-        private static Dictionary<int, List<int>> weekendTypeMap = new Dictionary<int, List<int>>();
+        private static readonly Dictionary<int, List<int>> weekendTypeMap = new Dictionary<int, List<int>>();
         /**
          * Constructor.
          */
@@ -124,8 +124,8 @@ namespace NPOI.SS.Formula.Atp
         public DateTime CalculateWorkdays(double start, int workdays, int weekendType, double[] holidays)
         {
             List<int> weekendDays = new List<int>() { 7, 1 };
-            if (weekendTypeMap.ContainsKey(weekendType))
-                weekendDays= weekendTypeMap[weekendType];
+            if (weekendTypeMap.TryGetValue(weekendType, out List<int> value))
+                weekendDays= value;
             DateTime startDate = DateUtil.GetJavaDate(start);
             int direction = workdays < 0 ? -1 : 1;
             var endDate=startDate;
@@ -141,7 +141,8 @@ namespace NPOI.SS.Formula.Atp
             }
             return endDate;
         }
-        private bool isWeekend(DateTime date, List<int> weekendDays)
+
+        private static bool isWeekend(DateTime date, List<int> weekendDays)
         {
             return weekendDays.Contains(((int)date.DayOfWeek) + 1);
         }
@@ -187,7 +188,7 @@ namespace NPOI.SS.Formula.Atp
                     pastDaysOfWeek++;
                 }
             }
-            return start < end ? pastDaysOfWeek : -pastDaysOfWeek;
+            return start <= end ? pastDaysOfWeek : -pastDaysOfWeek;
         }
 
         /**
@@ -199,22 +200,22 @@ namespace NPOI.SS.Formula.Atp
          * @return number of holidays that occur in workdays, between start and end dates.
          */
 
-        private int CalculateNonWeekendHolidays(double start, double end, double[] holidays)
+        protected internal int CalculateNonWeekendHolidays(double start, double end, double[] holidays)
         {
             int nonWeekendHolidays = 0;
             double startDay = start < end ? start : end;
             double endDay = end > start ? end : start;
-            for (int i = 0; i < holidays.Length; i++)
+            foreach (double holiday in holidays)
             {
-                if (IsInARange(startDay, endDay, holidays[i]))
+                if (WorkdayCalculator.IsInARange(startDay, endDay, holiday))
                 {
-                    if (!IsWeekend(holidays[i]))
+                    if (!IsWeekend(holiday))
                     {
                         nonWeekendHolidays++;
                     }
                 }
             }
-            return start < end ? nonWeekendHolidays : -nonWeekendHolidays;
+            return start <= end ? nonWeekendHolidays : -nonWeekendHolidays;
         }
 
         /**
@@ -222,7 +223,7 @@ namespace NPOI.SS.Formula.Atp
          * @return <code>true</code> if date is weekend, <code>false</code> otherwise.
          */
 
-        private bool IsWeekend(double aDate)
+        private static bool IsWeekend(double aDate)
         {
             DateTime date = DateUtil.GetJavaDate(aDate);
             return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
@@ -234,11 +235,11 @@ namespace NPOI.SS.Formula.Atp
          * @return <code>true</code> if date is a holiday, <code>false</code> otherwise.
          */
 
-        private bool IsHoliday(double aDate, double[] holidays)
+        private static bool IsHoliday(double aDate, double[] holidays)
         {
-            for (int i = 0; i < holidays.Length; i++)
+            foreach (double holiday in holidays)
             {
-                if (Math.Round(holidays[i]) == Math.Round(aDate))
+                if (Math.Round(holiday) == Math.Round(aDate))
                 {
                     return true;
                 }
@@ -251,8 +252,8 @@ namespace NPOI.SS.Formula.Atp
          * @param holidays an array of holidays.
          * @return <code>1</code> is not a workday, <code>0</code> otherwise.
          */
-
-        private int IsNonWorkday(double aDate, double[] holidays)
+        [Obsolete("will be removed, not used in POI itself")]
+        protected internal int IsNonWorkday(double aDate, double[] holidays)
         {
             return IsWeekend(aDate) || IsHoliday(aDate, holidays) ? 1 : 0;
         }
@@ -264,7 +265,7 @@ namespace NPOI.SS.Formula.Atp
          * @return <code>true</code> if aDate is between start and end dates, <code>false</code> otherwise.
          */
 
-        private bool IsInARange(double start, double end, double aDate)
+        private static bool IsInARange(double start, double end, double aDate)
         {
             return aDate >= start && aDate <= end;
         }

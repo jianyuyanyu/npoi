@@ -18,7 +18,7 @@
 using NPOI.SS.Util;
 using NPOI.SS.UserModel;
 using System;
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 using NPOI.SS.UserModel.Charts;
 using NPOI.XSSF.UserModel;
 
@@ -26,16 +26,16 @@ namespace TestCases.XSSF.UserModel.Charts
 {
     /**
      * Tests for XSSFScatterChartData.
-     * @author Roman Kashitsyn
      */
     [TestFixture]
     public class TestXSSFScatterChartData
     {
-
-        private static Object[][] plotData = new Object[][] {
+        private static Object[][] plotData = new Object[][]
+        {
             new object[] {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"},
-            new object[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-            };
+            new object[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+        };
+
         [Test]
         public void TestOneSeriePlot()
         {
@@ -55,14 +55,13 @@ namespace TestCases.XSSF.UserModel.Charts
             IChartDataSource<double> ys = DataSources.FromNumericCellRange(sheet, CellRangeAddress.ValueOf("A2:J2"));
             IScatterChartSeries<string, double> series = scatterChartData.AddSeries(xs, ys);
 
-            Assert.IsNotNull(series);
+            ClassicAssert.IsNotNull(series);
 
-            Assert.AreEqual(1, scatterChartData.GetSeries().Count);
-            Assert.IsTrue(scatterChartData.GetSeries().Contains(series));
+            ClassicAssert.AreEqual(1, scatterChartData.GetSeries().Count);
+            ClassicAssert.IsTrue(scatterChartData.GetSeries().Contains(series));
 
             chart.Plot(scatterChartData, bottomAxis, leftAxis);
+            wb.Close();
         }
-
     }
 }
-

@@ -126,7 +126,7 @@ namespace NPOI.HSSF.Extractor
                 TextListener tl = TriggerExtraction();
 
                 text = tl.text.ToString();
-                if (!text.EndsWith("\n", StringComparison.Ordinal))
+                if (!text.EndsWith('\n'))
                 {
                     text = text + "\n";
                 }
@@ -155,7 +155,7 @@ namespace NPOI.HSSF.Extractor
             return tl;
         }
 
-        private class TextListener : IHSSFListener
+        private sealed class TextListener : IHSSFListener
         {
             public FormatTrackingHSSFListener ft;
             private SSTRecord sstRecord;

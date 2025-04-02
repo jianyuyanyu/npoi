@@ -94,15 +94,15 @@ namespace NPOI.POIFS.FileSystem
          *            is a list of Strings specifying what nodes NOT to copy
          * @deprecated use {@link FilteringDirectoryNode} instead
          */
-        [Obsolete]
+        [Obsolete("To be removed NPOI 2.8.")]
         public static void CopyNodes(DirectoryEntry sourceRoot,
                 DirectoryEntry targetRoot, List<String> excepts)
         {
             IEnumerator entries = sourceRoot.Entries;
-            while (entries.MoveNext())
+            while(entries.MoveNext())
             {
                 Entry entry = (Entry)entries.Current;
-                if (!excepts.Contains(entry.Name))
+                if(!excepts.Contains(entry.Name))
                 {
                     CopyNodeRecursively(entry, targetRoot);
                 }
@@ -213,7 +213,7 @@ namespace NPOI.POIFS.FileSystem
             foreach (Entry b in dirB)
             {
                 String bName = b.Name;
-                if (!aSizes.ContainsKey(bName))
+                if (!aSizes.TryGetValue(bName, out int value))
                 {
                     // In B but not A
                     return false;
@@ -228,7 +228,7 @@ namespace NPOI.POIFS.FileSystem
                 {
                     size = ((DocumentNode)b).Size;
                 }
-                if (size != aSizes[(bName)])
+                if (size != value)
                 {
                     // Either the wrong type, or they're different sizes
                     return false;

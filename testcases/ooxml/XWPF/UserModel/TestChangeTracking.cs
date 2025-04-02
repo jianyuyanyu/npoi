@@ -19,7 +19,7 @@ namespace TestCases.XWPF.UserModel
     using System;
 
     using NPOI.XWPF;
-    using NUnit.Framework;
+    using NUnit.Framework;using NUnit.Framework.Legacy;
     using System.IO;
     using NPOI.XWPF.UserModel;
 
@@ -31,23 +31,23 @@ namespace TestCases.XWPF.UserModel
         public void Detection()
         {
 
-            XWPFDocument documentWithoutChangeTracking = XWPFTestDataSamples.OpenSampleDocument("bug56075-ChangeTracking_off.docx");
-            Assert.IsFalse(documentWithoutChangeTracking.IsTrackRevisions);
+            XWPFDocument documentWithoutChangeTracking = XWPFTestDataSamples.OpenSampleDocument("bug56075-changeTracking_off.docx");
+            ClassicAssert.IsFalse(documentWithoutChangeTracking.IsTrackRevisions);
 
-            XWPFDocument documentWithChangeTracking = XWPFTestDataSamples.OpenSampleDocument("bug56075-ChangeTracking_on.docx");
-            Assert.IsTrue(documentWithChangeTracking.IsTrackRevisions);
+            XWPFDocument documentWithChangeTracking = XWPFTestDataSamples.OpenSampleDocument("bug56075-changeTracking_on.docx");
+            ClassicAssert.IsTrue(documentWithChangeTracking.IsTrackRevisions);
 
         }
 
         [Test]
         public void ActivateChangeTracking()
         {
-            XWPFDocument document = XWPFTestDataSamples.OpenSampleDocument("bug56075-ChangeTracking_off.docx");
-            Assert.IsFalse(document.IsTrackRevisions);
+            XWPFDocument document = XWPFTestDataSamples.OpenSampleDocument("bug56075-changeTracking_off.docx");
+            ClassicAssert.IsFalse(document.IsTrackRevisions);
 
             document.IsTrackRevisions = (/*setter*/true);
 
-            Assert.IsTrue(document.IsTrackRevisions);
+            ClassicAssert.IsTrue(document.IsTrackRevisions);
         }
 
         [Test]
@@ -68,7 +68,7 @@ namespace TestCases.XWPF.UserModel
             XWPFDocument document = new XWPFDocument(inputStream);
             inputStream.Close();
 
-            Assert.IsTrue(document.IsTrackRevisions);
+            ClassicAssert.IsTrue(document.IsTrackRevisions);
         }
 
     }

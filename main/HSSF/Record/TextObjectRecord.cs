@@ -94,6 +94,9 @@ namespace NPOI.HSSF.Record
                     throw new RecordFormatException("Read " + ptgs.Length
                             + " tokens but expected exactly 1");
                 }
+                if(!(ptgs[0] is OperandPtg)) {
+                    throw new ArgumentException("Had unexpected type of ptg at index 0: " + ptgs[0].GetType());
+                }
                 _linkRefPtg = (OperandPtg)ptgs[0];
                 if (in1.Remaining > 0)
                 {
@@ -202,7 +205,7 @@ namespace NPOI.HSSF.Record
             WriteFormatData(out1,_text);
         }
 
-        private void WriteFormatData(ContinuableRecordOutput out1, IRichTextString str)
+        private static void WriteFormatData(ContinuableRecordOutput out1, IRichTextString str)
         {
             int nRuns = str.NumFormattingRuns;
             for (int i = 0; i < nRuns; i++)

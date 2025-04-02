@@ -2,7 +2,7 @@
 using NPOI.SS.Formula;
 using NPOI.SS.Formula.Eval;
 using NPOI.SS.Formula.Functions;
-using NUnit.Framework;
+using NUnit.Framework;using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,12 +23,14 @@ namespace TestCases.SS.Formula.Functions
         [Test]
         public void TestNumError()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             confirmNumError("22.5", "-40");
         }
 
         [Test]
         public void TestDiv0()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             confirmDiv0("22.5", "0");
             confirmDiv0("22.5", "0.9");
             confirmDiv0("22.5", "-0.9");
@@ -38,6 +40,7 @@ namespace TestCases.SS.Formula.Functions
         [Test]
         public void TestMicrosoftExample1()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             HSSFWorkbook wb = new HSSFWorkbook();
             var sheet = wb.CreateSheet();
             var row = sheet.CreateRow(0);
@@ -63,29 +66,29 @@ namespace TestCases.SS.Formula.Functions
         private static void confirmValue(String number1, String number2, double expected)
         {
             ValueEval result = invokeValue(number1, number2);
-            Assert.IsTrue(result is NumberEval);
-            Assert.AreEqual(expected, ((NumberEval)result).NumberValue, 0.00000000000001);
+            ClassicAssert.IsTrue(result is NumberEval);
+            ClassicAssert.AreEqual(expected, ((NumberEval)result).NumberValue, 0.00000000000001);
         }
 
         private static void confirmInvalidError(String number1, String number2)
         {
             ValueEval result = invokeValue(number1, number2);
-            Assert.IsTrue(result is ErrorEval);
-            Assert.AreEqual(ErrorEval.VALUE_INVALID, result);
+            ClassicAssert.IsTrue(result is ErrorEval);
+            ClassicAssert.AreEqual(ErrorEval.VALUE_INVALID, result);
         }
 
         private static void confirmNumError(String number1, String number2)
         {
             ValueEval result = invokeValue(number1, number2);
-            Assert.IsTrue(result is ErrorEval);
-            Assert.AreEqual(ErrorEval.NUM_ERROR, result);
+            ClassicAssert.IsTrue(result is ErrorEval);
+            ClassicAssert.AreEqual(ErrorEval.NUM_ERROR, result);
         }
 
         private static void confirmDiv0(String number1, String number2)
         {
             ValueEval result = invokeValue(number1, number2);
-            Assert.IsTrue(result is ErrorEval);
-            Assert.AreEqual(ErrorEval.DIV_ZERO, result);
+            ClassicAssert.IsTrue(result is ErrorEval);
+            ClassicAssert.AreEqual(ErrorEval.DIV_ZERO, result);
         }
     }
 }
